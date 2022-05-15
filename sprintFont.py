@@ -24,9 +24,11 @@ import tkinter.filedialog as tkFileDialog
 #import tkinter.simpledialog as tkSimpleDialog  #askstring()
 from fontTools.ttLib.ttFont import TTFont
 from i18n import I18n
-from font_to_polygon import str_to_int, str_to_float, isHexString, singleWordPolygon
+from sprint_struct.font_to_polygon import str_to_int, str_to_float, isHexString, singleWordPolygon
+from sprint_struct.sprint_textio import SprintTextIO
+from kicad_to_sprint import kicadModToTextIo
 
-__VERSION__ = "v1.0"
+__VERSION__ = "1.1"
 __DATE__ = "20220515"
 __AUTHOR__ = "cdhigh"
 
@@ -86,13 +88,13 @@ class Application_ui(Frame):
     #这个类仅实现界面生成功能，具体事件处理代码在子类Application中。
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.master.title('sprintFont')
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (570 / 2)
-        y = (hs / 2) - (289 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (570,289,x,y))
+        x = (ws / 2) - (625 / 2)
+        y = (hs / 2) - (363 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,363,x,y))
+        self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
             R0lGODlhEAAQAPcAAD6KKP///z6KJ//8///+//v6+/n4+f77//37/vz6/fv6/Pr5+/v9
@@ -116,7 +118,6 @@ class Application_ui(Frame):
             NnHkRInEZkmHGAI0W4utyZ0AIl4CsOnjJLYoNofoFRPgxEaBAUI1Wcx4sU2DkAsGBAA"""
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
-        
         self.createWidgets()
 
     def createWidgets(self):
@@ -124,136 +125,171 @@ class Application_ui(Frame):
 
         self.style = Style()
 
+        self.tabStrip = Notebook(self.top)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.862)
+
+        self.tabStrip__Tab1 = Frame(self.tabStrip)
+        self.VScroll1 = Scrollbar(self.tabStrip__Tab1, orient='vertical')
+        self.VScroll1.place(relx=0.917, rely=0.128, relwidth=0.029, relheight=0.182)
+        self.cmbLayerList = ['Add items in designer or code!',]
+        self.cmbLayerVar = StringVar(value='Add items in designer or code!')
+        self.cmbLayer = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
+        self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
+        self.cmbLayer.text = lambda : self.cmbLayerVar.get()
+        self.cmbLayer.place(relx=0.162, rely=0.511, relwidth=0.352)
+        self.txtMainFont = Font(font=('微软雅黑',10))
+        self.txtMain = Text(self.tabStrip__Tab1, yscrollcommand=self.VScroll1.set, font=self.txtMainFont)
+        self.txtMain.place(relx=0.162, rely=0.128, relwidth=0.757, relheight=0.182)
+        self.txtMain.insert('1.0','')
+        self.VScroll1['command'] = self.txtMain.yview
+        self.cmbSmoothList = ['Add items in designer or code!',]
+        self.cmbSmoothVar = StringVar(value='Add items in designer or code!')
+        self.cmbSmooth = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
+        self.cmbSmooth.setText = lambda x: self.cmbSmoothVar.set(x)
+        self.cmbSmooth.text = lambda : self.cmbSmoothVar.get()
+        self.cmbSmooth.place(relx=0.162, rely=0.639, relwidth=0.352)
+        self.cmdOkVar = StringVar(value='Ok')
+        self.style.configure('TcmdOk.TButton', font=('微软雅黑',10))
+        self.cmdOk = Button(self.tabStrip__Tab1, text='Ok', textvariable=self.cmdOkVar, command=self.cmdOk_Cmd, style='TcmdOk.TButton')
+        self.cmdOk.setText = lambda x: self.cmdOkVar.set(x)
+        self.cmdOk.text = lambda : self.cmdOkVar.get()
+        self.cmdOk.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdCancelVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancel.TButton', font=('微软雅黑',10))
+        self.cmdCancel = Button(self.tabStrip__Tab1, text='Cancel', textvariable=self.cmdCancelVar, command=self.cmdCancel_Cmd, style='TcmdCancel.TButton')
+        self.cmdCancel.setText = lambda x: self.cmdCancelVar.set(x)
+        self.cmdCancel.text = lambda : self.cmdCancelVar.get()
+        self.cmdCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmbWordSpacingList = ['Add items in designer or code!',]
+        self.cmbWordSpacingVar = StringVar(value='Add items in designer or code!')
+        self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
+        self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
+        self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
+        self.cmbWordSpacing.place(relx=0.755, rely=0.511, relwidth=0.204)
+        self.cmbLineSpacingList = ['Add items in designer or code!',]
+        self.cmbLineSpacingVar = StringVar(value='Add items in designer or code!')
+        self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
+        self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
+        self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
+        self.cmbLineSpacing.place(relx=0.755, rely=0.639, relwidth=0.204)
+        self.cmbFontHeightList = ['Add items in designer or code!',]
+        self.cmbFontHeightVar = StringVar(value='Add items in designer or code!')
+        self.cmbFontHeight = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
+        self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
+        self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
+        self.cmbFontHeight.place(relx=0.755, rely=0.383, relwidth=0.204)
+        self.cmbFontList = ['Add items in designer or code!',]
+        self.cmbFontVar = StringVar(value='Add items in designer or code!')
+        self.cmbFont = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
+        self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
+        self.cmbFont.text = lambda : self.cmbFontVar.get()
+        self.cmbFont.place(relx=0.162, rely=0.383, relwidth=0.352)
+        self.lblTxtVar = StringVar(value='Text')
+        self.style.configure('TlblTxt.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblTxt = Label(self.tabStrip__Tab1, text='Text', textvariable=self.lblTxtVar, style='TlblTxt.TLabel')
+        self.lblTxt.setText = lambda x: self.lblTxtVar.set(x)
+        self.lblTxt.text = lambda : self.lblTxtVar.get()
+        self.lblTxt.place(relx=0.027, rely=0.128, relwidth=0.11, relheight=0.08)
+        self.lblLayerVar = StringVar(value='Layer')
+        self.style.configure('TlblLayer.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblLayer = Label(self.tabStrip__Tab1, text='Layer', textvariable=self.lblLayerVar, style='TlblLayer.TLabel')
+        self.lblLayer.setText = lambda x: self.lblLayerVar.set(x)
+        self.lblLayer.text = lambda : self.lblLayerVar.get()
+        self.lblLayer.place(relx=0.027, rely=0.511, relwidth=0.11, relheight=0.08)
+        self.lblSmoothVar = StringVar(value='Smooth')
+        self.style.configure('TlblSmooth.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSmooth = Label(self.tabStrip__Tab1, text='Smooth', textvariable=self.lblSmoothVar, style='TlblSmooth.TLabel')
+        self.lblSmooth.setText = lambda x: self.lblSmoothVar.set(x)
+        self.lblSmooth.text = lambda : self.lblSmoothVar.get()
+        self.lblSmooth.place(relx=0.027, rely=0.639, relwidth=0.11, relheight=0.08)
+        self.lblWordSpacingVar = StringVar(value='Word spacing (mm)')
+        self.style.configure('TlblWordSpacing.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblWordSpacing = Label(self.tabStrip__Tab1, text='Word spacing (mm)', textvariable=self.lblWordSpacingVar, style='TlblWordSpacing.TLabel')
+        self.lblWordSpacing.setText = lambda x: self.lblWordSpacingVar.set(x)
+        self.lblWordSpacing.text = lambda : self.lblWordSpacingVar.get()
+        self.lblWordSpacing.place(relx=0.513, rely=0.511, relwidth=0.231, relheight=0.08)
+        self.LblLineSpacingVar = StringVar(value='Line spacing (mm)')
+        self.style.configure('TLblLineSpacing.TLabel', anchor='e', font=('微软雅黑',10))
+        self.LblLineSpacing = Label(self.tabStrip__Tab1, text='Line spacing (mm)', textvariable=self.LblLineSpacingVar, style='TLblLineSpacing.TLabel')
+        self.LblLineSpacing.setText = lambda x: self.LblLineSpacingVar.set(x)
+        self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
+        self.LblLineSpacing.place(relx=0.513, rely=0.639, relwidth=0.231, relheight=0.08)
+        self.lblSaveAsVar = StringVar(value='Save as')
+        self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.lblSaveAs = Label(self.tabStrip__Tab1, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
+        self.lblSaveAs.setText = lambda x: self.lblSaveAsVar.set(x)
+        self.lblSaveAs.text = lambda : self.lblSaveAsVar.get()
+        self.lblSaveAs.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAs.bind('<Button-1>', self.lblSaveAs_Button_1)
+        self.lblFontVar = StringVar(value='Font')
+        self.style.configure('TlblFont.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblFont = Label(self.tabStrip__Tab1, text='Font', textvariable=self.lblFontVar, style='TlblFont.TLabel')
+        self.lblFont.setText = lambda x: self.lblFontVar.set(x)
+        self.lblFont.text = lambda : self.lblFontVar.get()
+        self.lblFont.place(relx=0.027, rely=0.383, relwidth=0.11, relheight=0.08)
+        self.lblFontHeightVar = StringVar(value='Height (mm)')
+        self.style.configure('TlblFontHeight.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblFontHeight = Label(self.tabStrip__Tab1, text='Height (mm)', textvariable=self.lblFontHeightVar, style='TlblFontHeight.TLabel')
+        self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
+        self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
+        self.lblFontHeight.place(relx=0.513, rely=0.383, relwidth=0.231, relheight=0.08)
+        self.tabStrip.add(self.tabStrip__Tab1, text='Font')
+
+        self.tabStrip__Tab2 = Frame(self.tabStrip)
+        self.cmdFootprintFileVar = StringVar(value='...')
+        self.style.configure('TcmdFootprintFile.TButton', font=('Arial',9))
+        self.cmdFootprintFile = Button(self.tabStrip__Tab2, text='...', textvariable=self.cmdFootprintFileVar, command=self.cmdFootprintFile_Cmd, style='TcmdFootprintFile.TButton')
+        self.cmdFootprintFile.setText = lambda x: self.cmdFootprintFileVar.set(x)
+        self.cmdFootprintFile.text = lambda : self.cmdFootprintFileVar.get()
+        self.cmdFootprintFile.place(relx=0.917, rely=0.256, relwidth=0.056, relheight=0.08)
+        self.txtFootprintFileVar = StringVar(value='')
+        self.txtFootprintFile = Entry(self.tabStrip__Tab2, textvariable=self.txtFootprintFileVar, font=('微软雅黑',10))
+        self.txtFootprintFile.setText = lambda x: self.txtFootprintFileVar.set(x)
+        self.txtFootprintFile.text = lambda : self.txtFootprintFileVar.get()
+        self.txtFootprintFile.place(relx=0.175, rely=0.256, relwidth=0.73, relheight=0.089)
+        self.cmdOkFootprintVar = StringVar(value='Ok')
+        self.style.configure('TcmdOkFootprint.TButton', font=('微软雅黑',10))
+        self.cmdOkFootprint = Button(self.tabStrip__Tab2, text='Ok', textvariable=self.cmdOkFootprintVar, command=self.cmdOkFootprint_Cmd, style='TcmdOkFootprint.TButton')
+        self.cmdOkFootprint.setText = lambda x: self.cmdOkFootprintVar.set(x)
+        self.cmdOkFootprint.text = lambda : self.cmdOkFootprintVar.get()
+        self.cmdOkFootprint.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdCancelFootprintVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancelFootprint.TButton', font=('微软雅黑',10))
+        self.cmdCancelFootprint = Button(self.tabStrip__Tab2, text='Cancel', textvariable=self.cmdCancelFootprintVar, command=self.cmdCancelFootprint_Cmd, style='TcmdCancelFootprint.TButton')
+        self.cmdCancelFootprint.setText = lambda x: self.cmdCancelFootprintVar.set(x)
+        self.cmdCancelFootprint.text = lambda : self.cmdCancelFootprintVar.get()
+        self.cmdCancelFootprint.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.lblFootprintFileVar = StringVar(value='File')
+        self.style.configure('TlblFootprintFile.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblFootprintFile = Label(self.tabStrip__Tab2, text='File', textvariable=self.lblFootprintFileVar, style='TlblFootprintFile.TLabel')
+        self.lblFootprintFile.setText = lambda x: self.lblFootprintFileVar.set(x)
+        self.lblFootprintFile.text = lambda : self.lblFootprintFileVar.get()
+        self.lblFootprintFile.place(relx=0.027, rely=0.256, relwidth=0.11, relheight=0.08)
+        self.lblFootprintTipsVar = StringVar(value='Kicad footprint Library Supported')
+        self.style.configure('TlblFootprintTips.TLabel', anchor='w', font=('微软雅黑',10))
+        self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Kicad footprint Library Supported', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
+        self.lblFootprintTips.setText = lambda x: self.lblFootprintTipsVar.set(x)
+        self.lblFootprintTips.text = lambda : self.lblFootprintTipsVar.get()
+        self.lblFootprintTips.place(relx=0.04, rely=0.128, relwidth=0.906, relheight=0.08)
+        self.lblSaveAsFootprintVar = StringVar(value='Save as')
+        self.style.configure('TlblSaveAsFootprint.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.lblSaveAsFootprint = Label(self.tabStrip__Tab2, text='Save as', textvariable=self.lblSaveAsFootprintVar, style='TlblSaveAsFootprint.TLabel')
+        self.lblSaveAsFootprint.setText = lambda x: self.lblSaveAsFootprintVar.set(x)
+        self.lblSaveAsFootprint.text = lambda : self.lblSaveAsFootprintVar.get()
+        self.lblSaveAsFootprint.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsFootprint.bind('<Button-1>', self.lblSaveAsFootprint_Button_1)
+        self.tabStrip.add(self.tabStrip__Tab2, text='Footprint')
+
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
 
-        self.cmbFontList = ['Add items in designer or code!',]
-        self.cmbFontVar = StringVar(value='Add items in designer or code!')
-        self.cmbFont = Combobox(self.top, state='readonly', text='Add items in designer or code!', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
-        self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
-        self.cmbFont.text = lambda : self.cmbFontVar.get()
-        self.cmbFont.place(relx=0.14, rely=0.304, relwidth=0.367)
 
-        self.cmbFontHeightList = ['Add items in designer or code!',]
-        self.cmbFontHeightVar = StringVar(value='Add items in designer or code!')
-        self.cmbFontHeight = Combobox(self.top, text='Add items in designer or code!', textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
-        self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
-        self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
-        self.cmbFontHeight.place(relx=0.758, rely=0.304, relwidth=0.212)
-
-        self.cmbLineSpacingList = ['Add items in designer or code!',]
-        self.cmbLineSpacingVar = StringVar(value='Add items in designer or code!')
-        self.cmbLineSpacing = Combobox(self.top, text='Add items in designer or code!', textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
-        self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
-        self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
-        self.cmbLineSpacing.place(relx=0.758, rely=0.581, relwidth=0.212)
-
-        self.cmbWordSpacingList = ['Add items in designer or code!',]
-        self.cmbWordSpacingVar = StringVar(value='Add items in designer or code!')
-        self.cmbWordSpacing = Combobox(self.top, text='Add items in designer or code!', textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
-        self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
-        self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
-        self.cmbWordSpacing.place(relx=0.758, rely=0.443, relwidth=0.212)
-
-        self.cmdCancelVar = StringVar(value='Cancel')
-        self.style.configure('TcmdCancel.TButton', font=('微软雅黑',10))
-        self.cmdCancel = Button(self.top, text='Cancel', textvariable=self.cmdCancelVar, command=self.cmdCancel_Cmd, style='TcmdCancel.TButton')
-        self.cmdCancel.setText = lambda x: self.cmdCancelVar.set(x)
-        self.cmdCancel.text = lambda : self.cmdCancelVar.get()
-        self.cmdCancel.place(relx=0.491, rely=0.775, relwidth=0.254, relheight=0.087)
-
-        self.cmdOkVar = StringVar(value='Ok')
-        self.style.configure('TcmdOk.TButton', font=('微软雅黑',10))
-        self.cmdOk = Button(self.top, text='Ok', textvariable=self.cmdOkVar, command=self.cmdOk_Cmd, style='TcmdOk.TButton')
-        self.cmdOk.setText = lambda x: self.cmdOkVar.set(x)
-        self.cmdOk.text = lambda : self.cmdOkVar.get()
-        self.cmdOk.place(relx=0.112, rely=0.775, relwidth=0.254, relheight=0.087)
-
-        self.cmbSmoothList = ['Add items in designer or code!',]
-        self.cmbSmoothVar = StringVar(value='Add items in designer or code!')
-        self.cmbSmooth = Combobox(self.top, state='readonly', text='Add items in designer or code!', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
-        self.cmbSmooth.setText = lambda x: self.cmbSmoothVar.set(x)
-        self.cmbSmooth.text = lambda : self.cmbSmoothVar.get()
-        self.cmbSmooth.place(relx=0.14, rely=0.581, relwidth=0.367)
-
-        self.VScroll1 = Scrollbar(self.top, orient='vertical')
-        self.VScroll1.place(relx=0.926, rely=0.028, relwidth=0.03, relheight=0.197)
-
-        self.cmbLayerList = ['Add items in designer or code!',]
-        self.cmbLayerVar = StringVar(value='Add items in designer or code!')
-        self.cmbLayer = Combobox(self.top, state='readonly', text='Add items in designer or code!', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
-        self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
-        self.cmbLayer.text = lambda : self.cmbLayerVar.get()
-        self.cmbLayer.place(relx=0.14, rely=0.443, relwidth=0.367)
-
-        self.txtMainFont = Font(font=('微软雅黑',10))
-        self.txtMain = Text(self.top, yscrollcommand=self.VScroll1.set, font=self.txtMainFont)
-        self.txtMain.place(relx=0.14, rely=0.028, relwidth=0.788, relheight=0.197)
-        self.txtMain.insert('1.0','')
-        self.VScroll1['command'] = self.txtMain.yview
-
-        self.lblFontHeightVar = StringVar(value='Height (mm)')
-        self.style.configure('TlblFontHeight.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblFontHeight = Label(self.top, text='Height (mm)', textvariable=self.lblFontHeightVar, style='TlblFontHeight.TLabel')
-        self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
-        self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
-        self.lblFontHeight.place(relx=0.505, rely=0.304, relwidth=0.24, relheight=0.087)
-
-        self.lblFontVar = StringVar(value='Font')
-        self.style.configure('TlblFont.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblFont = Label(self.top, text='Font', textvariable=self.lblFontVar, style='TlblFont.TLabel')
-        self.lblFont.setText = lambda x: self.lblFontVar.set(x)
-        self.lblFont.text = lambda : self.lblFontVar.get()
-        self.lblFont.place(relx=0., rely=0.304, relwidth=0.114, relheight=0.087)
-
-        self.lblSaveAsVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
-        self.lblSaveAs = Label(self.top, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
-        self.lblSaveAs.setText = lambda x: self.lblSaveAsVar.set(x)
-        self.lblSaveAs.text = lambda : self.lblSaveAsVar.get()
-        self.lblSaveAs.place(relx=0.884, rely=0.803, relwidth=0.114, relheight=0.087)
-        self.lblSaveAs.bind('<Button-1>', self.lblSaveAs_Button_1)
-
-        self.LblLineSpacingVar = StringVar(value='Line spacing (mm)')
-        self.style.configure('TLblLineSpacing.TLabel', anchor='e', font=('微软雅黑',10))
-        self.LblLineSpacing = Label(self.top, text='Line spacing (mm)', textvariable=self.LblLineSpacingVar, style='TLblLineSpacing.TLabel')
-        self.LblLineSpacing.setText = lambda x: self.LblLineSpacingVar.set(x)
-        self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
-        self.LblLineSpacing.place(relx=0.505, rely=0.581, relwidth=0.24, relheight=0.087)
-
-        self.lblWordSpacingVar = StringVar(value='Word spacing (mm)')
-        self.style.configure('TlblWordSpacing.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblWordSpacing = Label(self.top, text='Word spacing (mm)', textvariable=self.lblWordSpacingVar, style='TlblWordSpacing.TLabel')
-        self.lblWordSpacing.setText = lambda x: self.lblWordSpacingVar.set(x)
-        self.lblWordSpacing.text = lambda : self.lblWordSpacingVar.get()
-        self.lblWordSpacing.place(relx=0.505, rely=0.443, relwidth=0.24, relheight=0.087)
-
-        self.lblSmoothVar = StringVar(value='Smooth')
-        self.style.configure('TlblSmooth.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblSmooth = Label(self.top, text='Smooth', textvariable=self.lblSmoothVar, style='TlblSmooth.TLabel')
-        self.lblSmooth.setText = lambda x: self.lblSmoothVar.set(x)
-        self.lblSmooth.text = lambda : self.lblSmoothVar.get()
-        self.lblSmooth.place(relx=0., rely=0.581, relwidth=0.114, relheight=0.087)
-
-        self.lblLayerVar = StringVar(value='Layer')
-        self.style.configure('TlblLayer.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblLayer = Label(self.top, text='Layer', textvariable=self.lblLayerVar, style='TlblLayer.TLabel')
-        self.lblLayer.setText = lambda x: self.lblLayerVar.set(x)
-        self.lblLayer.text = lambda : self.lblLayerVar.get()
-        self.lblLayer.place(relx=0., rely=0.443, relwidth=0.114, relheight=0.087)
-
-        self.lblTxtVar = StringVar(value='Text')
-        self.style.configure('TlblTxt.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblTxt = Label(self.top, text='Text', textvariable=self.lblTxtVar, style='TlblTxt.TLabel')
-        self.lblTxt.setText = lambda x: self.lblTxtVar.set(x)
-        self.lblTxt.text = lambda : self.lblTxtVar.get()
-        self.lblTxt.place(relx=0., rely=0.028, relwidth=0.114, relheight=0.087)
 
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
-        self.master.title('sprintFont {} by cdhigh [github.com/cdhigh]'.format(__VERSION__))
+        self.master.title('sprintFont v{} by cdhigh [github.com/cdhigh]'.format(__VERSION__))
         width = str_to_int(self.master.geometry().split('x')[0])
         if (width > 16):
             self.staBar.panelwidth(0, width)
@@ -297,6 +333,7 @@ class Application(Application_ui):
             self.staBar.text(_("  In: {}").format(self.inFileName))
         else: #单独执行
             self.cmdOk.configure(state='disabled')
+            self.cmdOkFootprint.configure(state='disabled')
             self.staBar.text(_("  Standalone mode"))
 
         self.txtMain.focus_set()
@@ -304,8 +341,11 @@ class Application(Application_ui):
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
         self.cmdOk.setText(_("Ok"))
+        self.cmdOkFootprint.setText(_("Ok"))
         self.cmdCancel.setText(_("Cancel"))
+        self.cmdCancelFootprint.setText(_("Cancel"))
         self.lblSaveAs.setText(_("Save as"))
+        self.lblSaveAsFootprint.setText(_("Save as"))
         self.lblFont.setText(_("Font"))
         self.lblTxt.setText(_("Text"))
         self.lblLayer.setText(_("Layer"))
@@ -313,6 +353,10 @@ class Application(Application_ui):
         self.lblFontHeight.setText(_("Height (mm)"))
         self.lblWordSpacing.setText(_("Word spacing (mm)"))
         self.LblLineSpacing.setText(_("Line spacing (mm)"))
+        self.lblFootprintFile.setText(_("File"))
+        self.tabStrip.tab(0, text=_("Font"))
+        self.tabStrip.tab(1, text=_("Footprint"))
+        self.lblFootprintTips.setText(_("Kicad footprint Library Supported"))
         
     #填充界面控件
     def populateWidgets(self):
@@ -391,12 +435,22 @@ class Application(Application_ui):
         except:
             pass
     
+    #选择一个封装文件
+    def cmdFootprintFile_Cmd(self, event=None):
+        ret = tkFileDialog.askopenfilename(filetypes=[("Kicad footprint","*.kicad_mod"), ("All Files", "*")])
+        if ret:
+            self.txtFootprintFile.setText(ret)
+
     #取消退出
     def cmdCancel_Cmd(self, event=None):
-        #self.saveConfig()
         self.destroy()
         sys.exit(0)
-    
+
+    #取消退出
+    def cmdCancelFootprint_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(0)
+
     #保存为单独一个文本文件
     def lblSaveAs_Button_1(self, event):
         self.saveConfig()
@@ -409,11 +463,35 @@ class Application(Application_ui):
         if newStr:
             retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
             if retFile:
-                with open(retFile, 'w') as f:
-                    f.write(newStr)
+                try:
+                    with open(retFile, 'w') as f:
+                        f.write(newStr)
+                except:
+                    showinfo(_('info'), _('Failed to save file'))
         else:
             showinfo(_('info'), _('Failed to generate text'))
     
+    #转换封装结果保存为单独一个文本文件
+    def lblSaveAsFootprint_Button_1(self, event):
+        fileName = self.txtFootprintFile.text()
+        if not fileName:
+            showinfo(_('info'), _('No file selected'))
+            return
+
+        errStr, retStr = self.generateFootprint(fileName)
+        if (errStr):
+            showinfo(_('info'), errStr)
+        elif not retStr:
+            showinfo(_('info'), _('Failed to parse file content'))
+        else:
+            retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
+            if retFile:
+                try:
+                    with open(retFile, 'w') as f:
+                        f.write(retStr)
+                except:
+                    showinfo(_('info'), _('Failed to save file'))
+
     #开始转换文本为多边形
     def cmdOk_Cmd(self, event=None):
         self.saveConfig()
@@ -424,7 +502,7 @@ class Application(Application_ui):
             return
 
         newStr = self.generatePolygons(txt)
-        if newStr:
+        if newStr:  #写输出文件
             with open(self.outFileName, 'w') as f:
                 f.write(newStr)
             ret = 4
@@ -439,8 +517,27 @@ class Application(Application_ui):
         #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
         #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
         sys.exit(ret)
+
+    #点击了将封装文件转换为Sprint-Layout的按钮
+    def cmdOkFootprint_Cmd(self, event=None):
+        fileName = self.txtFootprintFile.text()
+        if not fileName:
+            showinfo(_('info'), _('No file selected'))
+            return
+
+        errStr, retStr = self.generateFootprint(fileName)
+        if (errStr):
+            showinfo(_('info'), errStr)
+        elif not retStr:
+            showinfo(_('info'), _('Failed to parse file content'))
+        else:
+            with open(self.outFileName, 'w') as f:
+                f.write(retStr)
+
+            self.destroy()
+            sys.exit(4)
     
-    #将字符串转换为Sprint-Layout多边形
+    #将字符串转换为Sprint-Layout多边形，返回一个字符串，可以直接写到文件里面
     def generatePolygons(self, txt: str):
         if not txt:
             return ''
@@ -466,7 +563,7 @@ class Application(Application_ui):
         
         #开始逐字转换
         txt = self.translateUnicodeSymbol(txt)
-        polygons = []
+        sprintTextIo = SprintTextIO()
         offsetY = 0.0
         prevWidth = 0
         for line in txt.split('\n'):
@@ -482,7 +579,7 @@ class Application(Application_ui):
                     continue
                     
                 prevWidth = ret['width']
-                polygons.append(ret['polygon'])
+                sprintTextIo.addAllPolygon(ret['polygons'])
                 inc = prevWidth + (wordSpacing * 10000)
                 offsetX += inc if (inc > 0) else prevWidth
                 if ret['height'] > maxHeight:
@@ -493,8 +590,8 @@ class Application(Application_ui):
 
         font.close()
 
-        #每行一个多边形
-        return '\n'.join(polygons)
+        #返回字符串
+        return str(sprintTextIo)
         
         
     #将字符串里面的\u1234转换为对应的字符
@@ -564,7 +661,15 @@ class Application(Application_ui):
                 if name:
                     fontNameMap[name] = fontFileName
         return fontNameMap
-        
+
+    #将封装文件转换为Sprint-Layout格式
+    #返回：("错误信息"，生成的文本)
+    def generateFootprint(self, fileName: str):
+        #当前仅支持Kicad格式
+        if (fileName.endswith('.kicad_mod')):
+            return ('', kicadModToTextIo(fileName))
+        else:
+            return (_("This file format is not supported"), '')
 
 if __name__ == "__main__":
     top = Tk()

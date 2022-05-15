@@ -6,20 +6,22 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 
 #表示一个多边形
-class Polygon:
-    def __init__(self):
-        self.reset()
+class SprintPolygon:
+    def __init__(self, layerIdx: int=2, lineWidth: float=0):
+        self.reset(layerIdx, lineWidth)
 
-    def reset(self):
+    def reset(self, layerIdx: int=2, lineWidth: float=0):
         self._xMin = self._yMin = 999999999.0
         self._xMax = self._yMax = -999999999.0
         self.points = [] #元素为 (x,y)
         self._ptIdx = 0
         self._segIdx = 0
+        self.layerIdx = layerIdx
+        self.lineWidth = lineWidth if lineWidth else 0
 
-    #多边形是否合法，至少要求为三个点
+    #多边形是否合法，至少要求为两个点
     def isValid(self):
-        return (len(self.points) >= 3)
+        return (len(self.points) >= 2)
 
     #增加一个点
     def addPoint(self, x: float, y: float):

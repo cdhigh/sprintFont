@@ -47,11 +47,18 @@ class I18n:
     "info": ("", "信息"),
     "Text is empty": ("", "文本为空"),
     "Failed to generate text": ("", "创建文本失败"),
+    "Failed to save file": ("", "保存文件失败"),
     "Save to a text file": ("", "保存为一个文本文件"),
     "Text files": ("", "文本文件"),
     "All files": ("", "所有文件"),
     "  Standalone mode": ("", "  单独执行模式"),
     "  In: {}": ("", "  输入：{}"),
+    "No file selected": ("", "没有选择文件"),
+    "Failed to parse file content": ("", "分析文件内容错误"),
+    "File": ("", "文件"),
+    "Font": ("            Font            ", "            字体            "),    
+    "Footprint": ("            Footprint            ", "            封装            "),
+    "Kicad footprint Library Supported": ("", "当前支持Kicad的封装库格式"),
     }
 
     #这个属性是可以在程序执行过程中修改的

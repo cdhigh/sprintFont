@@ -9,16 +9,8 @@ import os, sys
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
-from polygon import Polygon
-
-#Sprint-Layout的各板层索引定义
-LAYER_C1 = 1
-LAYER_S1 = 2
-LAYER_C2 = 3
-LAYER_S2 = 4
-LAYER_I1 = 5
-LAYER_I2 = 6
-LAYER_U  = 7
+from .sprint_polygon import SprintPolygon
+from .sprint_textio import *
 
 #字符串转整数，出错则返回defaultValue
 def str_to_int(txt: str, defaultValue: int=0):
@@ -123,7 +115,7 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
     scaleY = lambda y: -(((y * fontHeight) / height) + offsetY)
 
     polygons = []  #保存所有的封闭多边形
-    currPolygon = Polygon()
+    currPolygon = SprintPolygon(layerIdx)
     prevX = prevY = 0 #笔的前一个位置
     currX = currY = 0 #笔的当前位置
     ctrlX1 = ctrlY1 = ctrlX2 = ctrlY2 = 0 #控制点坐标
@@ -195,7 +187,7 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
         # Z = 路径结束，无参数
         elif code == 'Z':
             polygons.append(currPolygon)
-            currPolygon = Polygon()
+            currPolygon = SprintPolygon(layerIdx)
         #有一些语句指令为空，为绘制直线
         else:
             prevX = scaleX(str_to_float(vert[0]))
@@ -204,27 +196,7 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
 
     #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
     extensionPolygons(polygons)
-
-    scripts = [] #保存所有生成的Sprint-Layout绘图指令行
-    currScript = []
-    currPtIndex = 0
-
-    for polygon in polygons:
-        currScript = None
-        if not polygon.isValid():
-            continue
-
-        for (x, y) in polygon.points:
-            if not currScript:
-                currScript = ['ZONE,LAYER={},WIDTH=0,P0={:0.0f}/{:0.0f}'.format(layerIdx, x, y)]
-                currPtIndex = 1
-            else:
-                currScript.append('P{}={:0.0f}/{:0.0f}'.format(currPtIndex, x, y))
-                currPtIndex += 1
-        currScript[-1] += ';'  #Sprint-Layout每行以分号结尾
-        scripts.append(','.join(currScript))
-    
-    return {'width':fontWidth, 'height':fontHeight, 'polygon':'\n'.join(scripts)}
+    return {'width':fontWidth, 'height':fontHeight, 'polygons':polygons}
 
 #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
 def extensionPolygons(polygons):
