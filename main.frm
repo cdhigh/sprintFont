@@ -22,7 +22,7 @@ Begin VB.Form frmMain
    ScaleHeight     =   4335
    ScaleWidth      =   8550
    ShowInTaskbar   =   0   'False
-   StartUpPosition =   3  '窗口缺省
+   StartUpPosition =   2  '屏幕中心
    Begin MSComctlLib.StatusBar staBar 
       Align           =   2  'Align Bottom
       Height          =   345

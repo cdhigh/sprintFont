@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 """
-Sprint-layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
-将字体转换为sprint-layout的多边形填充
+Sprint-Layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
+将字体转换为Sprint-Layout的多边形填充
 Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys
@@ -11,7 +11,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
 from polygon import Polygon
 
-#sprint-layout的各板层索引定义
+#Sprint-Layout的各板层索引定义
 LAYER_C1 = 1
 LAYER_S1 = 2
 LAYER_C2 = 3
@@ -43,7 +43,7 @@ def isHexString(txt: str):
     return True
 
 SMOOTH_MAP = {
-    0: [(i / 30) for i in range(1, 30)], #超精细，一个曲线分成30份
+    0: [(i / 50) for i in range(1, 50)], #超精细，一个曲线分成50份
     1: [(i / 20) for i in range(1, 20)], #精细，一个曲线分成20份
     2: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9], #正常，一个曲线分成10份
     3: [0.2, 0.4, 0.6, 0.8,], #粗糙，一个曲线分成5份
@@ -59,7 +59,7 @@ SMOOTH_MAP = {
 #offsetY: Y方向的偏移，单位为毫米，用于多行
 #smooth: 曲线平滑系数，参见 SMOOTH_MAP
 #返回{'width':, 'height':, 'polygon':}
-#字体坐标原点在屏幕左下角，但sprint-layout坐标原点在左上角，所以字形需要垂直翻转
+#字体坐标原点在屏幕左下角，但Sprint-Layout坐标原点在左上角，所以字形需要垂直翻转
 def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, offsetX: float=0, 
     offsetY: float=0, smooth: int=2):
     
@@ -69,8 +69,23 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
 
     #先通过cmap查询字形名字
     cmap = font.getBestCmap()
-    codeStr = cmap.get(code)
-    if not codeStr or (codeStr not in glyphSet): #再尝试使用unicode查找
+    #font.saveXML(r'd:/testfont.xml')
+    if (not cmap) and font['cmap']:
+        cmapIds = [(1, 0), (3, 0)]
+        for ptId, peId in cmapIds:
+            cmapSubtable = font['cmap'].getcmap(platformID=ptId, platEncID=peId)
+            if cmapSubtable:
+                cmap = cmapSubtable.cmap
+                break
+
+        if not cmap: #最后一步，就用第一个cmap表
+            cmap = font['cmap'].tables[0].cmap
+
+    if not cmap:
+        return None
+
+    codeStr = cmap.get(code) #先使用字符编码直接查找
+    if not codeStr or (codeStr not in glyphSet): #再尝试使用unicode符号查找
         codeStr = 'uni{:04X}'.format(code)
         if codeStr not in glyphSet:
             return None
@@ -82,14 +97,20 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
     glyph.draw(pen)  #绘制字形对象
     fontCmds = pen._commands  #提取绘制语句
     
-    #从'head'表中提取所有字形的边界框，并且计算缩放系数
-    xMin = font['head'].xMin
-    yMin = font['head'].yMin
-    xMax = font['head'].xMax
-    yMax = font['head'].yMax
-    width = xMax - xMin
-    height = yMax - yMin
-    fontHeight *= 10000  #sprint-layout以0.1微米为单位
+    #字形边界框
+    width = glyph.width
+    height = glyph.height
+
+    #如果需要，从'head'表中提取所有字形的边界框，并且计算缩放系数
+    if not width:
+        xMin = font['head'].xMin
+        xMax = font['head'].xMax
+        width = xMax - xMin
+    if not height:
+        yMin = font['head'].yMin
+        yMax = font['head'].yMax
+        height = yMax - yMin
+    fontHeight *= 10000  #Sprint-Layout以0.1微米为单位
     fontWidth = (width * fontHeight) / height
     
     #如果是下方板层，则将字形进行水平翻转
@@ -184,7 +205,7 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
     #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
     extensionPolygons(polygons)
 
-    scripts = [] #保存所有生成的sprint-layout绘图指令行
+    scripts = [] #保存所有生成的Sprint-Layout绘图指令行
     currScript = []
     currPtIndex = 0
 
@@ -200,7 +221,7 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
             else:
                 currScript.append('P{}={:0.0f}/{:0.0f}'.format(currPtIndex, x, y))
                 currPtIndex += 1
-        currScript[-1] += ';'  #sprint-layout每行以分号结尾
+        currScript[-1] += ';'  #Sprint-Layout每行以分号结尾
         scripts.append(','.join(currScript))
     
     return {'width':fontWidth, 'height':fontHeight, 'polygon':'\n'.join(scripts)}
@@ -218,12 +239,12 @@ def extensionPolygons(polygons):
             
             #逐个点判断，只要有点在里面，就认为在里面
             for (x, y) in poly2.points:
-                if not poly.insideMe(x, y):
+                if not poly.encircle(x, y):
                     continue
                 
                 #poly2在poly里面，所以可以将poly2合并到poly里面
-                poly.mergePolygon(poly2)
-                poly2.reset()
+                poly.devour(poly2)
+                poly2.reset()  #这个多边形已经没用了，将里面的点清除掉
                 break
     
 

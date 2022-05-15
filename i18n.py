@@ -1,25 +1,25 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 """
-多语种支持模块
-为了简单，不使用python内置的gettext来进行多语种支持，直接使用一个大Map
+Python通用简单多语种支持模块
+不使用python内置的gettext来进行多语种支持，直接使用一个大Map，简单粗暴
 Author: cdhigh <https://github.com/cdhigh>
 使用方法：
 1. 导入此模块的Language类
 2. 初始化
-   Language.init()
-   Language.setLang(locale.getdefaultlocale()[0])
-3. 代码中使用 _("") 进行字符串翻译
+   I18n.init()
+   I18n.setLanguage(locale.getdefaultlocale()[0])
+3. 代码中使用 _("") 或 I18n.tr("") 进行字符串翻译
 """
 import builtins
 
 #用于翻译的辅助类，使用时创建一个实例，然后设置对应的语种，即可调用tr()获取翻译字符串
-class Language:
+class I18n:
     #目前支持的语种，不支持的语种则使用第一个语言
     #语种代码全部为小写
     _supported_languages = ('en','zh-cn')
 
-    #这个Map的Key是英语，Value是翻译列表，列表中字符串的顺序就是supported_languages[]的顺序
+    #这个Map的Key是英语，Value是翻译列表，列表中字符串的顺序就是_supported_languages[]的顺序
     #如果翻译字符串列表的第一个元素为空，则使用Key做为翻译字符串
     _translations = {
     "Ok":  ("", "确定"),
@@ -70,7 +70,7 @@ class Language:
 
     #设置语种，比如: zh-cn
     @classmethod
-    def setLang(cls, lang: str):
+    def setLanguage(cls, lang: str):
         idx = cls._getLangIndex(lang)
         cls._langIndex = idx if (idx >= 0) else 0
         

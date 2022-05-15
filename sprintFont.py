@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 """
-Sprint-layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
+Sprint-Layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
 Author: cdhigh <https://github.com/cdhigh>
 ==========================
 使用cx_freeze打包
@@ -23,11 +23,11 @@ from tkinter.messagebox import *
 import tkinter.filedialog as tkFileDialog
 #import tkinter.simpledialog as tkSimpleDialog  #askstring()
 from fontTools.ttLib.ttFont import TTFont
-from i18n import Language
+from i18n import I18n
 from font_to_polygon import str_to_int, str_to_float, isHexString, singleWordPolygon
 
 __VERSION__ = "v1.0"
-__DATE__ = "20220514"
+__DATE__ = "20220515"
 __AUTHOR__ = "cdhigh"
 
 WIN_DIR = os.environ['WINDIR']
@@ -87,10 +87,15 @@ class Application_ui(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master.title('sprintFont')
-        self.master.geometry('570x289')
+        # To center the window on the screen.
+        ws = self.master.winfo_screenwidth()
+        hs = self.master.winfo_screenheight()
+        x = (ws / 2) - (570 / 2)
+        y = (hs / 2) - (289 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (570,289,x,y))
         self.master.resizable(0,0)
         self.icondata = """
-            R0lGODlhMAAwAPcAAD6KKP///z6KJ//8///+//v6+/n4+f77//37/vz6/fv6/Pr5+/v9
+            R0lGODlhEAAQAPcAAD6KKP///z6KJ//8///+//v6+/n4+f77//37/vz6/fv6/Pr5+/v9
             +/3+/fz9/PX29e/27ufx5fP48t/s3Ojx5jmIIz2KKD6KKT+LKkeQM2ShU2ymXG+nYH6x
             cH+ycY27gZO+h5K9hprCj6jLn7bTrr7Yt8bdwMXcv87iyc/iytLkzdjn1Nno1eHt3uDs
             3ez06uvz6fb69Sh9Dyl9ES2AFS+BFzCBGC+BGDGCGTKCGjGCGjKDGzOEHDODHDSEHTWF
@@ -105,34 +110,22 @@ class Application_ui(Frame):
             9fL18fH08O/y7sTavNPjzeTv4OLt3t7o2uXt4uTs4fP48e3x6/r8+fn7+Pz9+/7+/f//
             /wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
             AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAACH5BAEAANgALAAAAAAwADAAAAj/ALEJHEiwoMGDCBMqXMiw
-            ocOHECF6+ALklZCLGDEGwUGDxg4gGS8GGfmDiBY8DhlB8VEEgAAAMGMCsMDjiBs+e8z4
-            ECKzJwAkPqAgWoioxhKfMgX8mIUqAYEBD3S54ZH0JcyXS2wUUljDglekMIU4CnBgwYAB
-            Bgggg8UTbEwatxBSOeLVAlgfeQIYGDDN06gFChIo+9LSLYAjUQ4yyjHzq08BREidXdYl
-            h4830AoQSETVMIActQyKMdLYrs8KZwwUSCbmB0waggYcAEbE82EuBpE0KY00CAfZplzD
-            rCDmQQJoUZB4bgIFUEEhF3j7FKIBQYJVApQD+AGnQIJnSpII/xhv1WVPgwKiG0ZiJVqC
-            AYdoBOHxg9fTXFTJly/v0mAS9YbpoEgAAThgSSyylEJgAW605ZkA/gHolg6PEGjhhcwQ
-            wZ9bEBb0n2dFhEHMhSRKE0ZhD0boWQ4jXGhNixeGoINL5IHVIUEfuoWEFMFcmIoQolxI
-            jBdH2HbjQDmC1YMhJPYxwx4kNsJYih5K2BMSWMBw4S9DHHFFBBeqcsRuhh0pUJI+9cAH
-            iSHsAMAOgZBIyA7jxVTjVSoi1cQRKlxIQQZFIvEEKxe28NN+deJZ5V0dkPjBjDDtIAmJ
-            cghnY54++aCghcaAgeIRXLhyYQpDbJgUpjIJ0QY1F17SWUw6RP9CYh1BcIgqTEwEYcKF
-            EoBRQU9EqNHAhZrg0FONSdwKwBBqkEjCDUhEKy0SOGByYTVrOEjjS8ku2tMOk1xIDR0Y
-            bGGuuVlkIQUbxlzIiaXbAtAtjlYSgQarFjrgCgTE9OsvMRC8wMCFxpyI1LxIWokDJSQ2
-            7DCJkkDaUxOoHpEFBQ9n3LAEZfzaE8JnSriDCCT20gkoKKesMiglpEDiIsbGCzI2SR6x
-            xTAXrrDDDjz07PPPPeggBAsXtlKFcshiysMfJB7iw4MA+ADlhYvkV+fMOSKBgQsXTvCT
-            bT9hIMyFzTQh3tXoqbfDIHJOCXYPIJC4h9XyGgREdAIIgcKFEHjLCjZMSFThTJhQaOeE
-            mdjott0dJIrg9t84QEJiHk8DwJxBZFQgwBCn8J1FkX/DVMQYMVz4CQ/jHaGFQbbkIAQb
-            DlyYSQ+hy7QDLhc2MIdrONByUBQ6bHLhMWcMUXtMxOFL4Ak1JXaQLc1eWEnMRibqkg8l
-            EFyGDIwk5AuJcGh7/BBpFHMhJn4wZGEoPzTh/vvwxy+/+zjskrtDBWpgxBRS9O///wAM
-            oBSGkIdrECgi2PDABjjAwAY68IEQtIMc4qCHYiDwghjMoAYNEhAAOw="""
+            AAAAAAAAAAAAAAAAAAAAACH5BAEAANgALAAAAAAQABAAAAimALEJHEiw4EAoABJacGMm
+            YUIoA6lYcBhg2gJlDgFEEdhkIoAgBwBUSIDEYROBFzIGsFSqQEYAKB3mCGAtQAAAAhzG
+            TAgjwJAIAY5k3OnDJoAdRnViSwnARAAwCRsEwIET5lIARGxCIEbsRQBjSlOKCNALlFlQ
+            NnHkRInEZkmHGAI0W4utyZ0AIl4CsOnjJLYoNofoFRPgxEaBAUI1Wcx4sU2DkAsGBAA"""
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
+        
         self.createWidgets()
 
     def createWidgets(self):
         self.top = self.winfo_toplevel()
 
         self.style = Style()
+
+        self.staBar = Statusbar(self.top, panelwidths=(16,))
+        self.staBar.pack(side=BOTTOM, fill=X)
 
         self.cmbFontList = ['Add items in designer or code!',]
         self.cmbFontVar = StringVar(value='Add items in designer or code!')
@@ -256,9 +249,6 @@ class Application_ui(Frame):
         self.lblTxt.text = lambda : self.lblTxtVar.get()
         self.lblTxt.place(relx=0., rely=0.028, relwidth=0.114, relheight=0.087)
 
-        self.staBar = Statusbar(self.top, panelwidths=(16,))
-        self.staBar.pack(side=BOTTOM, fill=X)
-
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
@@ -268,8 +258,8 @@ class Application(Application_ui):
         if (width > 16):
             self.staBar.panelwidth(0, width)
 
-        Language.init()
-        Language.setLang(locale.getdefaultlocale()[0])
+        I18n.init()
+        I18n.setLanguage(locale.getdefaultlocale()[0])
         self.language = None #如果手工在配置文件中添加语种选择，则此变量保存对应语种
 
         #读取配置文件到内存
@@ -284,15 +274,15 @@ class Application(Application_ui):
         #支持手动选择语种
         if isinstance(self.cfg, dict):
             lang = self.cfg.get('language', '')
-            if lang and Language.langIsSupported(lang):
+            if lang and I18n.langIsSupported(lang):
                 self.language = lang
-                Language.setLang(lang)
+                I18n.setLanguage(lang)
         
         self.populateWidgets()
         self.restoreConfig()
         self.translateWidgets()
 
-        #分析sprint-layout传入的参数
+        #分析Sprint-Layout传入的参数，目前仅使用输入文件，其他的忽略
         self.inFileName = ''
         self.outFileName = ''
         if (len(sys.argv) >= 2): #第二个参数为临时文件名
@@ -300,7 +290,7 @@ class Application(Application_ui):
             if not (os.path.exists(self.inFileName)):
                 self.inFileName = ''
 
-        #输出文件名为输入文件名加一个 "_out"        
+        #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
             inExts = os.path.splitext(self.inFileName)
             self.outFileName = '{}_out{}'.format(inExts[0], inExts[1] if (len(inExts) > 1) else '')
@@ -339,14 +329,14 @@ class Application(Application_ui):
         self.cmbLayer.current(1) #默认为顶层丝印层
 
         #字高
-        self.cmbFontHeightList = [1.0, 2.0, 3.0]
+        self.cmbFontHeightList = [1.0, 2.0, 3.0, 4.0]
         self.cmbFontHeight.configure(values=self.cmbFontHeightList)
         self.cmbFontHeight.current(1) #字高默认2mm
         
         #字间距
         self.cmbWordSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
         self.cmbWordSpacing.configure(values=self.cmbWordSpacingList)
-        self.cmbWordSpacing.current(1)
+        self.cmbWordSpacing.current(1) #默认-0.2，电路板空间比较宝贵，文字可以相互靠近一些
         
         #行间距
         self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
@@ -442,22 +432,22 @@ class Application(Application_ui):
             ret = 0
 
         self.destroy()
-        #sprint-layout的插件返回码定义
+        #Sprint-Layout的插件返回码定义
         #0: = 中止/无动作
-        #1: = 完全替换元素，Sprint-layout删除选中的项目并将其替换为插件输出文件中的新项目。
-        #2: = 绝对添加元素，Sprint-layout从插件输出文件中插入新元素。不会删除任何项目。
-        #3: = 相对替换元素，Sprint-layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
+        #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
+        #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
+        #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
         #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
         sys.exit(ret)
     
-    #将字符串转换为sprint-layout多边形
+    #将字符串转换为Sprint-Layout多边形
     def generatePolygons(self, txt: str):
         if not txt:
             return ''
         
         #参数
         fontName = self.cmbFont.text()
-        layerIdx = self.cmbLayer.current() + 1 #sprint-layout的板层定义从1开始
+        layerIdx = self.cmbLayer.current() + 1 #Sprint-Layout的板层定义从1开始
         smooth = self.cmbSmooth.current()
         fontHeight = str_to_float(self.cmbFontHeight.text())
         wordSpacing = str_to_float(self.cmbWordSpacing.text())
@@ -486,7 +476,7 @@ class Application(Application_ui):
                 ret = singleWordPolygon(font, code=ord(word), layerIdx=layerIdx, fontHeight=fontHeight,
                     offsetX=offsetX, offsetY=offsetY, smooth=smooth)
                 #print(ret)
-                if not ret: #没有对应的字形，跳过一个空格
+                if not ret: #没有对应的字形，跳过一个空格位置
                     inc = prevWidth + (wordSpacing * 10000)
                     offsetX += inc if (inc > 0) else prevWidth
                     continue

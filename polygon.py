@@ -2,7 +2,7 @@
 #-*- coding:utf-8 -*-
 """
 多边形数据结构和算法
-Author: cdhigh
+Author: cdhigh <https://github.com/cdhigh>
 """
 
 #表示一个多边形
@@ -11,7 +11,8 @@ class Polygon:
         self.reset()
 
     def reset(self):
-        self._xMin = self._xMax = self._yMin = self._yMax = 0.0
+        self._xMin = self._yMin = 999999999.0
+        self._xMax = self._yMax = -999999999.0
         self.points = [] #元素为 (x,y)
         self._ptIdx = 0
         self._segIdx = 0
@@ -49,7 +50,7 @@ class Polygon:
             yield ret
 
     #判断一个点是否在此多边形内，此算法专门为字体优化，不判断很多特殊情况
-    def insideMe(self, x: float, y: float):
+    def encircle(self, x: float, y: float):
         #先判断极限情况，如果在外包矩形外，就是在多边形外
         if ((x < self._xMin) or (x > self._xMax) or (y < self._yMin) or (y > self._yMax)):
             return False
@@ -68,16 +69,30 @@ class Polygon:
 
         return inMe
 
+    #移动各顶点，保证第一个点为最左边
+    def ensureFirstPointLeftest(self):
+        if ((not self.isValid()) or (self.points[0][0] <= self._xMin)):
+            return
 
-    
+        idx = 0
+        for idx, (x, y) in enumerate(self.points):
+            if (x <= self._xMin):
+                break
+
+        #从idx开始取到末尾，然后从开始到idx
+        self.points = self.points[idx:] + self.points[0:idx]
+        
     #将polygon合并进自己，前提是polygon在自己内部
     #算法：将polygon的第一个点反向做一个水平射线，直到和另一个多边形的某个边相交
     #然后将交点同时做为polygon的起点和终点，将polygon展开为一个“线段”
     #最好将此线段合并入另一个多边形（合并位置在交点位置）
     #因为用于字体，这里有一个假定，多边形都是凸多边形
-    def mergePolygon(self, polygon):
+    def devour(self, polygon):
         if (not polygon.isValid()):
             return
+
+        #因为要从一个点向做做水平射线，所以需要将最左边的点移到第一个点位置
+        polygon.ensureFirstPointLeftest()
 
         x, y = polygon.points[0]
         segIdx = 0
