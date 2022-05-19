@@ -6,7 +6,9 @@ sprintFont 是 Sprint-Layout v6 2022版 的一个插件，用于直接往PCB中�
 
 
 
-## 使用方法
+## 1. 使用方法
+
+### 1.1 插入汉字或其他字体的文字
 1. 将sprintFont解压缩到某一个目录，打开Sprint-Layout 6.0 2022版，选择菜单“其他”|“定义插件”
 
 ![define_plugin](pic/define_plugin.png)
@@ -42,6 +44,15 @@ sprintFont 是 Sprint-Layout v6 2022版 的一个插件，用于直接往PCB中�
 
 ![symbol.png](pic/symbol.png)
 
+
+
+
+### 1.2 导入Kicad的封装库
+
+<span style="color: red;">免责声明：因为使用本软件导入的封装不正确导致的任何损失，本人不承担任何责任，如不认可此免责声明，请立刻停止使用此软件</span>
+注1：Kicad的文本默认居中对齐，Sprint-Layout的文本左对齐，而无法计算文本的实际占用长度，如果在加上旋转，情况就更复杂了，所以导入后的文本信息需要手工再调整    
+注2：Kicad和Sprint-Layout的焊盘无法一一对应，针对一些特殊形状焊盘，可能需要手工修改   
+注3：Kicad相比Sprint-Layout有更多的电路板层，所以导入后可能有些信息会堆叠起来     
 
 
 

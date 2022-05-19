@@ -7,10 +7,11 @@ import os, sys
 from io import StringIO
 from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
-from kicad_pcb.kicad_mod import KicadMod
 
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
 #TEST_FILE = os.path.join(os.path.dirname(__file__), 'ttt.kicad_mod')
+
+from pykicad.module import *
 
 #kicad板层和Sprint-Layout板层的对应关系
 kicadLayerMap = {
@@ -48,78 +49,60 @@ kicadPadShapeMap = {
 #kicadFile: kicad_mod文件名
 #importText: 是否输出文本信息
 def kicadModToTextIo(kicadFile: str, importText: int):
-    sprintTextIo = SprintTextIO(isComponent=True)
+    sprintTextIo = SprintTextIO(isGroup=True)
 
     #try:
-    kicadMod = KicadMod(kicadFile)
+    kicadMod = Module.from_file(kicadFile)
     #except:
     #    return ''
 
     #线
     for kiLine in kicadMod.lines:
-        layerIdx = kicadLayerMap.get(kiLine['layer'], LAYER_S1)
-        kiTra = SprintTrack(layerIdx, kiLine['width'] * 10000 if kiLine['width'] else 0)
-        kiTra.addPoint(kiLine['start']['x'] * 10000, kiLine['start']['y'] * 10000) #Sprint-Layout以0.1微米为单位
-        kiTra.addPoint(kiLine['end']['x'] * 10000, kiLine['end']['y'] * 10000)
+        layerIdx = kicadLayerMap.get(kiLine.layer, LAYER_S1)
+        kiTra = SprintTrack(layerIdx, kiLine.width * 10000 if kiLine.width else 0)
+        kiTra.addPoint(kiLine.start[0] * 10000, kiLine.start[-1] * 10000) #Sprint-Layout以0.1微米为单位
+        kiTra.addPoint(kiLine.end[0] * 10000, kiLine.end[-1] * 10000)
         sprintTextIo.addTrack(kiTra)
-    
+
     #多边形
-    for kiPoly in kicadMod.polys:
-        layerIdx = kicadLayerMap.get(kiPoly['layer'], LAYER_S1)
-        polygon = SprintPolygon(layerIdx, kiPoly['width'] * 10000)
-        for pt in kiPoly['points']:
-            polygon.addPoint(pt['x'] * 10000, pt['y'] * 10000) #Sprint-Layout以0.1微米为单位
+    for kiPoly in kicadMod.polygons:
+        layerIdx = kicadLayerMap.get(kiPoly.layer, LAYER_S1)
+        polygon = SprintPolygon(layerIdx, kiPoly.width * 10000 if kiPoly.width else 0)
+        for (x, y) in kiPoly.pts:
+            polygon.addPoint(x * 10000, y * 10000) #Sprint-Layout以0.1微米为单位
         sprintTextIo.addPolygon(polygon)
-    
-    #矩形
-    for kiRect in kicadMod.rects:
-        layerIdx = kicadLayerMap.get(kiRect['layer'], LAYER_S1)
-        polygon = SprintPolygon(layerIdx, kiRect['width'] * 10000)
-        x1 = rect["start"]['x']
-        y1 = rect["start"]['y']
-        x2 = rect["end"]['x']
-        y2 = rect["end"]['y']
-        polygon.addPoint(x1 * 10000, y1 * 10000) #Sprint-Layout以0.1微米为单位
-        polygon.addPoint(x2 * 10000, y1 * 10000)
-        polygon.addPoint(x2 * 10000, y2 * 10000)
-        polygon.addPoint(x1 * 10000, y2 * 10000)
-        sprintTextIo.addPolygon(polygon)
-    
+
     #焊盘
     for kiPad in kicadMod.pads:
-        layers = kiPad['layers']
-        if (('F.Cu' in layers) or ('*.Cu' in layers)):
+        if (('F.Cu' in kiPad.layers) or ('*.Cu' in kiPad.layers)):
             layerIdx = LAYER_C1
-        elif 'B.Cu' in layers:
+        elif 'B.Cu' in kiPad.layers:
             layerIdx = LAYER_C2
         else:  #除了两个覆铜层的焊盘外，其他层的忽略（F.Paste F.Mask, B.Paste B.Mask）
             continue
         
-        shape = kicadPadShapeMap.get(kiPad['shape'], PAD_FORM_SQUARE)
+        shape = kicadPadShapeMap.get(kiPad.shape, PAD_FORM_SQUARE)
         
         spPad = SprintPad(layerIdx=layerIdx)
-        spPad.pos = (kiPad['pos']['x'] * 10000, kiPad['pos']['y'] * 10000)
+        spPad.pos = (kiPad.at[0] * 10000, kiPad.at[1] * 10000)
+        if (len(kiPad.at) > 2):
+            spPad.rotation = kiPad.at[2] * 100 #Kicad的焊盘旋转角度单位为度，Sprint-Layout的角度单位为0.01度
 
-        #Kicad的焊盘旋转角度单位为度，Sprint-Layout的角度单位为0.01度
-        #Kicad顺时针为正，Sprint-Layout逆时针为正
-        rotation = kiPad['pos']['orientation']
-        spPad.rotation = ((360 - rotation) * 100) if rotation else 0
-        
         #spPad.padId = kiPad.name
         #thru_hole/np_thru_hole(内部不镀铜)/smd/connect(smd不镀锡)
-        if (kiPad['type'] in ('smd', 'connect')):
+        if (kiPad.type in ('smd', 'connect')):
             spPad.padType='SMDPAD'
-            spPad.sizeX = kiPad['size']['x'] * 10000
-            spPad.sizeY = kiPad['size']['y'] * 10000
+            spPad.sizeX = kiPad.size[0] * 10000
+            spPad.sizeY = kiPad.size[1] * 10000
         else:
             spPad.padType='PAD'
-            width, height = kiPad['size']['x'], kiPad['size']['y']
+            width, height = kiPad.size[0], kiPad.size[1]
             spPad.size = min(width, height) * 10000
             if (spPad.size <= 0):
                 spPad.size = max(width, height) * 10000
 
             #处理椭圆焊盘，确定是水平还是垂直
-            if (kiPad['shape'] == 'oval'):
+            if (kiPad.shape == 'oval'):
                 #究竟使用圆形焊盘还是长条椭圆焊盘，取决于长轴是否大于短轴的4/3
                 if ((width > height) and ((width * 2 / 3) > height)): #水平椭圆焊盘
                     spPad.form = PAD_FORM_RECT_ROUND_H
@@ -127,7 +110,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
                     spPad.form = PAD_FORM_RECT_ROUND_V
                 else: #圆形
                     spPad.form = PAD_FORM_ROUND
-            elif (kiPad['shape'] == 'rect'):
+            elif (kiPad.shape == 'rect'):
                 if ((width > height) and ((width * 2 / 3) > height)): #水平矩形焊盘
                     spPad.form = PAD_FORM_RECT_H
                 elif ((width < height) and ((height * 2 / 3) > width)): #垂直矩形焊盘
@@ -137,73 +120,70 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             else:
                 spPad.form = shape
 
-            if (kiPad['type'] == 'thru_hole'): #thru_hole为镀铜过孔，np_thru_hole为不镀铜过孔
+            if (kiPad.type == 'thru_hole'): #thru_hole为镀铜过孔，np_thru_hole为不镀铜过孔
                 spPad.via = True
-        
-        if kiPad['drill'] and kiPad['drill']['size']:
-            spPad.drill = min(kiPad['drill']['size']['x'], kiPad['drill']['size']['y']) * 10000
-        else:
-            spPad.drill = 0
 
-        #if kiPad['clearance']: #outline / convexhull
-        #    spPad.clearance = kiPad['clearance'] * 10000
+        if (kiPad.drill is not None):
+            spPad.drill = (kiPad.drill.size[0] if isinstance(kiPad.drill.size, (tuple, list)) else kiPad.drill.size) * 10000
 
-        if 10 < spPad.drill <= 5100: #小于0.51mm的过孔默认盖绿油
-            spPad.soldermask = False
+        if (kiPad.clearance is not None):
+            spPad.clearance = kiPad.clearance * 10000
 
         sprintTextIo.addPad(spPad)
-    
+
     #文本
     if importText:
-        for kiText in kicadMod.userText:
+        for kiText in kicadMod.texts:
             #reference(元件编号)/value(元件名称)/user(元件数值)
-            if kiText['hide'] or (not kiText['user']) or (kiText['user'] in ('REF**', '%R', 'IC**')):
+            if kiText.hide or (kiText.type in ('reference', 'user') and (kiText.text in ('REF**', '%R'))):
                 continue
-                
-            layerIdx = kicadLayerMap.get(kiText['layer'], LAYER_S1)
+
+            layerIdx = kicadLayerMap.get(kiText.layer, LAYER_S1)
             spText = SprintText(layerIdx=layerIdx)
-            spText.text = str(kiText['user'])
-            spText.height = kiText['font']['height'] * 10000
+            spText.text = kiText.text
+            spText.height = kiText.size[0] * 10000
 
             #尝试适当调整文本位置，Sprint-Layout都是左对齐的
             #(justify [left | right] [top | bottom] [mirror]
             offsetX = offsetY = 0
-            angle = kiText['pos']['orientation']
-            #if (angle == 0): #假定Sprint-Layout的字宽是字高的三分之一
-            #    offsetX = -(len(spText.text) * spText.height / 3)
-            #    offsetY = spText.height / 3
+            if (kiText.justify == 'mirror'):
+                spText.mirrorH = True
+            elif ((kiText.justify is None) and (len(kiText.at) <= 2)): #中心对齐，假定Sprint-Layout的字宽是字高的三分之一
+                offsetX = -(len(spText.text) * spText.height / 3)
+                offsetY = spText.height / 3
 
-            spText.pos = ((kiText['pos']['x'] * 10000 + offsetX), (kiText['pos']['y'] * 10000 + offsetY))
-            #Kicad逆时针旋转为正，Sprint-Layout顺时针旋转为正
-            spText.rotation = (360 - angle) if angle else 0
-            #spText.thickness = 2
+            spText.pos = ((kiText.at[0] * 10000 + offsetX), (kiText.at[1] * 10000 + offsetY))
+            if (len(kiText.at) > 2):
+                #Kicad的角度单位为1度，Sprint-Layout的文本角度单位为1度
+                #Kicad逆时针旋转为正，Sprint-Layout顺时针旋转为正
+                spText.rotation = (360 - kiText.at[2])
+            
+            if (kiText.bold):
+                spText.thickness = 2
 
             sprintTextIo.addText(spText)
-    
+
     #圆形
     for kiCir in kicadMod.circles:
-        layerIdx = kicadLayerMap.get(kiCir['layer'], LAYER_S1)
+        layerIdx = kicadLayerMap.get(kiCir.layer, LAYER_S1)
         spCir = SprintCircle(layerIdx=layerIdx)
-        spCir.center = (kiCir['center']['x'] * 10000, kiCir['center']['y'] * 10000)
-        spCir.width = kiCir['width'] * 10000
-        spCir.setRadiusByArcPoint(kiCir['end']['x'] * 10000, kiCir['end']['y'] * 10000) #通过end计算半径
+        spCir.center = (kiCir.center[0] * 10000, kiCir.center[1] * 10000)
+        spCir.width = kiCir.width * 10000
+        spCir.setRadiusByArcPoint(kiCir.end[0] * 10000, kiCir.end[1] * 10000) #通过end计算半径
         sprintTextIo.addCircle(spCir)
-    
+
     #弧形
     for kiArc in kicadMod.arcs:
-        layerIdx = kicadLayerMap.get(kiArc['layer'], LAYER_S1)
+        layerIdx = kicadLayerMap.get(kiArc.layer, LAYER_S1)
         spCir = SprintCircle(layerIdx=layerIdx)
-        spCir.width = kiArc['width'] * 10000
-        if kiArc['mid']: #Kicad v6定义
-            spCir.center = (kiArc["center"]['x'] * 10000, kiArc["center"]['y'] * 10000)
-            spCir.radius = kiArc['radius']
-        else:
-            spCir.setArcByCenterStartAngle(kiArc['start']['x'] * 10000, kiArc['start']['y'] * 10000, kiArc['end']['x'] * 10000, 
-                kiArc['end']['y'] * 10000, kiArc['angle'] * 1000) #Kicad的圆弧角度单位为1度，Sprint-Layout的圆弧角度单位为0.001度
+        spCir.width = kiArc.width * 10000
+        spCir.setArcByCenterStartAngle(kiArc.start[0] * 10000, kiArc.start[1] * 10000, kiArc.end[0] * 10000, 
+            kiArc.end[1] * 10000, kiArc.angle * 1000) #Kicad的圆弧角度单位为1度，Sprint-Layout的圆弧角度单位为0.001度
         
         sprintTextIo.addCircle(spCir)
 
-    return str(sprintTextIo)
+        #print(str(kiArc))
+        #print(type(kiPad.kiArc))
 
     #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
     bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
@@ -226,6 +206,21 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         sprintTextIo.addPolygon(polygon)
 
     return str(sprintTextIo)
-    
+        
+
+import os
+rootDir = r'C:\Program Files\KiCad\share\kicad\modules'
+for root, dirs, files in os.walk(rootDir):
+    for file in files:
+        if file.endswith('.kicad_mod'):
+            ffile = os.path.join(root, file)
+            try:
+                k = kicadModToTextIo(ffile, 1)
+                print(file)
+            except Exception as e:
+                print(str(e))
+                print(ffile)
+                raise
+
 #kicadModToTextIo(r'C:\Program Files\KiCad\share\kicad\modules\Battery.pretty\BatteryHolder_ComfortableElectronic_CH273-2450_1x2450.kicad_mod', 0)
 

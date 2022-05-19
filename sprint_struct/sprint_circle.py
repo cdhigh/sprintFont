@@ -5,30 +5,45 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
+from .sprint_component import SprintComponent
+from comm_utils import euclideanDistance
 
-#计算二维空间两点之间的距离
-def euclideanDistance(x1: float, y1: float, x2: float, y2: float):
-    return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
-
-#sprint的圆形类
-class SprintCircle:
+#里面的长度单位都是0.1微米
+class SprintCircle(SprintComponent):
     def __init__(self, layerIdx: int=1):
-        self.layerIdx = layerIdx
+        super().__init__(layerIdx)
         self.center = (0, 0)
         self.width = 0
         self.radius = 0
         self.clearance = None
         self.cutout = None
         self.soldermask = None
-        self.start = None
-        self.stop = None
+        self.start = None  #起始角度，0为3点钟方向，逆时针计算，角度*1000
+        self.stop = None   #结束角度，0为3点钟方向，逆时针计算，角度*1000
         self.fill = None
-
+    
+    def updateCircleLimit(self):
+        self.updateLimit(self.center[0] - self.radius, self.center[1] + self.radius)
+        self.updateLimit(self.center[0] + self.radius, self.center[1] - self.radius)
+        
     #Kicad没有直接指定半径，而是指定处于圆弧上的一个点来定义半径
     #注意调用此函数前请先保证设置了圆心坐标
     def setRadiusByArcPoint(self, x: float, y: float):
         self.radius = euclideanDistance(self.center[0], self.center[1], x, y)
-        
+        self.updateCircleLimit()
+
+    #通过圆心，起点，和角度来设定一段圆弧
+    #这个是Kicad的规则，圆弧角度为从起点开始顺时针旋转为正，而Sprint-Layout逆时针旋转为正
+    #如果是绝对角度，都是3点钟方向为0度
+    def setArcByCenterStartAngle(self, cX: float, cY: float, sX: float, sY: float, angle: float):
+        self.center = (cX, cY)
+        self.radius = euclideanDistance(cX, cY, sX, sY)
+        start = math.degrees(math.atan2(cY - sY, sX - cX)) * 1000 #弧度转角度，角度单位为0.001度
+        stop = start - angle #逆时针计数
+        self.start = min(start, stop)
+        self.stop = max(start, stop)
+        self.updateCircleLimit()
+
     def __str__(self):
         outStr = ['CIRCLE,LAYER={},CENTER={:0.0f}/{:0.0f},WIDTH={:0.0f},RADIUS={:0.0f}'.format(
             self.layerIdx, self.center[0], self.center[1], self.width, self.radius)]

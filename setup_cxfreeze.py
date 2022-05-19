@@ -13,9 +13,9 @@ if sys.platform == "win32":
 else:
     base = None
 
-APP_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-APP_LIB_PATH = os.path.normpath(os.path.join(APP_PATH, 'mylib'))
-sys.path.insert(0, APP_LIB_PATH)
+APP_PATH = os.path.dirname(__file__)
+#APP_LIB_PATH = os.path.normpath(os.path.join(APP_PATH, 'mylib'))
+#sys.path.insert(0, APP_LIB_PATH)
 
 appVersion = '1.0'
 appMain = os.path.join(APP_PATH, 'sprintFont.py')
@@ -30,7 +30,7 @@ if os.path.exists(appMain):
             appVersion = mt.group(1)
             break
 
-build_exe_options = {'packages': ['tkinter', 'pyparsing', 'pykicad'], 
+build_exe_options = {'packages': ['tkinter'], 
                     'excludes' : [],
                     'include_files' : [],
                     'optimize' : 2,

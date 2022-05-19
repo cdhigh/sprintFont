@@ -46,6 +46,7 @@ class I18n:
     "Super Rough": ("", "比较粗糙"),
     "info": ("", "信息"),
     "Text is empty": ("", "文本为空"),
+    "File does not exist": ("", "文件不存在"),
     "Failed to generate text": ("", "创建文本失败"),
     "Failed to save file": ("", "保存文件失败"),
     "Save to a text file": ("", "保存为一个文本文件"),
@@ -55,10 +56,16 @@ class I18n:
     "  In: {}": ("", "  输入：{}"),
     "No file selected": ("", "没有选择文件"),
     "Failed to parse file content": ("", "分析文件内容错误"),
-    "File": ("", "文件"),
+    "Input": ("", "输入"),
     "Font": ("            Font            ", "            字体            "),    
     "Footprint": ("            Footprint            ", "            封装            "),
     "Kicad footprint Library Supported": ("", "当前支持Kicad的封装库格式"),
+    "Import text": ("", "导入封装库中的文本"),
+    "Kicad footprint": ("", "Kicad封装文件"),
+    "Easyeda footprint": ("", "力创EDA封装文件"),
+    "All Files": ("", "所有文件"),
+    "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA component ID: C + number (need Internet)",
+        "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (需要网络)"),
     }
 
     #这个属性是可以在程序执行过程中修改的

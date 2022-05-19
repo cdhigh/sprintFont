@@ -3,10 +3,10 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5445
+   ClientHeight    =   5490
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   9375
+   ClientWidth     =   9390
    BeginProperty Font 
       Name            =   "Î¢ÈíÑÅºÚ"
       Size            =   10.5
@@ -19,17 +19,26 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5445
-   ScaleWidth      =   9375
+   ScaleHeight     =   5490
+   ScaleWidth      =   9390
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
    Begin VB.Frame tabStrip__Tab2 
       Caption         =   "Footprint"
       Height          =   4695
-      Left            =   7920
+      Left            =   2760
       TabIndex        =   21
-      Top             =   6120
+      Top             =   5760
       Width           =   8895
+      Begin VB.CheckBox chkImportFootprintText 
+         Caption         =   "Import text"
+         Height          =   375
+         Left            =   1560
+         TabIndex        =   26
+         Top             =   2880
+         Value           =   1  'Checked
+         Width           =   3015
+      End
       Begin VB.CommandButton cmdFootprintFile 
          Caption         =   "..."
          BeginProperty Font 
@@ -44,21 +53,21 @@ Begin VB.Form frmMain
          Height          =   375
          Left            =   8160
          TabIndex        =   25
-         Top             =   1200
+         Top             =   2160
          Width           =   495
       End
       Begin VB.TextBox txtFootprintFile 
          Height          =   420
          Left            =   1560
          TabIndex        =   24
-         Top             =   1200
+         Top             =   2160
          Width           =   6495
       End
       Begin VB.CommandButton cmdOkFootprint 
          Caption         =   "Ok"
          Height          =   450
          Left            =   1200
-         TabIndex        =   26
+         TabIndex        =   27
          Top             =   3840
          Width           =   2175
       End
@@ -66,26 +75,26 @@ Begin VB.Form frmMain
          Caption         =   "Cancel"
          Height          =   450
          Left            =   4440
-         TabIndex        =   27
+         TabIndex        =   28
          Top             =   3840
          Width           =   2175
       End
       Begin VB.Label lblFootprintFile 
          Alignment       =   1  'Right Justify
-         Caption         =   "File"
+         Caption         =   "Input"
          Height          =   375
          Left            =   240
          TabIndex        =   23
-         Top             =   1200
+         Top             =   2160
          Width           =   975
       End
       Begin VB.Label lblFootprintTips 
-         Caption         =   "Kicad footprint Library Supported"
-         Height          =   375
-         Left            =   360
+         Caption         =   "Footprint_features_tips"
+         Height          =   1575
+         Left            =   1560
          TabIndex        =   22
-         Top             =   600
-         Width           =   8055
+         Top             =   360
+         Width           =   6855
       End
       Begin VB.Label lblSaveAsFootprint 
          Caption         =   "Save as"
@@ -101,7 +110,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00FF0000&
          Height          =   375
          Left            =   7800
-         TabIndex        =   28
+         TabIndex        =   29
          Top             =   3960
          Width           =   975
       End
@@ -109,9 +118,9 @@ Begin VB.Form frmMain
    Begin VB.Frame tabStrip__Tab1 
       Caption         =   "Font"
       Height          =   4695
-      Left            =   1080
+      Left            =   600
       TabIndex        =   2
-      Top             =   6360
+      Top             =   5760
       Width           =   8895
       Begin VB.TextBox txtMain 
          Height          =   855
@@ -292,9 +301,9 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5100
-      Width           =   9375
-      _ExtentX        =   16536
+      Top             =   5145
+      Width           =   9390
+      _ExtentX        =   16563
       _ExtentY        =   609
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
@@ -314,5 +323,9 @@ Private Sub lblSaveAs_Click()
 End Sub
 
 Private Sub lblSaveAsFootprint_Click()
+
+End Sub
+
+Private Sub tabStrip_Click()
 
 End Sub

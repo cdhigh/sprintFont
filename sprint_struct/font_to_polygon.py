@@ -11,28 +11,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
 from .sprint_polygon import SprintPolygon
 from .sprint_textio import *
-
-#字符串转整数，出错则返回defaultValue
-def str_to_int(txt: str, defaultValue: int=0):
-    try:
-        return int(txt.strip())
-    except:
-        return defaultValue
-
-#字符串转浮点数，出错则返回defaultValue
-def str_to_float(txt: str, defaultValue: int=0.0):
-    try:
-        return float(txt.strip())
-    except:
-        return defaultValue
-
-#判断一个字符串是否是十六进制字符串
-def isHexString(txt: str):
-    txt = txt.lower()
-    for ch in txt:
-        if ((not ('0' <= ch <= '9')) and (not ('a' <= ch <= 'f'))):
-            return False
-    return True
+from comm_utils import *
 
 SMOOTH_MAP = {
     0: [(i / 50) for i in range(1, 50)], #超精细，一个曲线分成50份
@@ -195,11 +174,11 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
             currPolygon.addPoint(prevX, prevY)
 
     #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
-    extensionPolygons(polygons)
+    mergePolygons(polygons)
     return {'width':fontWidth, 'height':fontHeight, 'polygons':polygons}
 
 #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
-def extensionPolygons(polygons):
+def mergePolygons(polygons):
     copied = polygons[::]
     for poly in copied:
         if not poly.isValid():

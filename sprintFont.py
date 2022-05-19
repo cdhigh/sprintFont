@@ -13,7 +13,7 @@ cxfreeze --base-name=Win32GUI --icon=app.ico sprintFont.py
 -i: 图标
 pyinstaller.exe -F -w -i app.ico sprintFont.py
 """
-import os, sys, locale, json
+import os, sys, locale, json, threading, queue
 from tkinter import *
 from tkinter.font import Font, families
 from tkinter.ttk import *
@@ -24,9 +24,12 @@ import tkinter.filedialog as tkFileDialog
 #import tkinter.simpledialog as tkSimpleDialog  #askstring()
 from fontTools.ttLib.ttFont import TTFont
 from i18n import I18n
-from sprint_struct.font_to_polygon import str_to_int, str_to_float, isHexString, singleWordPolygon
+from comm_utils import *
+from sprint_struct.font_to_polygon import singleWordPolygon
 from sprint_struct.sprint_textio import SprintTextIO
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
 from kicad_to_sprint import kicadModToTextIo
+from lceda_to_sprint import LcComponent
 
 __VERSION__ = "1.1"
 __DATE__ = "20220515"
@@ -91,31 +94,39 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (363 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,363,x,y))
+        x = (ws / 2) - (626 / 2)
+        y = (hs / 2) - (366 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (626,366,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
-            R0lGODlhEAAQAPcAAD6KKP///z6KJ//8///+//v6+/n4+f77//37/vz6/fv6/Pr5+/v9
-            +/3+/fz9/PX29e/27ufx5fP48t/s3Ojx5jmIIz2KKD6KKT+LKkeQM2ShU2ymXG+nYH6x
-            cH+ycY27gZO+h5K9hprCj6jLn7bTrr7Yt8bdwMXcv87iyc/iytLkzdjn1Nno1eHt3uDs
-            3ez06uvz6fb69Sh9Dyl9ES2AFS+BFzCBGC+BGDGCGTKCGjGCGjKDGzOEHDODHDSEHTWF
-            HjeGHzaFHzeGIDiGITmHIjqIIzqHIzuIJDyJJT2KJj6LJzyIJj6JJz2JJz6JKECLKUCL
-            KkKNK0GMK0GMLEOOLUKNLUSOLkONLkWOMEePMUiRMkePMkmRNEuSNUuSNkyTN02TOU6U
-            OlKXPVGWPVOXPlSXQFWYQViaRViZRVubSFycSV6dS2CfTWGfT2KgUGahVGeiVWmkWGym
-            W26nXW+oX3CpYG+nX3KpYnetZnWrZXquanitaXyvbYCycYKzc4Gzc4a3d4O0dYa1eIi3
-            eoe2eYy6fou5foy5f4+7gZG7hJS9h5W/iZjBi5fAipS9iJzDkZvCkJ/FlKPHmKfKnarL
-            oKvMoazMoq7OpbDPp7HPqLjUsLrVsrzWtL/YuLzUtcLau8HZusPavMrfxMfbwcncw87h
-            yM3eyNbm0dDgy9zq2Nvp19/p3Obw4+Xv4uzz6jOEGWWiUWijVXSqYn6wbom4eYu5fJfA
-            iZzDj5/Ek7LOqbnTsL7XtsHYucnewtHiy9jn09Lhzeny5ujx5fH37+/17fj79/f69vb5
-            9fL18fH08O/y7sTavNPjzeTv4OLt3t7o2uXt4uTs4fP48e3x6/r8+fn7+Pz9+/7+/f//
-            /wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-            AAAAAAAAAAAAAAAAAAAAACH5BAEAANgALAAAAAAQABAAAAimALEJHEiw4EAoABJacGMm
-            YUIoA6lYcBhg2gJlDgFEEdhkIoAgBwBUSIDEYROBFzIGsFSqQEYAKB3mCGAtQAAAAhzG
-            TAgjwJAIAY5k3OnDJoAdRnViSwnARAAwCRsEwIET5lIARGxCIEbsRQBjSlOKCNALlFlQ
-            NnHkRInEZkmHGAI0W4utyZ0AIl4CsOnjJLYoNofoFRPgxEaBAUI1Wcx4sU2DkAsGBAA"""
+            R0lGODlhMAAwAPcAAP///z6KKPf39z6KJz6JJz2KKP78/vz7/Pv6+/f69/r8+v7//v3+
+            /fz9/PH38Ja6j8XWwvP48vL38Yiwf5G4iJK3iqTGnJ/Al6bEn6jGobHOqqzHprHLq7XL
+            sL3SuNXm0dLgz9Th0d/s3N7r2+ny5+jx5kOOL0ySOVGWPlOXQFOVQVeaRViaRliYR1yZ
+            TGWiVWSeVWumW2mkWmqhXGyiXnWsZnWrZnanaYW2eH6scoe3eom2fYKud426gY+8g5G8
+            hZW/ipW9iqnLoKrMobHQqbTSrLXQrr3XtsbdwMXcv8LWvczgx8/iytLkzczcyNno1eLu
+            3+Ht3uPu4Ovz6fX59O7y7e3x7DiHH0CLKT+KKUCLKkGMK0KMLEONLUONLkaOL0SOL0WO
+            MEaPMUeQMkiQM0mQNEqRNUuSNkyRNkySN02TOU6TOVCVO0+UO1CVPFKWPlSXQFWYQVWY
+            QlaZQ1eZRFiaRVubR1ubSFycSV2dS16dS1+eTGGfT2KgUGWhU2aiVWijVmqlWGmkWGym
+            W22mXG6nXXCoX2+oX26nXnGpYXSrZHOqY3esZ3itaXuva3uvbHywbX6xb32wboCycX2v
+            b3+xcYKzc4Gzc4KzdIa2eIW1d4q4fY26f4u5foy5f467gY+7gpC8g5O9hpW/iZS+iJfA
+            i5rCjpnBjZ3EkpzDkZvCkJ/FlJ7Ek6HGlqDFlaPHmKXImqfKnabJnK3No67OpbDPp6/O
+            prPRqrjUsLfTr7rVsrvWs7zWtMDZub/YuMPbvMLau8Tbvcvfxc/iyc7hyNTlz9Pkztfn
+            0tbm0dXl0Nzq2Nvp193n2ubw4+Xv4u306+Tr4jGFFTSGGT6MJUKOKHSsYYe1eJrBjanL
+            nrPQqbbSrb/Yt8newszgxdDiytLjzNjn0+Ds3ODp3ejx5efw5O/17eju5vj79/b59S2E
+            Cy2DDOXv4ery5/H27yiCADCGCfT48vr8+fn7+PT28/7+/vj4+P///wAAAAAAAAAAAAAA
+            AAAAAAAAAAAAAAAAAAAAACH5BAEAAPYALAAAAAAwADAAAAj/AO0JHEiwoMGDCBMqXMiw
+            ocOHECFKCxAgGoECFDNSLIBRo8eP6Rxe2fhxY8doLa4MKOmRAEV3C0tezNjRioCbNxGM
+            1EhgZQCXLgNcSTiRY4COJRHgXCrAHUWfHzvuQGjyJ0tpSw0oxclSI8YCB9WZxBjUI04K
+            Ga/g3Nk140GaHAu4jPuVq0YONw20PXoUbEG4ckuqFaBXo7qcbeNSNAiY5QDEGifkDbBy
+            AFSrXwMwpkigbFQB9QSwDYBzA+Wfly9r/itzZkZzAAAgmKdODIPYAvZ63OwRKd8CsYML
+            ByBEt0beGYMaNTq8uXG3rHU/Gx5geJ8BLi1nt3o8evLfG507/3+OnPPH8X2ok/duVTnF
+            4Qw6jtddvuQI9ZRfDX/TM2h2z/Wdh997A3YVoEYnFFidgiUdmNF8GkHI0oFBDTcGTRkB
+            w+Bu7HnlHFJISUiZZSuV59twMXzU0wDwDLfiaeatRlBXDWz4oHA/dEWAg8316GNsHpHo
+            0oE/FjkcHSzt2OFRRjYJJGUrdibjQCVR4WSTimREYolLDhfPXmWN11l/Uwr0ETE2Bklg
+            cGA8RWKZ9ggonGtRyRmcm9jB6REoLnqlmxnDWcZTec111hGIXUmo5IwRCufFc9hlh6Zw
+            I0qJXKEkVZWpnQDIo9EABu20yHCM0NlbWwkEih2oby1I6W+Hkjzk26fDKUMiQiMNx8Jz
+            UPqUXXOWKSRmV7OqORwVcBoUXI68lrRSjcI59OReiKpIQHARZavtttx26y1DAQEAOw="""
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
         self.createWidgets()
@@ -126,14 +137,15 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.862)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.947, relheight=0.855)
+        self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
         self.VScroll1 = Scrollbar(self.tabStrip__Tab1, orient='vertical')
         self.VScroll1.place(relx=0.917, rely=0.128, relwidth=0.029, relheight=0.182)
-        self.cmbLayerList = ['Add items in designer or code!',]
-        self.cmbLayerVar = StringVar(value='Add items in designer or code!')
-        self.cmbLayer = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
+        self.cmbLayerList = ['',]
+        self.cmbLayerVar = StringVar(value='')
+        self.cmbLayer = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
         self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
         self.cmbLayer.text = lambda : self.cmbLayerVar.get()
         self.cmbLayer.place(relx=0.162, rely=0.511, relwidth=0.352)
@@ -142,9 +154,9 @@ class Application_ui(Frame):
         self.txtMain.place(relx=0.162, rely=0.128, relwidth=0.757, relheight=0.182)
         self.txtMain.insert('1.0','')
         self.VScroll1['command'] = self.txtMain.yview
-        self.cmbSmoothList = ['Add items in designer or code!',]
-        self.cmbSmoothVar = StringVar(value='Add items in designer or code!')
-        self.cmbSmooth = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
+        self.cmbSmoothList = ['',]
+        self.cmbSmoothVar = StringVar(value='')
+        self.cmbSmooth = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
         self.cmbSmooth.setText = lambda x: self.cmbSmoothVar.set(x)
         self.cmbSmooth.text = lambda : self.cmbSmoothVar.get()
         self.cmbSmooth.place(relx=0.162, rely=0.639, relwidth=0.352)
@@ -160,27 +172,27 @@ class Application_ui(Frame):
         self.cmdCancel.setText = lambda x: self.cmdCancelVar.set(x)
         self.cmdCancel.text = lambda : self.cmdCancelVar.get()
         self.cmdCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
-        self.cmbWordSpacingList = ['Add items in designer or code!',]
-        self.cmbWordSpacingVar = StringVar(value='Add items in designer or code!')
-        self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
+        self.cmbWordSpacingList = ['',]
+        self.cmbWordSpacingVar = StringVar(value='')
+        self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
         self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
         self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
         self.cmbWordSpacing.place(relx=0.755, rely=0.511, relwidth=0.204)
-        self.cmbLineSpacingList = ['Add items in designer or code!',]
-        self.cmbLineSpacingVar = StringVar(value='Add items in designer or code!')
-        self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
+        self.cmbLineSpacingList = ['',]
+        self.cmbLineSpacingVar = StringVar(value='')
+        self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
         self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
         self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
         self.cmbLineSpacing.place(relx=0.755, rely=0.639, relwidth=0.204)
-        self.cmbFontHeightList = ['Add items in designer or code!',]
-        self.cmbFontHeightVar = StringVar(value='Add items in designer or code!')
-        self.cmbFontHeight = Combobox(self.tabStrip__Tab1, text='Add items in designer or code!', textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
+        self.cmbFontHeightList = ['',]
+        self.cmbFontHeightVar = StringVar(value='')
+        self.cmbFontHeight = Combobox(self.tabStrip__Tab1, textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
         self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
         self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
         self.cmbFontHeight.place(relx=0.755, rely=0.383, relwidth=0.204)
-        self.cmbFontList = ['Add items in designer or code!',]
-        self.cmbFontVar = StringVar(value='Add items in designer or code!')
-        self.cmbFont = Combobox(self.tabStrip__Tab1, state='readonly', text='Add items in designer or code!', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
+        self.cmbFontList = ['',]
+        self.cmbFontVar = StringVar(value='')
+        self.cmbFont = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
         self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
         self.cmbFont.text = lambda : self.cmbFontVar.get()
         self.cmbFont.place(relx=0.162, rely=0.383, relwidth=0.352)
@@ -236,17 +248,23 @@ class Application_ui(Frame):
         self.tabStrip.add(self.tabStrip__Tab1, text='Font')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
+        self.chkImportFootprintTextVar = IntVar(value=1)
+        self.style.configure('TchkImportFootprintText.TCheckbutton', font=('微软雅黑',10))
+        self.chkImportFootprintText = Checkbutton(self.tabStrip__Tab2, text='Import text', variable=self.chkImportFootprintTextVar, style='TchkImportFootprintText.TCheckbutton')
+        self.chkImportFootprintText.setValue = lambda x: self.chkImportFootprintTextVar.set(x)
+        self.chkImportFootprintText.value = lambda : self.chkImportFootprintTextVar.get()
+        self.chkImportFootprintText.place(relx=0.175, rely=0.613, relwidth=0.339, relheight=0.08)
         self.cmdFootprintFileVar = StringVar(value='...')
         self.style.configure('TcmdFootprintFile.TButton', font=('Arial',9))
         self.cmdFootprintFile = Button(self.tabStrip__Tab2, text='...', textvariable=self.cmdFootprintFileVar, command=self.cmdFootprintFile_Cmd, style='TcmdFootprintFile.TButton')
         self.cmdFootprintFile.setText = lambda x: self.cmdFootprintFileVar.set(x)
         self.cmdFootprintFile.text = lambda : self.cmdFootprintFileVar.get()
-        self.cmdFootprintFile.place(relx=0.917, rely=0.256, relwidth=0.056, relheight=0.08)
+        self.cmdFootprintFile.place(relx=0.917, rely=0.46, relwidth=0.056, relheight=0.08)
         self.txtFootprintFileVar = StringVar(value='')
         self.txtFootprintFile = Entry(self.tabStrip__Tab2, textvariable=self.txtFootprintFileVar, font=('微软雅黑',10))
         self.txtFootprintFile.setText = lambda x: self.txtFootprintFileVar.set(x)
         self.txtFootprintFile.text = lambda : self.txtFootprintFileVar.get()
-        self.txtFootprintFile.place(relx=0.175, rely=0.256, relwidth=0.73, relheight=0.089)
+        self.txtFootprintFile.place(relx=0.175, rely=0.46, relwidth=0.73, relheight=0.089)
         self.cmdOkFootprintVar = StringVar(value='Ok')
         self.style.configure('TcmdOkFootprint.TButton', font=('微软雅黑',10))
         self.cmdOkFootprint = Button(self.tabStrip__Tab2, text='Ok', textvariable=self.cmdOkFootprintVar, command=self.cmdOkFootprint_Cmd, style='TcmdOkFootprint.TButton')
@@ -259,18 +277,18 @@ class Application_ui(Frame):
         self.cmdCancelFootprint.setText = lambda x: self.cmdCancelFootprintVar.set(x)
         self.cmdCancelFootprint.text = lambda : self.cmdCancelFootprintVar.get()
         self.cmdCancelFootprint.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
-        self.lblFootprintFileVar = StringVar(value='File')
+        self.lblFootprintFileVar = StringVar(value='Input')
         self.style.configure('TlblFootprintFile.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblFootprintFile = Label(self.tabStrip__Tab2, text='File', textvariable=self.lblFootprintFileVar, style='TlblFootprintFile.TLabel')
+        self.lblFootprintFile = Label(self.tabStrip__Tab2, text='Input', textvariable=self.lblFootprintFileVar, style='TlblFootprintFile.TLabel')
         self.lblFootprintFile.setText = lambda x: self.lblFootprintFileVar.set(x)
         self.lblFootprintFile.text = lambda : self.lblFootprintFileVar.get()
-        self.lblFootprintFile.place(relx=0.027, rely=0.256, relwidth=0.11, relheight=0.08)
-        self.lblFootprintTipsVar = StringVar(value='Kicad footprint Library Supported')
+        self.lblFootprintFile.place(relx=0.027, rely=0.46, relwidth=0.11, relheight=0.08)
+        self.lblFootprintTipsVar = StringVar(value='Footprint_features_tips')
         self.style.configure('TlblFootprintTips.TLabel', anchor='w', font=('微软雅黑',10))
-        self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Kicad footprint Library Supported', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
+        self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Footprint_features_tips', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
         self.lblFootprintTips.setText = lambda x: self.lblFootprintTipsVar.set(x)
         self.lblFootprintTips.text = lambda : self.lblFootprintTipsVar.get()
-        self.lblFootprintTips.place(relx=0.04, rely=0.128, relwidth=0.906, relheight=0.08)
+        self.lblFootprintTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.335)
         self.lblSaveAsFootprintVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsFootprint.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsFootprint = Label(self.tabStrip__Tab2, text='Save as', textvariable=self.lblSaveAsFootprintVar, style='TlblSaveAsFootprint.TLabel')
@@ -283,8 +301,6 @@ class Application_ui(Frame):
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
 
-
-
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
@@ -296,10 +312,10 @@ class Application(Application_ui):
 
         I18n.init()
         I18n.setLanguage(locale.getdefaultlocale()[0])
-        self.language = None #如果手工在配置文件中添加语种选择，则此变量保存对应语种
+        self.language = ''
 
         #读取配置文件到内存
-        self.cfg = None
+        self.cfg = {}
         if os.path.exists(CFG_FILENAME):
             try:
                 with open(CFG_FILENAME, 'r', encoding='utf-8') as f:
@@ -307,7 +323,7 @@ class Application(Application_ui):
             except:
                 pass
 
-        #支持手动选择语种
+        #支持手动选择语种，语种配置需要在填充控件前完成
         if isinstance(self.cfg, dict):
             lang = self.cfg.get('language', '')
             if lang and I18n.langIsSupported(lang):
@@ -338,6 +354,30 @@ class Application(Application_ui):
 
         self.txtMain.focus_set()
 
+    #多页控件的当前页面发现改变
+    def tabStrip_NotebookTabChanged(self, event):
+        try:
+            tabNo = self.getCurrentTabStripTab()
+            if (tabNo == 0):
+                self.txtMain.focus_set()
+            elif (tabNo == 1):
+                self.txtFootprintFile.focus_set()
+        except:
+            pass
+
+    #获取多页控件的当前页面
+    def getCurrentTabStripTab(self):
+        try:
+            return self.tabStrip.index(self.tabStrip.select())
+        except:
+            return -1
+
+    #设置多页控件的当前页面, 0-第一个页面
+    def setCurrentTabStripTab(self, tabNo: int):
+        tabs = self.tabStrip.tabs()
+        if 0 <= tabNo < len(tabs):
+            self.tabStrip.select(tabs[tabNo])
+
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
         self.cmdOk.setText(_("Ok"))
@@ -353,19 +393,28 @@ class Application(Application_ui):
         self.lblFontHeight.setText(_("Height (mm)"))
         self.lblWordSpacing.setText(_("Word spacing (mm)"))
         self.LblLineSpacing.setText(_("Line spacing (mm)"))
-        self.lblFootprintFile.setText(_("File"))
+        self.lblFootprintFile.setText(_("Input"))
         self.tabStrip.tab(0, text=_("Font"))
         self.tabStrip.tab(1, text=_("Footprint"))
-        self.lblFootprintTips.setText(_("Kicad footprint Library Supported"))
+        self.lblFootprintTips.setText(_("Footprint_features_tips"))
+        self.chkImportFootprintText.configure(text=_("Import text"))
         
     #填充界面控件
     def populateWidgets(self):
         #获取系统已安装的字体列表
-        self.fontNameMap = self.generateFontFileNameMap()
-        self.cmbFontList = sorted(self.fontNameMap.keys())
-        self.cmbFont.configure(value=self.cmbFontList)
-        self.cmbFont.setText(self.cmbFontList[0] if self.cmbFontList else '')
-
+        #启动一个新的线程在后台更新字体列表，避免启动过慢
+        self.fontNameMap = {}
+        try:
+            self.fontNameQueue = queue.Queue(5)
+            #daemon=True 可以让子线程在主线程退出后自动销毁
+            self.fontThread = threading.Thread(target=self.generateFontFileNameMap, args=(self.fontNameQueue,), daemon=True)
+            self.fontThread.start()
+            #启动after方法，每隔200ms确认一次是否已经获取到字体列表
+            self.master.after(200, self.populateFontCombox)
+        except Exception as e: #如果启动线程失败，就直接在这里更新
+            print('create thread failed: {}'.format(str(e)))
+            self.populateFontCombox(self.generateFontFileNameMap())
+            
         #填充板层
         self.cmbLayerList = [_("C1 (Front copper)"), _("S1 (Front silkscreen)"), _("C2 (Back copper)"), 
             _("S2 (Back silkscreen)"), _("I1 (Inner copper1)"), _("I2 (Inner copper2)"), _("U (Edge.cuts)"), ]
@@ -391,11 +440,31 @@ class Application(Application_ui):
         self.cmbSmoothList = [_("Super fine (super slow)"), _("Fine (slow)"), _("Normal"), _("Rough"), _("Super Rough"), ]
         self.cmbSmooth.configure(values=self.cmbSmoothList)
         self.cmbSmooth.current(2)
+
+    #更新字体列表组合框，可能直接调用，也可能会使用after延时调用
+    def populateFontCombox(self, fontMap: dict=None):
+        if fontMap is None: #使用after延时调用
+            if self.fontNameQueue.empty(): #还没有从磁盘里面读取到字体
+                self.master.after(200, self.populateFontCombox) #延时200ms再试
+                return
+            else:
+                fontMap = self.fontNameQueue.get_nowait()
+
+        if fontMap:
+            self.fontNameMap = fontMap
+            self.cmbFontList = sorted(self.fontNameMap.keys())
+            self.cmbFont.configure(value=self.cmbFontList)
+            lastFont = self.cfg.get('font', '')
+            if lastFont and (lastFont in self.cmbFontList):
+                self.cmbFont.current(self.cmbFontList.index(lastFont))
+            else:
+                self.cmbFont.setText(self.cmbFontList[0] if self.cmbFontList else '')
         
     #从配置文件中恢复以前的配置数据
     def restoreConfig(self):
         cfg = self.cfg
         if isinstance(cfg, dict):
+            #字体界面
             lastFont = cfg.get('font', '')
             if lastFont and (lastFont in self.cmbFontList):
                 self.cmbFont.current(self.cmbFontList.index(lastFont))
@@ -419,25 +488,34 @@ class Application(Application_ui):
             ls = str_to_float(cfg.get('lineSpacing', "0"))
             self.cmbLineSpacing.setText(str(ls))
 
+            #封装导入页面
+            if (str_to_int(cfg.get('importFootprintText', '0'))):
+                self.chkImportFootprintText.setValue(1)
+
+            lastTab = str_to_int(cfg.get('lastTab', '0'))
+            if (lastTab > 0):
+                self.setCurrentTabStripTab(lastTab)
+
     #保存当前配置数据
     def saveConfig(self):
-        cfg = {'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
+        cfg = {'language': self.language, 'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
-            'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), }
-
-        if self.language:
-            cfg['language'] = self.language
-
-        cfgStr = json.dumps(cfg, indent=2)
-        try:
-            with open(CFG_FILENAME, 'w', encoding='utf-8') as f:
-                f.write(cfgStr)
-        except:
-            pass
+            'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
+            'importFootprintText': str(self.chkImportFootprintText.value()),
+            'lastTab': str(self.getCurrentTabStripTab())}
+        
+        if (cfg != self.cfg):  #有变化再写配置文件
+            self.cfg = cfg
+            cfgStr = json.dumps(cfg, indent=2)
+            try:
+                with open(CFG_FILENAME, 'w', encoding='utf-8') as f:
+                    f.write(cfgStr)
+            except:
+                pass
     
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[("Kicad footprint","*.kicad_mod"), ("All Files", "*")])
+        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"),"*.kicad_mod"), (_("Easyeda footprint"), "*.json"), (_("All Files"), "*.*")])
         if ret:
             self.txtFootprintFile.setText(ret)
 
@@ -473,9 +551,16 @@ class Application(Application_ui):
     
     #转换封装结果保存为单独一个文本文件
     def lblSaveAsFootprint_Button_1(self, event):
+        self.saveConfig()
         fileName = self.txtFootprintFile.text()
+        #TODO, for test
+        fileName = self.autoAddKicadPath(fileName)
+
         if not fileName:
             showinfo(_('info'), _('No file selected'))
+            return
+        elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
+            showinfo(_('info'), _('File does not exist'))
             return
 
         errStr, retStr = self.generateFootprint(fileName)
@@ -520,9 +605,16 @@ class Application(Application_ui):
 
     #点击了将封装文件转换为Sprint-Layout的按钮
     def cmdOkFootprint_Cmd(self, event=None):
+        self.saveConfig()
         fileName = self.txtFootprintFile.text()
+        #TODO, for test
+        fileName = self.autoAddKicadPath(fileName)
+
         if not fileName:
             showinfo(_('info'), _('No file selected'))
+            return
+        elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
+            showinfo(_('info'), _('File does not exist'))
             return
 
         errStr, retStr = self.generateFootprint(fileName)
@@ -537,6 +629,14 @@ class Application(Application_ui):
             self.destroy()
             sys.exit(4)
     
+    #方便进行测试的一个函数，可以仅输入kicad封装文件名，自动添加路径
+    def autoAddKicadPath(self, fileName):
+        if fileName and ('\\' not in fileName) and (not LcComponent.isLcedaComponent(fileName)):
+            for root, subdirs, files in os.walk(r'C:\Program Files\KiCad\share\kicad\modules'):
+                if fileName + '.kicad_mod' in files:
+                    fileName = os.path.join(root, fileName + '.kicad_mod')
+        return fileName
+
     #将字符串转换为Sprint-Layout多边形，返回一个字符串，可以直接写到文件里面
     def generatePolygons(self, txt: str):
         if not txt:
@@ -623,7 +723,8 @@ class Application(Application_ui):
     
     #将字体文件和字体名字对应起来，关键字为字体名字，值为文件名
     #除了系统的字体目录，本软件同一目录下的ttf也可以做为选择
-    def generateFontFileNameMap(self):
+    #如果fontQueue传入值，也通过queue传出给子线程使用
+    def generateFontFileNameMap(self, fontQueue: queue.Queue=None):
         fontNameMap = {}
         fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(('.ttf', '.otf'))]
         fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(('.ttf', '.otf'))])
@@ -660,14 +761,22 @@ class Application(Application_ui):
 
                 if name:
                     fontNameMap[name] = fontFileName
+        if fontQueue:
+            fontQueue.put(fontNameMap)
         return fontNameMap
 
     #将封装文件转换为Sprint-Layout格式
     #返回：("错误信息"，生成的文本)
     def generateFootprint(self, fileName: str):
+        importText = self.chkImportFootprintText.value()
+
         #当前仅支持Kicad格式
         if (fileName.endswith('.kicad_mod')):
-            return ('', kicadModToTextIo(fileName))
+            return ('', kicadModToTextIo(fileName, importText))
+        elif LcComponent.isLcedaComponent(fileName):
+            lcInstance = LcComponent(fileName)
+            textIo = lcInstance.createSprintTextIo(importText)
+            return ('', str(textIo) if textIo else '')
         else:
             return (_("This file format is not supported"), '')
 

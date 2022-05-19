@@ -4,20 +4,52 @@
 多边形数据结构和算法
 Author: cdhigh <https://github.com/cdhigh>
 """
+from .sprint_component import SprintComponent
 
-#表示一个多边形
-class SprintPolygon:
+#里面的长度单位都是0.1微米
+class SprintPolygon(SprintComponent):
     def __init__(self, layerIdx: int=2, lineWidth: float=0):
+        super().__init__(layerIdx)
         self.reset(layerIdx, lineWidth)
 
     def reset(self, layerIdx: int=2, lineWidth: float=0):
-        self._xMin = self._yMin = 999999999.0
-        self._xMax = self._yMax = -999999999.0
+        self.xMin = self.yMin = 10000 * 10000
+        self.xMax = self.yMax = -10000 * 10000
         self.points = [] #元素为 (x,y)
         self._ptIdx = 0
         self._segIdx = 0
         self.layerIdx = layerIdx
         self.lineWidth = lineWidth if lineWidth else 0
+        self.clearance = None
+        self.cutout = None  #是否为禁止布线区
+        self.soldermask = None  #是否为阻焊区
+        self.hatch = None  #是否为网格填充
+        self.hatchAuto = None  #是否自动选择网格填充的线宽
+        self.hatchWidth = None  #网格填充的自定义线宽
+
+    def __str__(self):
+        if not self.isValid():
+            return ''
+
+        outStr = ['ZONE,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.lineWidth)]
+        if self.clearance:
+            outStr.append('CLEAR={:0.0f}'.format(self.clearance))
+        if self.cutout is not None:
+            outStr.append('CUTOUT={}'.format('true' if self.cutout else 'false'))
+        if self.soldermask is not None:
+            outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
+        if self.hatch is not None:
+            outStr.append('HATCH={}'.format('true' if self.hatch else 'false'))
+        if self.hatchAuto is not None:
+            outStr.append('HATCH_AUTO={}'.format('true' if self.hatchAuto else 'false'))
+        if self.hatchWidth:
+            outStr.append('HATCH_WIDTH={:0.0f}'.format(self.hatchWidth))
+
+        #点列表
+        for idx, (x, y) in enumerate(self.points):
+            outStr.append('P{}={:0.0f}/{:0.0f}'.format(idx, x, y))
+
+        return ','.join(outStr) + ';'
 
     #多边形是否合法，至少要求为两个点
     def isValid(self):
@@ -25,14 +57,7 @@ class SprintPolygon:
 
     #增加一个点
     def addPoint(self, x: float, y: float):
-        if x < self._xMin:
-            self._xMin = x
-        if x > self._xMax:
-            self._xMax = x
-        if y < self._yMin:
-            self._yMin = y
-        if y > self._yMax:
-            self._yMax = y
+        self.updateLimit(x, y)
         self.points.append((x, y))
 
     #生成器，用于迭代里面所有的线段
@@ -54,7 +79,7 @@ class SprintPolygon:
     #判断一个点是否在此多边形内，此算法专门为字体优化，不判断很多特殊情况
     def encircle(self, x: float, y: float):
         #先判断极限情况，如果在外包矩形外，就是在多边形外
-        if ((x < self._xMin) or (x > self._xMax) or (y < self._yMin) or (y > self._yMax)):
+        if ((x < self.xMin) or (x > self.xMax) or (y < self.yMin) or (y > self.yMax)):
             return False
 
         #W. Randolph Franklin 的PNPoly算法
@@ -73,12 +98,12 @@ class SprintPolygon:
 
     #移动各顶点，保证第一个点为最左边
     def ensureFirstPointLeftest(self):
-        if ((not self.isValid()) or (self.points[0][0] <= self._xMin)):
+        if ((not self.isValid()) or (self.points[0][0] <= self.xMin)):
             return
 
         idx = 0
         for idx, (x, y) in enumerate(self.points):
-            if (x <= self._xMin):
+            if (x <= self.xMin):
                 break
 
         #从idx开始取到末尾，然后从开始到idx

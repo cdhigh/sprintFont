@@ -4,6 +4,7 @@
 焊盘定义
 Author: cdhigh <https://github.com/cdhigh>
 """
+from .sprint_component import SprintComponent
 
 #Pad的形状
 PAD_FORM_ROUND = 1
@@ -16,19 +17,18 @@ PAD_FORM_RECT_ROUND_V = 7
 PAD_FORM_RECT_OCTAGON_V = 8
 PAD_FORM_RECT_V = 9
 
-
 #sprint的Pad类
-class SprintPad:
+class SprintPad(SprintComponent):
     def __init__(self, padType: str='PAD', layerIdx: int=1):
+        super().__init__(layerIdx)
         self.padType = padType # 'PAD'/'SMDPAD'
-        self.layerIdx = layerIdx
         self.pos = (0, 0)
         self.size = 0
         self.sizeX = 0
         self.sizeY = 0
         self.drill = 0
         self.form = PAD_FORM_ROUND
-        self.clearance = 0
+        self.clearance = None
         self.soldermask = None
         self.rotation = None
         self.via = None
@@ -38,6 +38,14 @@ class SprintPad:
         self.thermalTracks = 0
         self.padId = None
         self.connectToOtherPads = [] #从此焊盘到特定其他焊盘的直线
+    
+    def updatePadLimit(self):
+        if (self.padType == 'PAD'):
+            self.updateLimit(self.pos[0] - self.size * 2, self.pos[1] + self.size * 2)
+            self.updateLimit(self.pos[0] + self.size * 2, self.pos[1] - self.size * 2)
+        else:
+            self.updateLimit(self.pos[0] - self.sizeX / 2, self.pos[1] + self.sizeY / 2)
+            self.updateLimit(self.pos[0] + self.sizeX / 2, self.pos[1] - self.sizeY / 2)
 
     def __str__(self):
         return self._toStrPad() if self.padType == 'PAD' else self._toStrSmdPad()
@@ -46,11 +54,11 @@ class SprintPad:
     def _toStrPad(self):
         outStr = ['PAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE={:0.0f},DRILL={:0.0f},FORM={}'.format(
             self.layerIdx, self.pos[0], self.pos[1], self.size, self.drill, self.form)]
-        if self.clearance:
+        if self.clearance is not None:
             outStr.append('CLEAR={:0.0f}'.format(self.clearance))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
-        if self.rotation is not None:
+        if (self.form != PAD_FORM_ROUND) and (self.rotation is not None):
             outStr.append('ROTATION={:0.0f}'.format(self.rotation))
         if self.via is not None:
             outStr.append('VIA={}'.format('true' if self.via else 'false'))
