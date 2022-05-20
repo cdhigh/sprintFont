@@ -8,6 +8,7 @@ from io import StringIO
 from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
 from kicad_pcb.kicad_mod import KicadMod
+from comm_utils import str_to_int
 
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
 #TEST_FILE = os.path.join(os.path.dirname(__file__), 'ttt.kicad_mod')
@@ -44,16 +45,16 @@ kicadPadShapeMap = {
 }
 
 
-#输入一个Kicad的封装文件(*.kicad_mod)，返回Sprint-Layout定义的Text-IO字符串
+#输入一个Kicad的封装文件(*.kicad_mod)，返回Sprint-Layout定义的Text-IO
 #kicadFile: kicad_mod文件名
 #importText: 是否输出文本信息
 def kicadModToTextIo(kicadFile: str, importText: int):
-    sprintTextIo = SprintTextIO(isComponent=True)
-
     #try:
     kicadMod = KicadMod(kicadFile)
     #except:
-    #    return ''
+    #    return None
+    
+    sprintTextIo = SprintTextIO(isComponent=True)
 
     #线
     for kiLine in kicadMod.lines:
@@ -75,10 +76,10 @@ def kicadModToTextIo(kicadFile: str, importText: int):
     for kiRect in kicadMod.rects:
         layerIdx = kicadLayerMap.get(kiRect['layer'], LAYER_S1)
         polygon = SprintPolygon(layerIdx, kiRect['width'] * 10000)
-        x1 = rect["start"]['x']
-        y1 = rect["start"]['y']
-        x2 = rect["end"]['x']
-        y2 = rect["end"]['y']
+        x1 = kiRect["start"]['x']
+        y1 = kiRect["start"]['y']
+        x2 = kiRect["end"]['x']
+        y2 = kiRect["end"]['y']
         polygon.addPoint(x1 * 10000, y1 * 10000) #Sprint-Layout以0.1微米为单位
         polygon.addPoint(x2 * 10000, y1 * 10000)
         polygon.addPoint(x2 * 10000, y2 * 10000)
@@ -157,7 +158,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
     if importText:
         for kiText in kicadMod.userText:
             #reference(元件编号)/value(元件名称)/user(元件数值)
-            if kiText['hide'] or (not kiText['user']) or (kiText['user'] in ('REF**', '%R', 'IC**')):
+            if kiText['hide'] or (not kiText['user']) or (kiText['user'] in ('REF**', '%R', 'IC**', '${REFERENCE}')):
                 continue
                 
             layerIdx = kicadLayerMap.get(kiText['layer'], LAYER_S1)
@@ -168,7 +169,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             #尝试适当调整文本位置，Sprint-Layout都是左对齐的
             #(justify [left | right] [top | bottom] [mirror]
             offsetX = offsetY = 0
-            angle = kiText['pos']['orientation']
+            angle = str_to_int(kiText['pos']['orientation'])
             #if (angle == 0): #假定Sprint-Layout的字宽是字高的三分之一
             #    offsetX = -(len(spText.text) * spText.height / 3)
             #    offsetY = spText.height / 3
@@ -176,6 +177,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             spText.pos = ((kiText['pos']['x'] * 10000 + offsetX), (kiText['pos']['y'] * 10000 + offsetY))
             #Kicad逆时针旋转为正，Sprint-Layout顺时针旋转为正
             spText.rotation = (360 - angle) if angle else 0
+            
             #spText.thickness = 2
 
             sprintTextIo.addText(spText)
@@ -203,7 +205,10 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         
         sprintTextIo.addCircle(spCir)
 
-    return str(sprintTextIo)
+    if sprintTextIo.isValid():
+        sprintTextIo.comment = '{}'.format(kicadMod.name)
+        
+    return sprintTextIo
 
     #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
     bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
@@ -226,6 +231,4 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         sprintTextIo.addPolygon(polygon)
 
     return str(sprintTextIo)
-    
-#kicadModToTextIo(r'C:\Program Files\KiCad\share\kicad\modules\Battery.pretty\BatteryHolder_ComfortableElectronic_CH273-2450_1x2450.kicad_mod', 0)
 

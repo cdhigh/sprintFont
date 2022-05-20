@@ -54,18 +54,22 @@ class I18n:
     "All files": ("", "所有文件"),
     "  Standalone mode": ("", "  单独执行模式"),
     "  In: {}": ("", "  输入：{}"),
-    "No file selected": ("", "没有选择文件"),
+    "Input is empty": ("", "输入为空"),
     "Failed to parse file content": ("", "分析文件内容错误"),
+    "Failed to parse content\nMaybe Id error or Internet disconnected?": ("", "分析内容错误：\n可能是ID错误或网络不通？"),
     "Input": ("", "输入"),
     "Font": ("            Font            ", "            字体            "),    
     "Footprint": ("            Footprint            ", "            封装            "),
     "Kicad footprint Library Supported": ("", "当前支持Kicad的封装库格式"),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
-    "Easyeda footprint": ("", "力创EDA封装文件"),
+    "easyEDA footprint": ("", "力创封装文件"),
     "All Files": ("", "所有文件"),
+    " Cut": ("", " 剪切"),
+    " Copy": ("", " 复制"),
+    " Paste": ("", " 粘贴"),
     "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA component ID: C + number (need Internet)",
-        "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (需要网络)"),
+        "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (需要互联网)"),
     }
 
     #这个属性是可以在程序执行过程中修改的
@@ -109,4 +113,6 @@ class I18n:
     #获取翻译字符串，如果增加了翻译语种种类，则 (txt, txt) 元祖个数需要同步增加
     @classmethod
     def tr(cls, txt: str):
-        return cls._translations.get(txt, (txt, txt))[cls._langIndex] or txt
+        ret = cls._translations.get(txt, (txt,))
+
+        return ret[cls._langIndex] if (cls._langIndex < len(ret)) else txt

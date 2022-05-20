@@ -23,19 +23,22 @@ LAYER_U  = 7
 
 class SprintTextIO:
     def __init__(self, isGroup: bool=False, isComponent: bool=False):
-        self.component = {} #如果是一个元件，则此Map保存其他属性
         self.name = '' #用于元件的名字，比如R1
         self.value = '' #用于元件的值，比如10k
+        self.comment = '' #元件注释
+        self.package = '' #封装名字
         self.zones = [] #ZONE，为多边形列表
         self.tracks = []
         self.pads = []
-        self.smdPads = []
         self.texts = []
         self.circles = []
         self.isComponent = isComponent #是否是一个元件，如果是元件的话，还要输出 ID_TEXT/VALUE_TEXT
         self.isGroup = isGroup #是否输出为一个Group
         self.xMin = self.yMin = 10000 * 10000
         self.xMax = self.yMax = -10000 * 10000
+
+    def isValid(self):
+        return any((self.tracks, self.pads, self.zones, self.texts, self.circles))
 
     #转换为字符串TextIO
     def __str__(self):
@@ -45,15 +48,28 @@ class SprintTextIO:
             outStr.append('GROUP;')
         
         if self.isComponent:
-            outStr.append('BEGIN_COMPONENT;')
-            #ID_TEXT,LAYER=2,POS=408300/370050,HEIGHT=13000,THICKNESS=2,TEXT=|R1|;
+            #先单独生成元件的文件头
+            self.name = str(self.name).replace(';', '_').replace(',', '_').replace('|', '_')
+            self.value = str(self.value).replace(';', '_').replace(',', '_').replace('|', '_')
+            self.comment = str(self.comment).replace(';', '_').replace(',', '_').replace('|', '_')
+            self.package = str(self.package).replace(';', '_').replace(',', '_').replace('|', '_')
+
+            compHeadStrList = ['BEGIN_COMPONENT',]
+            if self.comment:
+                compHeadStrList.append('COMMENT=|{}|'.format(self.comment))
+            if self.package:
+                compHeadStrList.append('USE_PICKPLACE=true,PACKAGE=|{}|'.format(self.package))
+            compHead = ','.join(compHeadStrList) + ';'
+
+            outStr.append(compHead)
+            #Example: ID_TEXT,LAYER=2,POS=408300/370050,HEIGHT=13000,THICKNESS=2,TEXT=|R1|;
             x = self.xMin + (self.xMax - self.xMin) / 2
             y1 = self.yMin - 20000
             y2 = y1 - 20000
-            outStr.append('ID_TEXT,VISIBLE=false,LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=2,TEXT=|{}|;'
-                .format(x, y2, self.name))
-            outStr.append('VALUE_TEXT,VISIBLE=false,LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=2,TEXT=|{}|;'
-                .format(x, y1, self.value))
+            outStr.append('ID_TEXT,VISIBLE={},LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=1,TEXT=|{}|;'
+                .format(('true' if self.name else 'false'), x, y2, self.name))
+            outStr.append('VALUE_TEXT,VISIBLE={},LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=1,TEXT=|{}|;'
+                .format(('true' if self.value else 'false'), x, y1, self.value))
 
         #逐个添加
         for objList in (self.tracks, self.pads, self.zones, self.texts, self.circles):

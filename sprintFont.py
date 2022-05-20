@@ -25,6 +25,7 @@ import tkinter.filedialog as tkFileDialog
 from fontTools.ttLib.ttFont import TTFont
 from i18n import I18n
 from comm_utils import *
+from widget_right_click import rightClicker
 from sprint_struct.font_to_polygon import singleWordPolygon
 from sprint_struct.sprint_textio import SprintTextIO
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
@@ -44,6 +45,7 @@ else:
     MODULE_PATH = os.path.dirname(__file__)
 
 CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
+
 
 class Statusbar(Frame):
     """A Simple Statusbar
@@ -310,6 +312,14 @@ class Application(Application_ui):
         if (width > 16):
             self.staBar.panelwidth(0, width)
 
+        #封装文件文本框响应回车事件
+        self.txtFootprintFile.bind('<Return>', self.txtFootprintFile_Return)
+
+        #绑定文本控件的右键菜单
+        self.txtMain.bind('<Button-3>', rightClicker, add='')
+        self.txtFootprintFile.bind('<Button-3>', rightClicker, add='')
+        
+        #初始化多语种支持
         I18n.init()
         I18n.setLanguage(locale.getdefaultlocale()[0])
         self.language = ''
@@ -515,7 +525,7 @@ class Application(Application_ui):
     
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"),"*.kicad_mod"), (_("Easyeda footprint"), "*.json"), (_("All Files"), "*.*")])
+        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"),"*.kicad_mod"), (_("easyEDA footprint"),"*.json"), (_("All Files"), "*.*")])
         if ret:
             self.txtFootprintFile.setText(ret)
 
@@ -552,12 +562,12 @@ class Application(Application_ui):
     #转换封装结果保存为单独一个文本文件
     def lblSaveAsFootprint_Button_1(self, event):
         self.saveConfig()
-        fileName = self.txtFootprintFile.text()
+        fileName = self.txtFootprintFile.text().strip()
         #TODO, for test
-        fileName = self.autoAddKicadPath(fileName)
+        #fileName = self.autoAddKicadPath(fileName)
 
         if not fileName:
-            showinfo(_('info'), _('No file selected'))
+            showinfo(_('info'), _('Input is empty'))
             return
         elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
             showinfo(_('info'), _('File does not exist'))
@@ -567,7 +577,10 @@ class Application(Application_ui):
         if (errStr):
             showinfo(_('info'), errStr)
         elif not retStr:
-            showinfo(_('info'), _('Failed to parse file content'))
+            if LcComponent.isLcedaComponent(fileName):
+                showinfo(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
+            else:
+                showinfo(_('info'), _('Failed to parse file content'))
         else:
             retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
             if retFile:
@@ -603,15 +616,22 @@ class Application(Application_ui):
         #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
         sys.exit(ret)
 
+    #在封装文件文本框中回车，根据情况自动执行响应的命令
+    def txtFootprintFile_Return(self, event=None):
+        if (str(self.cmdOkFootprint['state']) == 'disabled') or (not self.txtFootprintFile.text().strip()):
+            return
+
+        self.cmdOkFootprint_Cmd()
+
     #点击了将封装文件转换为Sprint-Layout的按钮
     def cmdOkFootprint_Cmd(self, event=None):
         self.saveConfig()
-        fileName = self.txtFootprintFile.text()
+        fileName = self.txtFootprintFile.text().strip()
         #TODO, for test
-        fileName = self.autoAddKicadPath(fileName)
+        #fileName = self.autoAddKicadPath(fileName)
 
         if not fileName:
-            showinfo(_('info'), _('No file selected'))
+            showinfo(_('info'), _('Input is empty'))
             return
         elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
             showinfo(_('info'), _('File does not exist'))
@@ -621,7 +641,10 @@ class Application(Application_ui):
         if (errStr):
             showinfo(_('info'), errStr)
         elif not retStr:
-            showinfo(_('info'), _('Failed to parse file content'))
+            if LcComponent.isLcedaComponent(fileName):
+                showinfo(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
+            else:
+                showinfo(_('info'), _('Failed to parse file content'))
         else:
             with open(self.outFileName, 'w') as f:
                 f.write(retStr)
@@ -770,15 +793,20 @@ class Application(Application_ui):
     def generateFootprint(self, fileName: str):
         importText = self.chkImportFootprintText.value()
 
+        msg = ''
         #当前仅支持Kicad格式
-        if (fileName.endswith('.kicad_mod')):
-            return ('', kicadModToTextIo(fileName, importText))
+        if (fileName.lower().endswith('.kicad_mod')):
+            textIo = kicadModToTextIo(fileName, importText)
+        elif (fileName.lower().endswith('.json')):
+            lcInstance = LcComponent.fromFile(fileName)
+            textIo = lcInstance.createSprintTextIo(importText)
         elif LcComponent.isLcedaComponent(fileName):
             lcInstance = LcComponent(fileName)
             textIo = lcInstance.createSprintTextIo(importText)
-            return ('', str(textIo) if textIo else '')
         else:
-            return (_("This file format is not supported"), '')
+            msg = _("This file format is not supported")
+
+        return (msg, str(textIo) if (textIo and textIo.isValid()) else '')
 
 if __name__ == "__main__":
     top = Tk()

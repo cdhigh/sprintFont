@@ -1,7 +1,7 @@
 """
 Library for handling KiCad's footprint files (`*.kicad_mod`).
 https://gitlab.com/kicad/libraries/kicad-library-utils/-/tree/master/common
-使用时注意ARC的新老版本定义不一样，要判断arc_dict["mid"]是否为空
+已经修改过，使用时注意ARC的新老版本定义不一样，要判断arc_dict["mid"]是否为空
 """
 
 import copy
@@ -413,6 +413,9 @@ class KicadMod:
                     # Calculte coordinates of the Center (rx,ry) from the three points
                     # using formula found on http://ambrsoft.com/TrigoCalc/Circle3D.htm
                     A = 2 * (p1x * (p2y - p3y) - p1y * (p2x - p3x) + p2x * p3y - p3x * p2y)
+                    if A == 0: #先不管怎么回事，这个弧形跳过
+                        continue
+
                     rx = (
                         ((p1x_2 + p1y_2) * (p2y - p3y))
                         + ((p2x_2 + p2y_2) * (p3y - p1y))
@@ -425,8 +428,9 @@ class KicadMod:
                     ) / A
 
                     #Modified by cdhigh 2022-05-19, 保存圆心位置
+                    arc_dict["center"] = {}
                     arc_dict["center"]['x'] = rx
-                    arc_dict["center"]['x'] = ry
+                    arc_dict["center"]['y'] = ry
                     arc_dict['radius'] = math.sqrt(((rx - p1x) ** 2) + ((ry - p1y) ** 2))
 
                     # Then get diff between  vectors End-Center, Start-Center
@@ -1420,8 +1424,4 @@ class KicadMod:
         with open(filename, "w", newline="\n") as f:
             f.write(se.output)
             f.write("\n")
-
-#k = KicadMod(r'C:\Program Files\KiCad\share\kicad\modules\Socket.pretty\3M_Textool_240-1288-00-0602J_2x20_P2.54mm.kicad_mod')
-#print(k._getPads())
-#print(k.pads)
 

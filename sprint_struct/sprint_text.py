@@ -23,6 +23,8 @@ class SprintText(SprintComponent):
         self.mirrorV = None
 
     def __str__(self):
+        self.text = str(self.text).replace(';', '_').replace(',', '_').replace('|', '_')
+
         outStr = ['TEXT,LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
             self.layerIdx, self.pos[0], self.pos[1], self.height)]
         if self.clearance:
