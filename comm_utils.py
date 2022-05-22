@@ -36,7 +36,7 @@ def radiansToDegrees(ra):
 def euclideanDistance(x1: float, y1: float, x2: float, y2: float):
     return math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
 
-#已知两点和半径，求圆心
+#已知两点和半径，求圆心  [已废弃，使用svgArcToCenterParam()代替]
 #x1/y1: 起点坐标
 #x2/y2: 终点坐标
 #radius: 半径
@@ -72,4 +72,124 @@ def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radiu
         else:
             return (cx1, cy1) if (bigArc) else (cx2, cy2)
 
+
+#通过SVG语法的圆弧参数计算圆心/开始角度/结束角度
+#https://blog.csdn.net/cuixiping/article/details/7958298
+#输入：svg : [A | a] (rx ry x-axis-rotation large-arc-flag sweep-flag x y)+
+# x1 y1 rx ry φ fA fS x2 y2
+# sample :  svgArcToCenterParam(200, 200, 50, 50, 0, 1, 1, 300, 200)
+def svgArcToCenterParam(x1, y1, rx, ry, phi, fA, fS, x2, y2):
+    pix2 = math.pi * 2
+
+    if (rx < 0):
+        rx = -rx
+    if (ry < 0):
+        ry = -ry
+    
+    if ((rx == 0.0) or (ry == 0.0)): #非法参数
+        raise Exception('rx and ry can not be 0')
+
+    s_phi = math.sin(phi)
+    c_phi = math.cos(phi)
+    hd_x = (x1 - x2) / 2.0 #half diff of x
+    hd_y = (y1 - y2) / 2.0 #half diff of y
+    hs_x = (x1 + x2) / 2.0 #half sum of x
+    hs_y = (y1 + y2) / 2.0 #half sum of y
+
+    #F6.5.1
+    x1_ = c_phi * hd_x + s_phi * hd_y
+    y1_ = c_phi * hd_y - s_phi * hd_x
+
+    #F.6.6 Correction of out-of-range radii
+    #  Step 3: Ensure radii are large enough
+    _lambda = (x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry)
+    if (_lambda > 1):
+        rx = rx * math.sqrt(_lambda)
+        ry = ry * math.sqrt(_lambda)
+
+    rxry = rx * ry
+    rxy1_ = rx * y1_
+    ryx1_ = ry * x1_
+    sum_of_sq = rxy1_ * rxy1_ + ryx1_ * ryx1_  #sum of square
+    if (sum_of_sq == 0):
+        raise Exception('start point can not be same as end point')
+    
+    coe = math.sqrt(abs((rxry * rxry - sum_of_sq) / sum_of_sq))
+    if (fA == fS):
+        coe = -coe
+
+    #F6.5.2
+    cx_ = coe * rxy1_ / ry
+    cy_ = -coe * ryx1_ / rx
+
+    #F6.5.3
+    cx = c_phi * cx_ - s_phi * cy_ + hs_x
+    cy = s_phi * cx_ + c_phi * cy_ + hs_y
+
+    xcr1 = (x1_ - cx_) / rx
+    xcr2 = (x1_ + cx_) / rx
+    ycr1 = (y1_ - cy_) / ry
+    ycr2 = (y1_ + cy_) / ry
+
+    #F6.5.5
+    startAngle = radian(1.0, 0.0, xcr1, ycr1)
+
+    #F6.5.6
+    deltaAngle = radian(xcr1, ycr1, -xcr2, -ycr2)
+    while (deltaAngle > pix2):
+        deltaAngle -= pix2
+
+    while (deltaAngle < 0.0):
+        deltaAngle += pix2
+
+    if not fS:
+        deltaAngle -= pix2
+
+    endAngle = startAngle + deltaAngle
+    while (endAngle > pix2):
+        endAngle -= pix2
+
+    while (endAngle < 0.0):
+        endAngle += pix2
+
+    #角度转换为度数
+    startAngle = round(math.degrees(startAngle), 1)
+    deltaAngle = round(math.degrees(deltaAngle), 1)
+    endAngle = round(math.degrees(endAngle), 1)
+
+    #因为SVG的Y轴向下是增加的，而Sprint-Layout的Y轴向下是减小的，将角度沿X轴反转
+    if startAngle < 0:
+        startAngle = -startAngle
+    else:
+        startAngle = 360 - startAngle
+
+    if endAngle < 0:
+        endAngle = -endAngle
+    else:
+        endAngle = 360 - endAngle
+
+    if fS: #Sprint-Layout逆时针计算角度
+        startAngle, endAngle = endAngle, startAngle
+
+    if fA: #大圆弧标识
+        startAngle, endAngle = max(startAngle, endAngle), min(startAngle, endAngle)
+        if startAngle > (endAngle + 180):
+            startAngle, endAngle = endAngle, startAngle
+        
+    ret = {'cx': cx, 'cy': cy, 'startAngle': startAngle,
+        'deltaAngle': deltaAngle, 'endAngle': endAngle,
+        'clockwise': True if fS else False}
+    return ret
+
+def radian(ux, uy, vx, vy):
+    dot = ux * vx + uy * vy
+    mod = math.sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy ))
+    rad = math.acos(dot / mod)
+    if ((ux * vy - uy * vx) < 0.0):
+        rad = -rad
+    
+    return rad
+
+#3986.7795 3000.0358 A 4.5001 4.5001 0 1 1 3995.7795 3000.0358
+#print(svgArcToCenterParam(3986.7795, 3000.0358, 4.5001, 4.5001, 0, 1, 1, 3995.7795, 3000.0358))
 

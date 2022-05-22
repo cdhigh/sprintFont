@@ -7,7 +7,7 @@ Author: cdhigh <https://github.com/cdhigh>
 
 from .sprint_component import SprintComponent
 
-#里面的长度单位都是0.1微米
+#里面的长度单位都是mm
 class SprintTrack(SprintComponent):
     def __init__(self, layerIdx: int=1, width: float=0):
         super().__init__(layerIdx)
@@ -28,9 +28,9 @@ class SprintTrack(SprintComponent):
         if (len(self.points) < 2):
             return ''
 
-        outStr = ['TRACK,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.width)]
+        outStr = ['TRACK,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.width * 10000)]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance))
+            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.cutout is not None:
             outStr.append('CUTOUT={}'.format('true' if self.cutout else 'false'))
         if self.soldermask is not None:
@@ -42,6 +42,6 @@ class SprintTrack(SprintComponent):
         
         #点列表
         for idx, (x, y) in enumerate(self.points):
-            outStr.append('P{}={:0.0f}/{:0.0f}'.format(idx, x, y))
+            outStr.append('P{}={:0.0f}/{:0.0f}'.format(idx, x * 10000, y * 10000))
 
         return ','.join(outStr) + ';'

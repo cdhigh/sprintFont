@@ -24,14 +24,14 @@ lcLayerMap = {
     '8':  LAYER_S2, #B.Mask
     '10': LAYER_U,  #Edge.Cuts
     '11': LAYER_U,  #Edge.Cuts
-    '12': LAYER_U,  #Cmts.User
+    '12': LAYER_U,  #Cmts.User 文档层 F.Fab
     '13': LAYER_U,  #F.Fab
     '14': LAYER_U,  #B.Fab
     '15': LAYER_U,  #Dwgs.User
     '21': LAYER_I1,
     '22': LAYER_I2,
     '100': LAYER_S1,
-    '101': LAYER_S1,
+    '101': LAYER_U, #元件标识层
 }
 
 #力创焊盘形状和Sprint-Layout的对应关系
@@ -47,10 +47,8 @@ def mil2mm(data: str):
     
 class LcComponent:
     #lcId: 力创的封装ID(以C开头，后接几位数字)
-    def __init__(self, lcId: str):
-        lcId = lcId.upper()
-        self.lcId = lcId if lcId.startswith('C') else ('C' + lcId)
-
+    def __init__(self):
+        self.lcId = ''
         self.fpUuid = self.fpName = self.fpShape = self.fpPackage = self.prefix = ''
         self.importText = False
         self.handlers = {
@@ -60,20 +58,46 @@ class LcComponent:
             "CIRCLE": self.handleCircle,
             #"SOLIDREGION": self.handleSolidRegion,
             #"SVGNODE": self.handleSvgNode,
-            #"VIA": self.handleVia,
+            "VIA": self.handleVia,
             "RECT": self.handleRect,
             "HOLE": self.handleHole,
             "TEXT": self.handleText,
         }
 
+    #从立创ID创建
+    @classmethod
+    def fromLcId(cls, lcId: str):
+        if not lcId:
+            return None
+
+        lcId = lcId.upper()
+        if not lcId.startswith('C'):
+            lcId = 'C' + lcId
+
+        errMsg = None
+        errMsg, fpUuid = cls.getFootprintUuid(lcId)
+
+        if not fpUuid:
+            return errMsg
+
+        #创建实例返回
+        ins = LcComponent()
+        ins.lcId = lcId
+        ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromUuid(fpUuid)
+        #print(ins.fpShape) #TODO
+        return ins
+
     #从JSON文件创建
     @classmethod
     def fromFile(cls, fileName: str):
-        ins = cls('')
+        try:
+            with open(fileName, 'r', encoding='utf-8') as f:
+                data = json.loads(f.read())
+        except Exception as e:
+            #print('open failed: {}, {}'.format(fileName, str(e)))
+            return None
 
-        with open(fileName, 'r', encoding='utf-8') as f:
-            data = json.loads(f.read())
-
+        ins = LcComponent()
         ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromLocalJson(data)
         return ins
     
@@ -96,17 +120,11 @@ class LcComponent:
         
     #根据封装信息从网络创建一个SprintTextIo对象
     def createSprintTextIo(self, importText: bool):
-        self.importText = importText
-        if (self.lcId): #如果有力创ID，则从网络获取，否则为从本机获取
-            self.fpUuid = self.getFootprintUuid(self.lcId)
-            if not self.fpUuid:
-                return None
-                
-            self.fpName, self.packageName, self.prefix, self.fpShape = self.fetchFpInfoFromUuid(self.fpUuid)
-
         if not self.fpShape:
             return None
         
+        self.importText = importText
+
         #逐行扫描，调用对应的解析函数
         textIo = SprintTextIO(isComponent=True)
         for line in self.fpShape:
@@ -123,38 +141,44 @@ class LcComponent:
 
         return textIo
         
-    #根据力创商城ID获取封装的UUID
-    def getFootprintUuid(self, lcId: str):
+    #根据力创商城ID获取封装的UUID，返回 (errMsg, uuid)
+    @classmethod
+    def getFootprintUuid(cls, lcId: str):
         try:
             data = requests.get(LC_PRODUCT_URI.format(lcId)).content.decode()
             lcJsonData = json.loads(data)
-            if not isinstance(lcJsonData, dict) or (not lcJsonData.get('success', '')):
-                return ''
+            if not isinstance(lcJsonData, dict):
+                return (_('The content is not json format'), '')
+
+            success = lcJsonData.get('success', '')
+            if not success:
+                return (lcJsonData.get('message', ''), '')
             
             #获取到封装ID
-            return lcJsonData["result"][-1]["component_uuid"]
+            return ('', lcJsonData["result"][-1]["component_uuid"])
         except Exception as e:
-            print(str(e))
-            return ''
+            #print(str(e))
+            return (str(e), '')
 
     #联网获取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
-    def fetchFpInfoFromUuid(self, fpUuid: str):
+    @classmethod
+    def fetchFpInfoFromUuid(cls, fpUuid: str):
         try:
             response = requests.get(LC_FOOTPRINT_INFO_URI.format(fpUuid))
-
             if response.status_code == requests.codes.ok:
                 data = json.loads(response.content.decode())
             else:
-                #print("create_footprint error. error code {}".format(response.status_code))
+                #print("fetchFpInfoFromUuid error. error code {}".format(response.status_code))
                 return ('', '', '', '')
         except Exception as e:
-            #print(str(e))
+            print(str(e))
             return ('', '', '', '')
 
-        return self.fetchFpInfoFromWebJson(data)
+        return cls.fetchFpInfoFromWebJson(data)
 
     #从网络获取到的json包里面提取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
-    def fetchFpInfoFromWebJson(self, data: dict):
+    @classmethod
+    def fetchFpInfoFromWebJson(cls, data: dict):
         try:
             shape = data["result"]["dataStr"]["shape"]
         except:
@@ -205,26 +229,27 @@ class LcComponent:
         return (name, packageName, prefix, shape)
 
     #分析Track对象
+    #TRACK~0.591~3~~420.6665 298.189 421.2009 298.189~gge138~0
+    #TRACK~0.591~3~S$134~421.2009 298.189 421.2009 308.0315~gge132~0
+    #TRACK~1~3~~4014.9999 3012.0358 3986.7795 3012.0358 3986.7795 3000.0358~gge95~0
     #stroke_width,layer_id,net,points,id,is_locked
     def handleTrack(self, data: list, textIo: SprintTextIO):
         if not data or not textIo:
             return
             
         width = mil2mm(data[0])
-        try:
-            points = [mil2mm(p) for p in data[2].split(" ") if p]
-        except:
-            if len(data) > 5:
-                points = [mil2mm(p) for p in data[3].split(" ") if p]
-            else:
-                print("handleTrack skipping line")
+        points = [mil2mm(p) for p in data[2].split(" ") if p]
+        if (len(points) < 4):
+            points = [mil2mm(p) for p in data[3].split(" ") if p]
+            if (len(points) < 4):
+                #print("handleTrack skipping line")
                 return
-        
+                
         layer = lcLayerMap.get(data[1], LAYER_S1)
         for i in range(int(len(points) / 2) - 1):
-            lcTra = SprintTrack(layer, width * 10000)
-            lcTra.addPoint(points[2 * i] * 10000, points[2 * i + 1] * 10000) #Sprint-Layout以0.1微米为单位
-            lcTra.addPoint(points[2 * i + 2] * 10000, points[2 * i + 3] * 10000)
+            lcTra = SprintTrack(layer, width)
+            lcTra.addPoint(points[2 * i], points[2 * i + 1])
+            lcTra.addPoint(points[2 * i + 2], points[2 * i + 3])
             textIo.addTrack(lcTra)
 
     #分析PAD对象
@@ -258,18 +283,18 @@ class LcComponent:
             return
         
         spPad = SprintPad(layerIdx=layer)
-        spPad.pos = (x * 10000, y * 10000)
-        spPad.rotation = rotation * 100 #Sprint-Layout的角度单位为0.01度
+        spPad.pos = (x, y)
+        spPad.rotation = (360 - rotation) if rotation else 0  #Sprint-Layout和立创的焊盘旋转方向是相反的
         spPad.padType = padType
         spPad.via = via
         
         if (padType == 'SMDPAD'):
-            spPad.sizeX = width * 10000
-            spPad.sizeY = height * 10000
+            spPad.sizeX = width
+            spPad.sizeY = height
         else:
-            spPad.size = min(width, height) * 10000
+            spPad.size = min(width, height)
             if (spPad.size <= 0):
-                spPad.size = max(width, height) * 10000
+                spPad.size = max(width, height)
 
             #处理椭圆焊盘，确定是水平还是垂直
             if (data[0] == 'OVAL'):
@@ -290,15 +315,16 @@ class LcComponent:
             else:
                 spPad.form = shape
 
-        spPad.drill = drill * 10000
+        spPad.drill = drill
+
+        if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
+            spPad.soldermask = False
+
         textIo.addPad(spPad)
     
-    #处理弧形
+    #处理弧形，立创的弧形直接使用SVG的画圆弧命令
     #stroke_width,layer_id,net,path,helper_dots,id,is_locked
     #"ARC~1~3~~M4005.0049,3038.4907 A9.8425,9.8425 0 1 0 4005.0021,3038.4921~~gge43~0",
-    #"ARC~1~3~~M 4004.5 3037 A 8.0623 8.0623 0 1 0 4004.1055 3037.2111~~gge44~0",
-    #"ARC~1~3~~M3987.114,3030 A13.386,13.386 0 1 1 4013.886,3030~~circle_gge8~0",
-    #"ARC~1~3~~M4013.886,3030 A13.386,13.386 0 1 1 3987.114,3030~~circle_gge9~0",
     #A radiusx radiusy x-axis-rotation large-arc-flag sweep-flag(1-顺时针) endx endy
     def handleArc(self, data: list, textIo: SprintTextIO):
         if not data or not textIo:
@@ -309,38 +335,33 @@ class LcComponent:
         if layer == LAYER_U: #不引入外形层的弧形
             return
         
-        if 1:
-            if data[2][0] == "M":
-                startX, startY, radiusX, radiusY, axisRotation, bigArc, dirCC, endX, endY = [
-                    val
-                    for val in data[2].replace("M", "").replace("A", "").replace(",", " ").split(" ")
-                    if val
-                ]
-            elif data[3][0] == "M":
-                startX, startY, radiusX, radiusY, axisRotation, bigArc, dirCC, endX, endY = [
-                    val
-                    for val in data[3].replace("M", "").replace("A", "").replace(",", " ").split(" ")
-                    if val
-                ]
-            else:
-                print("handleArc : failed to parse ARC data, token unknown")
-                
-            startX = mil2mm(startX)
-            startY = mil2mm(startY)
-            radiusX = mil2mm(radiusX)
-            radiusY = mil2mm(radiusY)
-            endX = mil2mm(endX)
-            endY = mil2mm(endY)
-            bigArc = str_to_int(bigArc)
-            dirCC = str_to_int(dirCC)
+        if data[2][0] == "M":
+            arcCmd = [val for val in data[2].replace("M", " ").replace("A", " ").replace(",", " ").split(" ") if val]
+        elif data[3][0] == "M":
+            arcCmd = [val for val in data[3].replace("M", " ").replace("A", " ").replace(",", " ").split(" ") if val]
+        else:
+            arcCmd = []
+
+        if (len(arcCmd) < 9):
+            print("handleArc : token unknown")
+            return
             
-            spCir = SprintCircle(layerIdx=layer)
-            spCir.width = width * 10000
-            spCir.setByStartEndRadius(startX * 10000, startY * 10000, endX * 10000, endY * 10000, radiusX * 10000, bigArc, dirCC)
-            
-            #textIo.addCircle(spCir)
-        #except:
-        #    print("handleArc : failed to parse ARC data")
+        startX = mil2mm(arcCmd[0])
+        startY = mil2mm(arcCmd[1])
+        radiusX = mil2mm(arcCmd[2])
+        radiusY = mil2mm(arcCmd[3])
+        axisAngle = str_to_int(arcCmd[4])
+        bigArc = str_to_int(arcCmd[5])
+        clockwise = str_to_int(arcCmd[6])
+        endX = mil2mm(arcCmd[7])
+        endY = mil2mm(arcCmd[8])
+        
+        spCir = SprintCircle(layerIdx=layer)
+        spCir.width = width
+        spCir.setByStartEndRadius(startX, startY, radiusX, radiusY, 
+            axisAngle, bigArc, clockwise, endX, endY)
+        
+        textIo.addCircle(spCir)
             
     #处理圆形
     #cx,cy,radius,stroke_width,layer_id,id,is_locked
@@ -362,18 +383,20 @@ class LcComponent:
         width = mil2mm(data[3])
         
         spCir = SprintCircle(layerIdx=layer)
-        spCir.center = (centerX * 10000, centerY * 10000)
-        spCir.width = width * 10000
-        spCir.radius = radius * 10000
+        spCir.center = (centerX, centerY)
+        spCir.width = width
+        spCir.radius = radius
         textIo.addCircle(spCir)
     
     #处理矩形
-    #x,y,width,height,stroke_width,id,layer_id,is_locked
+    #x,y,width,height,layer_id,name,xx,stroke_width
+    #不填充：RECT~3998.425~3004.477~5.906~1.181~12~gge158~0~1~none~~~
+    #填充：  RECT~3998.425~3004.477~5.906~1.181~12~gge158~0~0~~~~
     def handleRect(self, data: list, textIo: SprintTextIO):
         if not data or not textIo:
             return
-        
-        layer = lcLayerMap.get(data[6], LAYER_S1)
+        #print(data)
+        layer = lcLayerMap.get(data[4], LAYER_S1)
         if layer == LAYER_U: #不引入外形层的矩形
             return
 
@@ -381,14 +404,23 @@ class LcComponent:
         y1 = mil2mm(data[1])
         width = mil2mm(data[2])
         height = mil2mm(data[3])
-        strokeWidth = mil2mm(data[4])
+        strokeWidth = mil2mm(data[7])
         
-        lcTra = SprintTrack(layer, strokeWidth * 10000)
-        lcTra.addPoint(x1 * 10000, y1 * 10000) #Sprint-Layout以0.1微米为单位
-        lcTra.addPoint((x1 + width) * 10000, y1 * 10000)
-        lcTra.addPoint((x1 + width) * 10000, (y1 + height) * 10000)
-        lcTra.addPoint(x1 * 10000, (y1 + height) * 10000)
-        textIo.addTrack(lcTra)
+        if strokeWidth: #仅是线条，不填充，使用四段线组成
+            lcTra = SprintTrack(layer, strokeWidth)
+            lcTra.addPoint(x1, y1)
+            lcTra.addPoint(x1 + width, y1)
+            lcTra.addPoint(x1 + width, y1 + height)
+            lcTra.addPoint(x1, y1 + height)
+            lcTra.addPoint(x1, y1)
+            textIo.addTrack(lcTra)
+        else: #填充的话，使用多边形组成
+            polygon = SprintPolygon(layer, strokeWidth)
+            polygon.addPoint(x1, y1)
+            polygon.addPoint(x1 + width, y1)
+            polygon.addPoint(x1 + width, y1 + height)
+            polygon.addPoint(x1, y1 + height)
+            textIo.addPolygon(polygon)
     
     #开孔实现为内外径相等的过孔
     #center_x,center_y,radius,id,is_locked
@@ -400,9 +432,9 @@ class LcComponent:
         y = mil2mm(data[1])
         size = mil2mm(data[2]) * 2 #转换为直径
         spPad = SprintPad(layerIdx=LAYER_C1)
-        spPad.pos = (x * 10000, y * 10000)
+        spPad.pos = (x, y)
         spPad.padType = 'PAD'
-        spPad.size = size * 10000
+        spPad.size = size
         spPad.drill = spPad.size
         spPad.form = PAD_FORM_ROUND
         textIo.addPad(spPad)
@@ -416,13 +448,15 @@ class LcComponent:
         layer = lcLayerMap.get(data[6], LAYER_S1)
         spText = SprintText(layerIdx=layer)
         spText.text = data[8]
-        spText.height = mil2mm(data[7]) * 10000
-        if (spText.height <= 0.1 * 10000):
-            spText.height = 1 * 10000
+        spText.height = mil2mm(data[7])
+        if (spText.height <= 0.1):
+            spText.height = 1
         
         x, y = mil2mm(data[1]), mil2mm(data[2])
-        spText.pos = (x * 10000, y * 10000)
-        spText.rotation = str_to_int(data[4]) * 100
+        spText.pos = (x, y)
+        spText.rotation = str_to_int(data[4])
+        if spText.rotation:
+            spText.rotation = 360 - spText.rotation #Sprint-Layout的旋转方向和立创是相反的
 
         #width = mil2mm(data[3])
         #mirror = str_to_int(data[5])
@@ -430,5 +464,26 @@ class LcComponent:
         
         textIo.addText(spText)
         
+    #处理过孔，过孔被处理为双面焊盘
+    #x,y,diameter,hole_radius
+    #VIA~4001.969~2998.032~2.4~~0.6~gge1050~0
+    def handleVia(self, data: list, textIo: SprintTextIO):
+        if not data or not textIo or not self.importText:
+            return
+
+        x = mil2mm(data[0])
+        y = mil2mm(data[1])
+        size = mil2mm(data[2])
+        drill = mil2mm(data[3]) * 2
+        spPad = SprintPad(layerIdx=LAYER_C1)
+        spPad.pos = (x, y)
+        spPad.padType = 'PAD'
+        spPad.form = PAD_FORM_ROUND
+        spPad.size = size
+        spPad.drill = drill
+        spPad.via = True
+        spPad.soldermask = False  #盖绿油
+        textIo.addPad(spPad)
+
 
 

@@ -749,8 +749,16 @@ class Application(Application_ui):
     #如果fontQueue传入值，也通过queue传出给子线程使用
     def generateFontFileNameMap(self, fontQueue: queue.Queue=None):
         fontNameMap = {}
-        fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(('.ttf', '.otf'))]
-        fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(('.ttf', '.otf'))])
+        try:
+            fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(('.ttf', '.otf'))]
+        except:
+            fontFileList = {}
+            
+        try:
+            fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(('.ttf', '.otf'))])
+        except:
+            pass
+            
         for fontFileName in fontFileList:
             try:
                 font = TTFont(fontFileName, lazy=True)
@@ -794,15 +802,19 @@ class Application(Application_ui):
         importText = self.chkImportFootprintText.value()
 
         msg = ''
+        textIo = None
         #当前仅支持Kicad格式
         if (fileName.lower().endswith('.kicad_mod')):
             textIo = kicadModToTextIo(fileName, importText)
         elif (fileName.lower().endswith('.json')):
-            lcInstance = LcComponent.fromFile(fileName)
-            textIo = lcInstance.createSprintTextIo(importText)
+            ins = LcComponent.fromFile(fileName)
+            textIo = ins.createSprintTextIo(importText) if ins else None
         elif LcComponent.isLcedaComponent(fileName):
-            lcInstance = LcComponent(fileName)
-            textIo = lcInstance.createSprintTextIo(importText)
+            ins = LcComponent.fromLcId(fileName)
+            if isinstance(ins, LcComponent):
+                textIo = ins.createSprintTextIo(importText)
+            elif ins:
+                msg = str(ins)
         else:
             msg = _("This file format is not supported")
 

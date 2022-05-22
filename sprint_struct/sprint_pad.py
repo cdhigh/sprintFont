@@ -41,8 +41,9 @@ class SprintPad(SprintComponent):
     
     def updatePadLimit(self):
         if (self.padType == 'PAD'):
-            self.updateLimit(self.pos[0] - self.size * 2, self.pos[1] + self.size * 2)
-            self.updateLimit(self.pos[0] + self.size * 2, self.pos[1] - self.size * 2)
+            size2 = self.size / 2
+            self.updateLimit(self.pos[0] - size2, self.pos[1] + size2)
+            self.updateLimit(self.pos[0] + size2, self.pos[1] - size2)
         else:
             self.updateLimit(self.pos[0] - self.sizeX / 2, self.pos[1] + self.sizeY / 2)
             self.updateLimit(self.pos[0] + self.sizeX / 2, self.pos[1] - self.sizeY / 2)
@@ -53,23 +54,23 @@ class SprintPad(SprintComponent):
     #生成通孔焊盘的字符串
     def _toStrPad(self):
         outStr = ['PAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE={:0.0f},DRILL={:0.0f},FORM={}'.format(
-            self.layerIdx, self.pos[0], self.pos[1], self.size, self.drill, self.form)]
+            self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.size * 10000, self.drill * 10000, self.form)]
         if self.clearance is not None:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance))
+            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
         if (self.form != PAD_FORM_ROUND) and (self.rotation is not None):
-            outStr.append('ROTATION={:0.0f}'.format(self.rotation))
+            outStr.append('ROTATION={:0.0f}'.format(self.rotation * 100)) #焊盘的旋转单位为0.01度
         if self.via is not None:
             outStr.append('VIA={}'.format('true' if self.via else 'false'))
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format('true' if self.thermal else 'false'))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth))
+            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth * 10000))
         if self.thermalTracksIndividual is not None:
             outStr.append('THERMAL_TRACKS_INDIVIDUAL={}'.format('true' if self.thermalTracksIndividual else 'false'))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks))
+            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
         if self.padId is not None:
             outStr.append('PAD_ID={:0.0f}'.format(self.padId))
         for conIdx, con in enumerate(self.connectToOtherPads):
@@ -80,19 +81,19 @@ class SprintPad(SprintComponent):
     #生成贴片焊盘的字符串
     def _toStrSmdPad(self):
         outStr = ['SMDPAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE_X={:0.0f},SIZE_Y={:0.0f}'.format(
-            self.layerIdx, self.pos[0], self.pos[1], self.sizeX, self.sizeY)]
+            self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.sizeX * 10000, self.sizeY * 10000)]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance))
+            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
         if self.rotation is not None:
-            outStr.append('ROTATION={:0.0f}'.format(self.rotation))
+            outStr.append('ROTATION={:0.0f}'.format(self.rotation * 100))
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format('true' if self.thermal else 'false'))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth))
+            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth * 10000))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks))
+            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
         if self.padId is not None:
             outStr.append('PAD_ID={}'.format(self.padId))
         for conIdx, con in enumerate(self.connectToOtherPads):

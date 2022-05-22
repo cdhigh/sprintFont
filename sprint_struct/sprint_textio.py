@@ -2,7 +2,7 @@
 #-*- coding:utf-8 -*-
 """
 表示Sprint-Layout的TextIO对象
-
+保存到里面的参数使用mm为单位，角度单位为度，仅仅在输出文本时再转换为0.1微米和0.001度
 Author: cdhigh <https://github.com/cdhigh>
 """
 
@@ -34,8 +34,8 @@ class SprintTextIO:
         self.circles = []
         self.isComponent = isComponent #是否是一个元件，如果是元件的话，还要输出 ID_TEXT/VALUE_TEXT
         self.isGroup = isGroup #是否输出为一个Group
-        self.xMin = self.yMin = 10000 * 10000
-        self.xMax = self.yMax = -10000 * 10000
+        self.xMin = self.yMin = 100000
+        self.xMax = self.yMax = -100000
 
     def isValid(self):
         return any((self.tracks, self.pads, self.zones, self.texts, self.circles))
@@ -63,13 +63,13 @@ class SprintTextIO:
 
             outStr.append(compHead)
             #Example: ID_TEXT,LAYER=2,POS=408300/370050,HEIGHT=13000,THICKNESS=2,TEXT=|R1|;
-            x = self.xMin + (self.xMax - self.xMin) / 2
-            y1 = self.yMin - 20000
-            y2 = y1 - 20000
+            x = self.xMin + (self.xMax - self.xMin) / 2 - 1
+            y1 = self.yMin - 1
+            y2 = y1 - 1
             outStr.append('ID_TEXT,VISIBLE={},LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=1,TEXT=|{}|;'
-                .format(('true' if self.name else 'false'), x, y2, self.name))
+                .format(('true' if self.name else 'false'), x * 10000, y2 * 10000, self.name))
             outStr.append('VALUE_TEXT,VISIBLE={},LAYER=2,POS={:0.0f}/{:0.0f},HEIGHT=13000,THICKNESS=1,TEXT=|{}|;'
-                .format(('true' if self.value else 'false'), x, y1, self.value))
+                .format(('true' if self.value else 'false'), x * 10000, y1 * 10000, self.value))
 
         #逐个添加
         for objList in (self.tracks, self.pads, self.zones, self.texts, self.circles):

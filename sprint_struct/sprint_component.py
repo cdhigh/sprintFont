@@ -9,8 +9,8 @@ Author: cdhigh <https://github.com/cdhigh>
 class SprintComponent:
     def __init__(self, layerIdx: int=1):
         self.layerIdx = layerIdx
-        self.xMin = self.yMin = 10000 * 10000
-        self.xMax = self.yMax = -10000 * 10000
+        self.xMin = self.yMin = 100000
+        self.xMax = self.yMax = -100000
     
     #更新元件的外框
     def updateLimitX(self, x: float):

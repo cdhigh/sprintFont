@@ -81,7 +81,6 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
         yMin = font['head'].yMin
         yMax = font['head'].yMax
         height = yMax - yMin
-    fontHeight *= 10000  #Sprint-Layout以0.1微米为单位
     fontWidth = (width * fontHeight) / height
     
     #如果是下方板层，则将字形进行水平翻转
