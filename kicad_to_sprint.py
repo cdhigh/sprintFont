@@ -54,7 +54,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
     #except:
     #    return None
     
-    sprintTextIo = SprintTextIO(isComponent=True)
+    textIo = SprintTextIO(isComponent=True)
 
     #线
     for kiLine in kicadMod.lines:
@@ -64,7 +64,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         kiTra = SprintTrack(layerIdx, kiLine['width'] if kiLine['width'] else 0)
         kiTra.addPoint(kiLine['start']['x'], kiLine['start']['y'])
         kiTra.addPoint(kiLine['end']['x'], kiLine['end']['y'])
-        sprintTextIo.addTrack(kiTra)
+        textIo.add(kiTra)
     
     #多边形
     for kiPoly in kicadMod.polys:
@@ -74,7 +74,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         polygon = SprintPolygon(layerIdx, kiPoly['width'])
         for pt in kiPoly['points']:
             polygon.addPoint(pt['x'], pt['y'])
-        sprintTextIo.addPolygon(polygon)
+        textIo.add(polygon)
     
     #矩形
     for kiRect in kicadMod.rects:
@@ -90,7 +90,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         polygon.addPoint(x2, y1)
         polygon.addPoint(x2, y2)
         polygon.addPoint(x1, y2)
-        sprintTextIo.addPolygon(polygon)
+        textIo.add(polygon)
     
     #焊盘
     for kiPad in kicadMod.pads:
@@ -157,7 +157,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
             spPad.soldermask = False
 
-        sprintTextIo.addPad(spPad)
+        textIo.add(spPad)
     
     #文本
     if importText:
@@ -185,7 +185,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             
             #spText.thickness = 2
 
-            sprintTextIo.addText(spText)
+            textIo.add(spText)
     
     #圆形
     for kiCir in kicadMod.circles:
@@ -196,7 +196,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         spCir.center = (kiCir['center']['x'], kiCir['center']['y'])
         spCir.width = kiCir['width']
         spCir.setRadiusByArcPoint(kiCir['end']['x'], kiCir['end']['y']) #通过end计算半径
-        sprintTextIo.addCircle(spCir)
+        textIo.add(spCir)
     
     #弧形
     for kiArc in kicadMod.arcs:
@@ -212,12 +212,12 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             spCir.setArcByCenterStartAngle(kiArc['start']['x'], kiArc['start']['y'], kiArc['end']['x'], 
                 kiArc['end']['y'], kiArc['angle'])
         
-        sprintTextIo.addCircle(spCir)
+        textIo.add(spCir)
 
-    if sprintTextIo.isValid():
-        sprintTextIo.comment = '{}'.format(kicadMod.name)
+    if textIo.isValid():
+        textIo.comment = '{}'.format(kicadMod.name)
         
-    return sprintTextIo
+    return textIo
 
     #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
     bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
@@ -239,7 +239,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         for (x, y) in midPoints[::-1]:
             polygon.addPoint(x, y)
 
-        sprintTextIo.addPolygon(polygon)
+        textIo.add(polygon)
 
-    return str(sprintTextIo)
+    return str(textIo)
 

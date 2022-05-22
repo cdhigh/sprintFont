@@ -9,7 +9,6 @@ import os, sys
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
-from .sprint_polygon import SprintPolygon
 from .sprint_textio import *
 from comm_utils import *
 
@@ -117,7 +116,6 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
             pt1 = (prevX, prevY)
             pt2 = (ctrlX1, ctrlY1)
             pt3 = (currX, currY)
-            arcLen = bezierTools.approximateQuadraticArcLength(pt1, pt2, pt3)
             
             #每个线段分成若干份
             for i in SMOOTH_MAP.get(smooth, [0.5,]):

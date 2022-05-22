@@ -60,9 +60,11 @@ class I18n:
     "Input": ("", "输入"),
     "Font": ("            Font            ", "            字体            "),    
     "Footprint": ("            Footprint            ", "            封装            "),
+    "SVG": ("            SVG            ", "            SVG            "),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
     "easyEDA footprint": ("", "力创封装文件"),
+    "SVG files": ("", "SVG矢量图像文件"),
     "All Files": ("", "所有文件"),
     " Cut": ("", " 剪切"),
     " Copy": ("", " 复制"),
@@ -70,7 +72,18 @@ class I18n:
     "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA component ID: C + number (C can be omitted)",
         "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (C可省略)"),
     "The content is not json format": ("", "内容不是json格式"),
-
+    "The content is not a valid json format": ("", "内容不是正确的json格式"),
+    "Error from easyEDA:\n{}": ("", "来自立创的错误信息：\n{}"),
+    "Convert svg image failed": ("", "转换SVG图像失败"),
+    "Enter the desired image height (mm)": ("", "输入要生成的图像高度 (mm)"),
+    "The image height is invalid": ("", "图像高度数值非法"),
+    "Polygon": ("", "多边形"),
+    "Track": ("", "线条"),
+    "svg_features_tips": ("Note:\nOnly for simple images, complex images may fail to convert", "注意：\n仅适用于简单的图像，复杂的图像可能会转换失败"),
+    "File": ("", "文件"),
+    "Mode": ("", "模式"),
+    "svgHeight": ("Height (mm)", "高度 (mm)"),
+    "The file format is not supported": ("", "此文件格式暂不支持"),
     }
 
     #这个属性是可以在程序执行过程中修改的

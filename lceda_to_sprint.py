@@ -4,13 +4,21 @@
 将力创的封装库转换为Sprint-Layout的Text-IO格式
 C80909 还有问题
 """
-
-import json, requests
+import json
+from urllib import request
 from comm_utils import *
 from sprint_struct.sprint_textio import *
 
 LC_PRODUCT_URI = "https://easyeda.com/api/products/{}/svgs"
 LC_FOOTPRINT_INFO_URI = "https://easyeda.com/api/components/{}"
+
+DEFAULT_WEB_TIMEOUT = 5
+webHeaders = {
+   'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36',
+   'Referer': 'https://lceda.cn/editor',
+   'Accept': 'application/json, text/javascript, */*; q=0.01',
+   #'Accept-Encoding': 'gzip, deflate', #不传这个请求头，因数据量不大，不需要压缩
+}
 
 #力创板层和Sprint-Layout板层的对应关系
 lcLayerMap = {
@@ -90,11 +98,15 @@ class LcComponent:
     #从JSON文件创建
     @classmethod
     def fromFile(cls, fileName: str):
+        data = None
         try:
             with open(fileName, 'r', encoding='utf-8') as f:
                 data = json.loads(f.read())
         except Exception as e:
             #print('open failed: {}, {}'.format(fileName, str(e)))
+            return None
+
+        if not isinstance(data, dict):
             return None
 
         ins = LcComponent()
@@ -140,62 +152,69 @@ class LcComponent:
             textIo.package = self.packageName
 
         return textIo
+
+    #联网获取一个json信息，返回 (errMsg, jsonObj)
+    @classmethod
+    def fetchJsonFromLc(cls, url: str):
+        lcJsonData = ''
+        try:
+            reqInst = request.Request(url, headers=webHeaders)
+            data = request.urlopen(reqInst, timeout=DEFAULT_WEB_TIMEOUT).read().decode('utf-8')
+            lcJsonData = json.loads(data)
+        except Exception as e:
+            print(str(e))
+            return (str(e), '')
+
+        if not isinstance(lcJsonData, dict):
+            return (_('The content is not json format'), '')
+        else:
+            return ('', lcJsonData)
         
     #根据力创商城ID获取封装的UUID，返回 (errMsg, uuid)
     @classmethod
     def getFootprintUuid(cls, lcId: str):
-        try:
-            data = requests.get(LC_PRODUCT_URI.format(lcId)).content.decode()
-            lcJsonData = json.loads(data)
-            if not isinstance(lcJsonData, dict):
-                return (_('The content is not json format'), '')
+        errMsg, lcJsonData = cls.fetchJsonFromLc(LC_PRODUCT_URI.format(lcId))
+        if errMsg:
+            return (errMsg, '')
 
-            success = lcJsonData.get('success', '')
-            if not success:
-                return (lcJsonData.get('message', ''), '')
-            
-            #获取到封装ID
-            return ('', lcJsonData["result"][-1]["component_uuid"])
-        except Exception as e:
-            #print(str(e))
-            return (str(e), '')
-
+        success = lcJsonData.get('success', '')
+        result = lcJsonData.get('result')
+        if not all((success, result, isinstance(result, list))):
+            errMsg = lcJsonData.get('message', '')
+            return (_('Error from easyEDA:\n{}').format(errMsg) if errMsg else _('The content is not a valid json format'), '')
+        
+        #获取到封装ID
+        return ('', result[-1].get('component_uuid', ''))
+    
     #联网获取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
     @classmethod
     def fetchFpInfoFromUuid(cls, fpUuid: str):
-        try:
-            response = requests.get(LC_FOOTPRINT_INFO_URI.format(fpUuid))
-            if response.status_code == requests.codes.ok:
-                data = json.loads(response.content.decode())
-            else:
-                #print("fetchFpInfoFromUuid error. error code {}".format(response.status_code))
-                return ('', '', '', '')
-        except Exception as e:
-            print(str(e))
+        errMsg, lcJsonData = cls.fetchJsonFromLc(LC_FOOTPRINT_INFO_URI.format(fpUuid))
+        if errMsg:
+            print(errMsg)
             return ('', '', '', '')
-
-        return cls.fetchFpInfoFromWebJson(data)
+        else:
+            return cls.fetchFpInfoFromWebJson(lcJsonData)
 
     #从网络获取到的json包里面提取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
     @classmethod
     def fetchFpInfoFromWebJson(cls, data: dict):
-        try:
-            shape = data["result"]["dataStr"]["shape"]
-        except:
-            shape = ''
+        result = data.get('result', '')
+        if not result or not isinstance(result, dict):
+            return ('', '', '', '')
 
-        try:
-            name = data["result"]["title"]
-        except:
-            name = ''
+        name = result.get('title', '')
+        dataStr = result.get('dataStr', {})
 
+        shape = dataStr.get('shape', '') if isinstance(dataStr, dict) else ''
+        
         try:
-            packageName = data['result']["dataStr"]['head']['c_para']['package']
+            packageName = dataStr['head']['c_para']['package']
         except:
             packageName = ''
 
         try:
-            prefix = data['result']["dataStr"]['head']['c_para']['pre']
+            prefix = dataStr['head']['c_para']['pre']
         except:
             prefix = ''
 
@@ -206,27 +225,32 @@ class LcComponent:
 
     #从本地的json包里面提取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
     def fetchFpInfoFromLocalJson(self, data: dict):
-        try:
-            shape = data["shape"]
-        except:
-            shape = ''
+        shape = data.get('shape', '')
+        head = data.get('head', '')
+        title = 'Untitled'
 
-        name = ''
-
+        #如果错误，尝试另一种文件格式，是通过以下URL格式返回的，同一个JSON里面包含原理图符号和封装符号
+        #https://easyeda.com/api/products/C80909/components?version=6.4.19.5
+        if not shape and not head:
+            try:
+                dataStr = data['result']['packageDetail']['dataStr']
+                shape = dataStr['shape']
+                head = dataStr['head']
+                title = data['result']['packageDetail']['title']
+            except:
+                return ('', '', '', '')
+        
         try:
-            packageName = data['head']['c_para']['package']
+            packageName = head['c_para']['package']
         except:
             packageName = ''
 
         try:
-            prefix = data['head']['c_para']['pre']
+            prefix = head['c_para']['pre']
         except:
             prefix = ''
 
-        if not name:
-            name = "NoName"
-            
-        return (name, packageName, prefix, shape)
+        return (title, packageName, prefix, shape)
 
     #分析Track对象
     #TRACK~0.591~3~~420.6665 298.189 421.2009 298.189~gge138~0
@@ -250,7 +274,7 @@ class LcComponent:
             lcTra = SprintTrack(layer, width)
             lcTra.addPoint(points[2 * i], points[2 * i + 1])
             lcTra.addPoint(points[2 * i + 2], points[2 * i + 3])
-            textIo.addTrack(lcTra)
+            textIo.add(lcTra)
 
     #分析PAD对象
     #shape,center_x,center_y,width,height,layer_id,net,number,hole_radius,points,rotation,id,hole_length,hole_point,is_plated,is_locked
@@ -320,7 +344,7 @@ class LcComponent:
         if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
             spPad.soldermask = False
 
-        textIo.addPad(spPad)
+        textIo.add(spPad)
     
     #处理弧形，立创的弧形直接使用SVG的画圆弧命令
     #stroke_width,layer_id,net,path,helper_dots,id,is_locked
@@ -361,7 +385,7 @@ class LcComponent:
         spCir.setByStartEndRadius(startX, startY, radiusX, radiusY, 
             axisAngle, bigArc, clockwise, endX, endY)
         
-        textIo.addCircle(spCir)
+        textIo.add(spCir)
             
     #处理圆形
     #cx,cy,radius,stroke_width,layer_id,id,is_locked
@@ -386,7 +410,7 @@ class LcComponent:
         spCir.center = (centerX, centerY)
         spCir.width = width
         spCir.radius = radius
-        textIo.addCircle(spCir)
+        textIo.add(spCir)
     
     #处理矩形
     #x,y,width,height,layer_id,name,xx,stroke_width
@@ -413,14 +437,14 @@ class LcComponent:
             lcTra.addPoint(x1 + width, y1 + height)
             lcTra.addPoint(x1, y1 + height)
             lcTra.addPoint(x1, y1)
-            textIo.addTrack(lcTra)
+            textIo.add(lcTra)
         else: #填充的话，使用多边形组成
             polygon = SprintPolygon(layer, strokeWidth)
             polygon.addPoint(x1, y1)
             polygon.addPoint(x1 + width, y1)
             polygon.addPoint(x1 + width, y1 + height)
             polygon.addPoint(x1, y1 + height)
-            textIo.addPolygon(polygon)
+            textIo.add(polygon)
     
     #开孔实现为内外径相等的过孔
     #center_x,center_y,radius,id,is_locked
@@ -437,7 +461,7 @@ class LcComponent:
         spPad.size = size
         spPad.drill = spPad.size
         spPad.form = PAD_FORM_ROUND
-        textIo.addPad(spPad)
+        textIo.add(spPad)
     
     #处理文本信息
     #TEXT~L~4018.5~3025.62~0.8~0~0~3~~5.9055~+~M 4020.92 3019.4999 L 4020.92 
@@ -462,7 +486,7 @@ class LcComponent:
         #mirror = str_to_int(data[5])
         #net = data[7]
         
-        textIo.addText(spText)
+        textIo.add(spText)
         
     #处理过孔，过孔被处理为双面焊盘
     #x,y,diameter,hole_radius
@@ -483,7 +507,7 @@ class LcComponent:
         spPad.drill = drill
         spPad.via = True
         spPad.soldermask = False  #盖绿油
-        textIo.addPad(spPad)
+        textIo.add(spPad)
 
 
 

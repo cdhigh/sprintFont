@@ -27,18 +27,14 @@ class SprintTextIO:
         self.value = '' #用于元件的值，比如10k
         self.comment = '' #元件注释
         self.package = '' #封装名字
-        self.zones = [] #ZONE，为多边形列表
-        self.tracks = []
-        self.pads = []
-        self.texts = []
-        self.circles = []
+        self.elements = [] #各种绘图元素，都是SprintComponent的子类
         self.isComponent = isComponent #是否是一个元件，如果是元件的话，还要输出 ID_TEXT/VALUE_TEXT
         self.isGroup = isGroup #是否输出为一个Group
         self.xMin = self.yMin = 100000
         self.xMax = self.yMax = -100000
 
     def isValid(self):
-        return any((self.tracks, self.pads, self.zones, self.texts, self.circles))
+        return (len(self.elements) > 0)
 
     #转换为字符串TextIO
     def __str__(self):
@@ -72,8 +68,7 @@ class SprintTextIO:
                 .format(('true' if self.value else 'false'), x * 10000, y1 * 10000, self.value))
 
         #逐个添加
-        for objList in (self.tracks, self.pads, self.zones, self.texts, self.circles):
-            outStr.extend([str(obj) for obj in objList])
+        outStr.extend([str(obj) for obj in self.elements])
         
         if self.isComponent:
             outStr.append('END_COMPONENT;')
@@ -94,37 +89,16 @@ class SprintTextIO:
             self.yMin = component.yMin
         if component.yMax > self.yMax:
             self.yMax = component.yMax
-    
-    #添加一个连线
-    def addTrack(self, track):
-        self.updateLimit(track)
-        self.tracks.append(track)
 
-    #添加一个多边形
-    def addPolygon(self, poly):
-        if poly and poly.isValid():
-            self.updateLimit(poly)
-            self.zones.append(poly)
+    #统一的添加绘图元素接口
+    def add(self, elem: SprintComponent):
+        if (elem and elem.isValid()):
+            elem.updateSelfBbox()
+            self.updateLimit(elem)
+            self.elements.append(elem)
 
-    #添加一个多边形列表
-    def addAllPolygon(self, polyList):
-        for poly in polyList:
-            self.addPolygon(poly)
-
-    #添加一个焊盘 SprintPad
-    def addPad(self, pad):
-        pad.updatePadLimit()
-        self.updateLimit(pad)
-        self.pads.append(pad)
-
-    #添加一个文本 SprintText
-    def addText(self, text):
-        self.updateLimit(text)
-        self.texts.append(text)
-
-    #添加一个圆形 SprintCircle
-    def addCircle(self, cir):
-        cir.updateCircleLimit()
-        self.updateLimit(cir)
-        self.circles.append(cir)
-
+    #添加列表中所有元素
+    def addAll(self, elemList: list):
+        for elem in elemList:
+            self.add(elem)
+            

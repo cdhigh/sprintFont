@@ -12,6 +12,15 @@ class SprintComponent:
         self.xMin = self.yMin = 100000
         self.xMax = self.yMax = -100000
     
+    #子类实现是否有效的函数
+    def isValid(self):
+        return False
+
+    #适用于一些外部直接设置内部变量的绘图元素比如PAD等
+    #在添加进绘图元素列表前被调用，更新自己内部的外框
+    def updateSelfBbox(self):
+        return
+
     #更新元件的外框
     def updateLimitX(self, x: float):
         if x < self.xMin:

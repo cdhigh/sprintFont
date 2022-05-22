@@ -26,10 +26,7 @@ from fontTools.ttLib.ttFont import TTFont
 from i18n import I18n
 from comm_utils import *
 from widget_right_click import rightClicker
-from sprint_struct.font_to_polygon import singleWordPolygon
 from sprint_struct.sprint_textio import SprintTextIO
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
-from kicad_to_sprint import kicadModToTextIo
 from lceda_to_sprint import LcComponent
 
 __VERSION__ = "1.1"
@@ -96,9 +93,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (626 / 2)
-        y = (hs / 2) - (366 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (626,366,x,y))
+        x = (ws / 2) - (625 / 2)
+        y = (hs / 2) - (361 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,361,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -139,7 +136,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.947, relheight=0.855)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.867)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -300,6 +297,99 @@ class Application_ui(Frame):
         self.lblSaveAsFootprint.bind('<Button-1>', self.lblSaveAsFootprint_Button_1)
         self.tabStrip.add(self.tabStrip__Tab2, text='Footprint')
 
+        self.tabStrip__Tab3 = Frame(self.tabStrip)
+        self.cmbSvgModeList = ['',]
+        self.cmbSvgModeVar = StringVar(value='')
+        self.cmbSvgMode = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgModeVar, values=self.cmbSvgModeList, font=('微软雅黑',10))
+        self.cmbSvgMode.setText = lambda x: self.cmbSvgModeVar.set(x)
+        self.cmbSvgMode.text = lambda : self.cmbSvgModeVar.get()
+        self.cmbSvgMode.place(relx=0.175, rely=0.46, relwidth=0.352)
+        self.cmbSvgHeightList = ['',]
+        self.cmbSvgHeightVar = StringVar(value='')
+        self.cmbSvgHeight = Combobox(self.tabStrip__Tab3, textvariable=self.cmbSvgHeightVar, values=self.cmbSvgHeightList, font=('微软雅黑',10))
+        self.cmbSvgHeight.setText = lambda x: self.cmbSvgHeightVar.set(x)
+        self.cmbSvgHeight.text = lambda : self.cmbSvgHeightVar.get()
+        self.cmbSvgHeight.place(relx=0.728, rely=0.46, relwidth=0.245)
+        self.cmbSvgSmoothList = ['',]
+        self.cmbSvgSmoothVar = StringVar(value='')
+        self.cmbSvgSmooth = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgSmoothVar, values=self.cmbSvgSmoothList, font=('微软雅黑',10))
+        self.cmbSvgSmooth.setText = lambda x: self.cmbSvgSmoothVar.set(x)
+        self.cmbSvgSmooth.text = lambda : self.cmbSvgSmoothVar.get()
+        self.cmbSvgSmooth.place(relx=0.728, rely=0.588, relwidth=0.245)
+        self.cmbSvgLayerList = ['',]
+        self.cmbSvgLayerVar = StringVar(value='')
+        self.cmbSvgLayer = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgLayerVar, values=self.cmbSvgLayerList, font=('微软雅黑',10))
+        self.cmbSvgLayer.setText = lambda x: self.cmbSvgLayerVar.set(x)
+        self.cmbSvgLayer.text = lambda : self.cmbSvgLayerVar.get()
+        self.cmbSvgLayer.place(relx=0.175, rely=0.588, relwidth=0.352)
+        self.cmdCancelSvgVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancelSvg.TButton', font=('微软雅黑',10))
+        self.cmdCancelSvg = Button(self.tabStrip__Tab3, text='Cancel', textvariable=self.cmdCancelSvgVar, command=self.cmdCancelSvg_Cmd, style='TcmdCancelSvg.TButton')
+        self.cmdCancelSvg.setText = lambda x: self.cmdCancelSvgVar.set(x)
+        self.cmdCancelSvg.text = lambda : self.cmdCancelSvgVar.get()
+        self.cmdCancelSvg.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdOkSvgVar = StringVar(value='Ok')
+        self.style.configure('TcmdOkSvg.TButton', font=('微软雅黑',10))
+        self.cmdOkSvg = Button(self.tabStrip__Tab3, text='Ok', textvariable=self.cmdOkSvgVar, command=self.cmdOkSvg_Cmd, style='TcmdOkSvg.TButton')
+        self.cmdOkSvg.setText = lambda x: self.cmdOkSvgVar.set(x)
+        self.cmdOkSvg.text = lambda : self.cmdOkSvgVar.get()
+        self.cmdOkSvg.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.txtSvgFileVar = StringVar(value='')
+        self.txtSvgFile = Entry(self.tabStrip__Tab3, textvariable=self.txtSvgFileVar, font=('微软雅黑',10))
+        self.txtSvgFile.setText = lambda x: self.txtSvgFileVar.set(x)
+        self.txtSvgFile.text = lambda : self.txtSvgFileVar.get()
+        self.txtSvgFile.place(relx=0.175, rely=0.319, relwidth=0.73, relheight=0.089)
+        self.cmdSvgFileVar = StringVar(value='...')
+        self.style.configure('TcmdSvgFile.TButton', font=('Arial',9))
+        self.cmdSvgFile = Button(self.tabStrip__Tab3, text='...', textvariable=self.cmdSvgFileVar, command=self.cmdSvgFile_Cmd, style='TcmdSvgFile.TButton')
+        self.cmdSvgFile.setText = lambda x: self.cmdSvgFileVar.set(x)
+        self.cmdSvgFile.text = lambda : self.cmdSvgFileVar.get()
+        self.cmdSvgFile.place(relx=0.917, rely=0.319, relwidth=0.056, relheight=0.08)
+        self.lblSvgHeightVar = StringVar(value='Height (mm)')
+        self.style.configure('TlblSvgHeight.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSvgHeight = Label(self.tabStrip__Tab3, text='Height (mm)', textvariable=self.lblSvgHeightVar, style='TlblSvgHeight.TLabel')
+        self.lblSvgHeight.setText = lambda x: self.lblSvgHeightVar.set(x)
+        self.lblSvgHeight.text = lambda : self.lblSvgHeightVar.get()
+        self.lblSvgHeight.place(relx=0.526, rely=0.46, relwidth=0.191, relheight=0.08)
+        self.lblSvgModeVar = StringVar(value='Mode')
+        self.style.configure('TlblSvgMode.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSvgMode = Label(self.tabStrip__Tab3, text='Mode', textvariable=self.lblSvgModeVar, style='TlblSvgMode.TLabel')
+        self.lblSvgMode.setText = lambda x: self.lblSvgModeVar.set(x)
+        self.lblSvgMode.text = lambda : self.lblSvgModeVar.get()
+        self.lblSvgMode.place(relx=0.04, rely=0.46, relwidth=0.11, relheight=0.08)
+        self.lblSvgSmoothVar = StringVar(value='Smooth')
+        self.style.configure('TlblSvgSmooth.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSvgSmooth = Label(self.tabStrip__Tab3, text='Smooth', textvariable=self.lblSvgSmoothVar, style='TlblSvgSmooth.TLabel')
+        self.lblSvgSmooth.setText = lambda x: self.lblSvgSmoothVar.set(x)
+        self.lblSvgSmooth.text = lambda : self.lblSvgSmoothVar.get()
+        self.lblSvgSmooth.place(relx=0.526, rely=0.588, relwidth=0.191, relheight=0.08)
+        self.lblSvgLayerVar = StringVar(value='Layer')
+        self.style.configure('TlblSvgLayer.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSvgLayer = Label(self.tabStrip__Tab3, text='Layer', textvariable=self.lblSvgLayerVar, style='TlblSvgLayer.TLabel')
+        self.lblSvgLayer.setText = lambda x: self.lblSvgLayerVar.set(x)
+        self.lblSvgLayer.text = lambda : self.lblSvgLayerVar.get()
+        self.lblSvgLayer.place(relx=0.04, rely=0.588, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsSvgVar = StringVar(value='Save as')
+        self.style.configure('TlblSaveAsSvg.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.lblSaveAsSvg = Label(self.tabStrip__Tab3, text='Save as', textvariable=self.lblSaveAsSvgVar, style='TlblSaveAsSvg.TLabel')
+        self.lblSaveAsSvg.setText = lambda x: self.lblSaveAsSvgVar.set(x)
+        self.lblSaveAsSvg.text = lambda : self.lblSaveAsSvgVar.get()
+        self.lblSaveAsSvg.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsSvg.bind('<Button-1>', self.lblSaveAsSvg_Button_1)
+        self.lblSvgTipsVar = StringVar(value='svg_features_tips')
+        self.style.configure('TlblSvgTips.TLabel', anchor='w', font=('微软雅黑',10))
+        self.lblSvgTips = Label(self.tabStrip__Tab3, text='svg_features_tips', textvariable=self.lblSvgTipsVar, style='TlblSvgTips.TLabel')
+        self.lblSvgTips.setText = lambda x: self.lblSvgTipsVar.set(x)
+        self.lblSvgTips.text = lambda : self.lblSvgTipsVar.get()
+        self.lblSvgTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.208)
+        self.lblSvgFileVar = StringVar(value='File')
+        self.style.configure('TlblSvgFile.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSvgFile = Label(self.tabStrip__Tab3, text='File', textvariable=self.lblSvgFileVar, style='TlblSvgFile.TLabel')
+        self.lblSvgFile.setText = lambda x: self.lblSvgFileVar.set(x)
+        self.lblSvgFile.text = lambda : self.lblSvgFileVar.get()
+        self.lblSvgFile.place(relx=0.027, rely=0.319, relwidth=0.11, relheight=0.08)
+        self.tabStrip.add(self.tabStrip__Tab3, text='SVG')
+
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
 
@@ -307,17 +397,19 @@ class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
-        self.master.title('sprintFont v{} by cdhigh [github.com/cdhigh]'.format(__VERSION__))
+        self.master.title('sprintFont v{} [github.com/cdhigh]'.format(__VERSION__))
         width = str_to_int(self.master.geometry().split('x')[0])
         if (width > 16):
             self.staBar.panelwidth(0, width)
 
         #封装文件文本框响应回车事件
         self.txtFootprintFile.bind('<Return>', self.txtFootprintFile_Return)
+        self.txtSvgFile.bind('<Return>', self.txtSvgFile_Return)
 
         #绑定文本控件的右键菜单
         self.txtMain.bind('<Button-3>', rightClicker, add='')
         self.txtFootprintFile.bind('<Button-3>', rightClicker, add='')
+        self.txtSvgFile.bind('<Button-3>', rightClicker, add='')
         
         #初始化多语种支持
         I18n.init()
@@ -360,6 +452,7 @@ class Application(Application_ui):
         else: #单独执行
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
+            self.cmdOkSvg.configure(state='disabled')
             self.staBar.text(_("  Standalone mode"))
 
         self.txtMain.focus_set()
@@ -372,6 +465,8 @@ class Application(Application_ui):
                 self.txtMain.focus_set()
             elif (tabNo == 1):
                 self.txtFootprintFile.focus_set()
+            elif (tabNo == 2):
+                self.txtSvgFile.focus_set()
         except:
             pass
 
@@ -392,10 +487,13 @@ class Application(Application_ui):
     def translateWidgets(self):
         self.cmdOk.setText(_("Ok"))
         self.cmdOkFootprint.setText(_("Ok"))
+        self.cmdOkSvg.setText(_("Ok"))
         self.cmdCancel.setText(_("Cancel"))
         self.cmdCancelFootprint.setText(_("Cancel"))
+        self.cmdCancelSvg.setText(_("Cancel"))
         self.lblSaveAs.setText(_("Save as"))
         self.lblSaveAsFootprint.setText(_("Save as"))
+        self.lblSaveAsSvg.setText(_("Save as"))
         self.lblFont.setText(_("Font"))
         self.lblTxt.setText(_("Text"))
         self.lblLayer.setText(_("Layer"))
@@ -406,10 +504,17 @@ class Application(Application_ui):
         self.lblFootprintFile.setText(_("Input"))
         self.tabStrip.tab(0, text=_("Font"))
         self.tabStrip.tab(1, text=_("Footprint"))
+        self.tabStrip.tab(2, text=_("SVG"))
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
+        self.lblSvgTips.setText(_("svg_features_tips"))
+        self.lblSvgFile.setText(_("File"))
+        self.lblSvgMode.setText(_("Mode"))
+        self.lblSvgHeight.setText(_("svgHeight"))
+        self.lblSvgLayer.setText(_("Layer"))
+        self.lblSvgSmooth.setText(_("Smooth"))
         
-    #填充界面控件
+    #初始化填充界面控件
     def populateWidgets(self):
         #获取系统已安装的字体列表
         #启动一个新的线程在后台更新字体列表，避免启动过慢
@@ -430,6 +535,8 @@ class Application(Application_ui):
             _("S2 (Back silkscreen)"), _("I1 (Inner copper1)"), _("I2 (Inner copper2)"), _("U (Edge.cuts)"), ]
         self.cmbLayer.configure(values=self.cmbLayerList)
         self.cmbLayer.current(1) #默认为顶层丝印层
+        self.cmbSvgLayer.configure(values=self.cmbLayerList)
+        self.cmbSvgLayer.current(1)
 
         #字高
         self.cmbFontHeightList = [1.0, 2.0, 3.0, 4.0]
@@ -450,6 +557,19 @@ class Application(Application_ui):
         self.cmbSmoothList = [_("Super fine (super slow)"), _("Fine (slow)"), _("Normal"), _("Rough"), _("Super Rough"), ]
         self.cmbSmooth.configure(values=self.cmbSmoothList)
         self.cmbSmooth.current(2)
+        self.cmbSvgSmooth.configure(values=self.cmbSmoothList)
+        self.cmbSvgSmooth.current(2)
+
+        #SVG生成方法
+        self.cmbSvgModeList = [_("Track"), _("Polygon")]
+        self.cmbSvgMode.configure(values=self.cmbSvgModeList)
+        self.cmbSvgMode.current(0)
+
+        #SVG图像高度
+        self.cmbSvgHeightList = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        self.cmbSvgHeight.configure(values=self.cmbSvgHeightList)
+        self.cmbSvgHeight.current(9) #SVG图像高度默认10mm
+
 
     #更新字体列表组合框，可能直接调用，也可能会使用after延时调用
     def populateFontCombox(self, fontMap: dict=None):
@@ -481,10 +601,7 @@ class Application(Application_ui):
 
             lastHeight = str_to_float(cfg.get('height', ''))
             if lastHeight:
-                if (lastHeight in self.cmbFontHeightList):
-                    self.cmbFontHeight.current(self.cmbFontHeightList.index(lastHeight))
-                else:
-                    self.cmbFontHeight.setText(str(lastHeight))
+                self.cmbFontHeight.setText(str(lastHeight))
 
             lastLayer = str_to_int(cfg.get('layer', '1'), 100)
             if 0 <= lastLayer < len(self.cmbLayerList):
@@ -502,6 +619,20 @@ class Application(Application_ui):
             if (str_to_int(cfg.get('importFootprintText', '0'))):
                 self.chkImportFootprintText.setValue(1)
 
+            #SVG页面
+            svgMode = str_to_int(cfg.get('svgMode', '2'), 100)
+            if 0 <= svgMode < len(self.cmbSvgModeList):
+                self.cmbSvgMode.current(svgMode)
+            smooth = str_to_int(cfg.get('svgSmooth', '2'), 100)
+            if 0 <= smooth < len(self.cmbSmoothList):
+                self.cmbSvgSmooth.current(smooth)
+            svgLayer = str_to_int(cfg.get('svgLayer', '2'), 100)
+            if 0 <= svgLayer < len(self.cmbSvgLayerList):
+                self.cmbSvgLayer.current(svgLayer)
+            lastHeight = str_to_float(cfg.get('svgHeight', ''))
+            if lastHeight:
+                self.cmbSvgHeight.setText(str(lastHeight))
+
             lastTab = str_to_int(cfg.get('lastTab', '0'))
             if (lastTab > 0):
                 self.setCurrentTabStripTab(lastTab)
@@ -512,6 +643,8 @@ class Application(Application_ui):
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
             'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
             'importFootprintText': str(self.chkImportFootprintText.value()),
+            'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
+            'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
             'lastTab': str(self.getCurrentTabStripTab())}
         
         if (cfg != self.cfg):  #有变化再写配置文件
@@ -525,9 +658,16 @@ class Application(Application_ui):
     
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"),"*.kicad_mod"), (_("easyEDA footprint"),"*.json"), (_("All Files"), "*.*")])
+        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"), "*.kicad_mod"), 
+            (_("easyEDA footprint"), "*.json"), (_("All Files"), "*.*")])
         if ret:
             self.txtFootprintFile.setText(ret)
+
+    #选择一个SVG文件
+    def cmdSvgFile_Cmd(self, event=None):
+        ret = tkFileDialog.askopenfilename(filetypes=[(_("SVG files"),"*.svg"), (_("All Files"), "*.*")])
+        if ret:
+            self.txtSvgFile.setText(ret)
 
     #取消退出
     def cmdCancel_Cmd(self, event=None):
@@ -536,6 +676,11 @@ class Application(Application_ui):
 
     #取消退出
     def cmdCancelFootprint_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(0)
+
+    #取消退出
+    def cmdCancelSvg_Cmd(self, event=None):
         self.destroy()
         sys.exit(0)
 
@@ -549,13 +694,7 @@ class Application(Application_ui):
 
         newStr = self.generatePolygons(txt)
         if newStr:
-            retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
-            if retFile:
-                try:
-                    with open(retFile, 'w') as f:
-                        f.write(newStr)
-                except:
-                    showinfo(_('info'), _('Failed to save file'))
+            self.saveTextFile(newStr)
         else:
             showinfo(_('info'), _('Failed to generate text'))
     
@@ -566,13 +705,9 @@ class Application(Application_ui):
         #TODO, for test
         #fileName = self.autoAddKicadPath(fileName)
 
-        if not fileName:
-            showinfo(_('info'), _('Input is empty'))
+        if (not self.verifyFileName(fileName, LcComponent.isLcedaComponent)):
             return
-        elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
-            showinfo(_('info'), _('File does not exist'))
-            return
-
+        
         errStr, retStr = self.generateFootprint(fileName)
         if (errStr):
             showinfo(_('info'), errStr)
@@ -582,13 +717,7 @@ class Application(Application_ui):
             else:
                 showinfo(_('info'), _('Failed to parse file content'))
         else:
-            retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
-            if retFile:
-                try:
-                    with open(retFile, 'w') as f:
-                        f.write(retStr)
-                except:
-                    showinfo(_('info'), _('Failed to save file'))
+            self.saveTextFile(retStr)
 
     #开始转换文本为多边形
     def cmdOk_Cmd(self, event=None):
@@ -601,8 +730,11 @@ class Application(Application_ui):
 
         newStr = self.generatePolygons(txt)
         if newStr:  #写输出文件
-            with open(self.outFileName, 'w') as f:
-                f.write(newStr)
+            try:
+                with open(self.outFileName, 'w') as f:
+                    f.write(newStr)
+            except:
+                pass
             ret = 4
         else:
             ret = 0
@@ -630,13 +762,9 @@ class Application(Application_ui):
         #TODO, for test
         #fileName = self.autoAddKicadPath(fileName)
 
-        if not fileName:
-            showinfo(_('info'), _('Input is empty'))
+        if (not self.verifyFileName(fileName, LcComponent.isLcedaComponent)):
             return
-        elif (not LcComponent.isLcedaComponent(fileName)) and ((not os.path.isfile(fileName)) or (not os.path.exists(fileName))):
-            showinfo(_('info'), _('File does not exist'))
-            return
-
+        
         errStr, retStr = self.generateFootprint(fileName)
         if (errStr):
             showinfo(_('info'), errStr)
@@ -646,14 +774,93 @@ class Application(Application_ui):
             else:
                 showinfo(_('info'), _('Failed to parse file content'))
         else:
-            with open(self.outFileName, 'w') as f:
-                f.write(retStr)
+            try:
+                with open(self.outFileName, 'w') as f:
+                    f.write(retStr)
+            except:
+                pass
 
             self.destroy()
             sys.exit(4)
     
+    #转换SVG结果保存为单独一个文本文件
+    def lblSaveAsSvg_Button_1(self, event):
+        self.saveConfig()
+        fileName = self.txtSvgFile.text().strip()
+        
+        if (not self.verifyFileName(fileName)):
+            return
+        
+        retStr = self.generateSvg(fileName)
+        if not retStr:
+            showinfo(_('info'), _('Convert svg image failed'))
+        else:
+            self.saveTextFile(retStr)
+            
+    #在SVG文件文本框中回车，根据情况自动执行响应的命令
+    def txtSvgFile_Return(self, event=None):
+        if (str(self.cmdOkSvg['state']) == 'disabled') or (not self.txtSvgFile.text().strip()):
+            return
+
+        self.cmdOkSvg_Cmd()
+
+    #点击了将SVG文件转换为Sprint-Layout的按钮
+    def cmdOkSvg_Cmd(self, event=None):
+        self.saveConfig()
+        fileName = self.txtSvgFile.text().strip().lower()
+        
+        if (not self.verifyFileName(fileName)):
+            return
+
+        if not fileName.endswith('.svg'):
+            showinfo(_('info'), _('The file format is not supported'))
+            return
+        
+        retStr = self.generateSvg(fileName)
+        if not retStr:
+            showinfo(_('info'), _('Convert svg image failed'))
+        else:
+            try:
+                with open(self.outFileName, 'w') as f:
+                    f.write(retStr)
+            except:
+                pass
+
+            self.destroy()
+            sys.exit(4)
+
+    #校验文件是否存在或是否合法，不合法则做出提示
+    #fileName: 文件名
+    #extraVeriFunc: 额外的校验函数，接受一个字符串参数
+    def verifyFileName(self, fileName: str, extraVeriFunc=None):
+        if not fileName:
+            showinfo(_('info'), _('Input is empty'))
+            return False
+
+        if (extraVeriFunc and extraVeriFunc(fileName)):
+            return True
+
+        if (not os.path.isfile(fileName)) or (not os.path.exists(fileName)):
+            showinfo(_('info'), _('File does not exist'))
+            return False
+        
+        return True
+
+    #将字符串保存到文本文件
+    def saveTextFile(self, txt: str):
+        if not txt:
+            return
+
+        retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
+        if retFile:
+            try:
+                with open(retFile, 'w') as f:
+                    f.write(txt)
+            except:
+                showinfo(_('info'), _('Failed to save file'))
+
     #方便进行测试的一个函数，可以仅输入kicad封装文件名，自动添加路径
-    def autoAddKicadPath(self, fileName):
+    def autoAddKicadPath(self, fileName: str):
         if fileName and ('\\' not in fileName) and (not LcComponent.isLcedaComponent(fileName)):
             for root, subdirs, files in os.walk(r'C:\Program Files\KiCad\share\kicad\modules'):
                 if fileName + '.kicad_mod' in files:
@@ -662,6 +869,8 @@ class Application(Application_ui):
 
     #将字符串转换为Sprint-Layout多边形，返回一个字符串，可以直接写到文件里面
     def generatePolygons(self, txt: str):
+        from sprint_struct.font_to_polygon import singleWordPolygon
+
         if not txt:
             return ''
         
@@ -686,7 +895,7 @@ class Application(Application_ui):
         
         #开始逐字转换
         txt = self.translateUnicodeSymbol(txt)
-        sprintTextIo = SprintTextIO()
+        textIo = SprintTextIO()
         offsetY = 0.0
         prevWidth = 0
         for line in txt.split('\n'):
@@ -702,7 +911,7 @@ class Application(Application_ui):
                     continue
                     
                 prevWidth = ret['width']
-                sprintTextIo.addAllPolygon(ret['polygons'])
+                textIo.addAll(ret['polygons'])
                 inc = prevWidth + (wordSpacing * 10000)
                 offsetX += inc if (inc > 0) else prevWidth
                 if ret['height'] > maxHeight:
@@ -714,7 +923,7 @@ class Application(Application_ui):
         font.close()
 
         #返回字符串
-        return str(sprintTextIo)
+        return str(textIo)
         
         
     #将字符串里面的\u1234转换为对应的字符
@@ -803,13 +1012,14 @@ class Application(Application_ui):
 
         msg = ''
         textIo = None
-        #当前仅支持Kicad格式
-        if (fileName.lower().endswith('.kicad_mod')):
+        fileName = fileName.lower()
+        if (fileName.endswith('.kicad_mod')):  #Kicad封装文件
+            from kicad_to_sprint import kicadModToTextIo
             textIo = kicadModToTextIo(fileName, importText)
-        elif (fileName.lower().endswith('.json')):
+        elif (fileName.endswith('.json')):  #立创EDA离线封装文件
             ins = LcComponent.fromFile(fileName)
             textIo = ins.createSprintTextIo(importText) if ins else None
-        elif LcComponent.isLcedaComponent(fileName):
+        elif LcComponent.isLcedaComponent(fileName): #在线立创EDA
             ins = LcComponent.fromLcId(fileName)
             if isinstance(ins, LcComponent):
                 textIo = ins.createSprintTextIo(importText)
@@ -819,6 +1029,22 @@ class Application(Application_ui):
             msg = _("This file format is not supported")
 
         return (msg, str(textIo) if (textIo and textIo.isValid()) else '')
+
+    #将SVG文件转换为Sprint-Layout格式
+    #返回：生成的textIo字符串
+    def generateSvg(self, fileName: str):
+        from svg_to_polygon import svgToPolygon
+
+        usePolygon = self.cmbSvgMode.current() #0-线条, 1-多边形
+        layerIdx = self.cmbSvgLayer.current() + 1 #Sprint-Layout的板层定义从1开始
+        smooth = self.cmbSvgSmooth.current()
+        height = str_to_float(self.cmbSvgHeight.text())
+        if height < 1.0:
+            height = 1.0
+
+        textIo = svgToPolygon(fileName, layerIdx=layerIdx, height=height, smooth=smooth, usePolygon=usePolygon)
+
+        return str(textIo) if (textIo and textIo.isValid()) else ''
 
 if __name__ == "__main__":
     top = Tk()

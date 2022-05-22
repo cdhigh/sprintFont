@@ -22,6 +22,10 @@ class SprintText(SprintComponent):
         self.mirrorH = None
         self.mirrorV = None
 
+    #多边形是否合法，至少要求为两个点
+    def isValid(self):
+        return (self.height > 0)
+
     def __str__(self):
         self.text = str(self.text).replace(';', '_').replace(',', '_').replace('|', '_')
 

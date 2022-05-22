@@ -27,8 +27,17 @@ class SprintPolygon(SprintComponent):
         self.hatchAuto = None  #是否自动选择网格填充的线宽
         self.hatchWidth = None  #网格填充的自定义线宽
 
+    #多边形是否合法，至少要求为两个点
+    def isValid(self):
+        return (len(self.points) >= 2)
+    
+    def updateSelfBbox(self):
+        return #addPoint()时就调用了
+        #for (x, y) in self.points:
+        #    self.updateLimit(x, y)
+            
     def __str__(self):
-        if not self.isValid():
+        if (not self.isValid()):
             return ''
 
         outStr = ['ZONE,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.lineWidth * 10000)]
@@ -51,13 +60,9 @@ class SprintPolygon(SprintComponent):
 
         return ','.join(outStr) + ';'
 
-    #多边形是否合法，至少要求为两个点
-    def isValid(self):
-        return (len(self.points) >= 2)
-
     #增加一个点
     def addPoint(self, x: float, y: float):
-        self.updateLimit(x, y)
+        self.updateLimit(x, y) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
         self.points.append((x, y))
 
     #生成器，用于迭代里面所有的线段

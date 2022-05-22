@@ -22,7 +22,10 @@ class SprintCircle(SprintComponent):
         self.stop = None   #结束角度，0为3点钟方向，逆时针计算，单位为角度
         self.fill = None
     
-    def updateCircleLimit(self):
+    def isValid(self):
+        return (self.radius > 0)
+
+    def updateSelfBbox(self):
         self.updateLimit(self.center[0] - self.radius, self.center[1] + self.radius)
         self.updateLimit(self.center[0] + self.radius, self.center[1] - self.radius)
         
@@ -30,8 +33,7 @@ class SprintCircle(SprintComponent):
     #注意调用此函数前请先保证设置了圆心坐标
     def setRadiusByArcPoint(self, x: float, y: float):
         self.radius = euclideanDistance(self.center[0], self.center[1], x, y)
-        self.updateCircleLimit()
-
+        
     #通过圆心，起点，和角度来设定一段圆弧
     #这个是Kicad的规则，圆弧角度为从起点开始顺时针旋转为正，而Sprint-Layout逆时针旋转为正
     #如果是绝对角度，都是3点钟方向为0度
@@ -42,8 +44,7 @@ class SprintCircle(SprintComponent):
         stop = start - angle #逆时针计数
         self.start = min(start, stop)
         self.stop = max(start, stop)
-        self.updateCircleLimit()
-
+        
     #通过起点/终点/半径设置圆心坐标，参数顺序和SVG的圆弧绘图参数一致
     #x1/y1: 起点
     #x2/y2: 终点
@@ -64,8 +65,6 @@ class SprintCircle(SprintComponent):
         self.start = ret['startAngle']
         self.stop = ret['endAngle']
         
-        self.updateCircleLimit()
-
     def __str__(self):
         if self.radius <= 0:
             return ''

@@ -19,13 +19,19 @@ class SprintTrack(SprintComponent):
         self.flatstart = None
         self.flatend = None
     
+    def isValid(self):
+        return (len(self.points) >= 2)
+
+    def updateSelfBbox(self):
+        for (x, y) in self.points:
+            self.updateLimit(x, y)
+
     #增加一个点
     def addPoint(self, x: float, y: float):
-        self.updateLimit(x, y)
         self.points.append((x, y))
 
     def __str__(self):
-        if (len(self.points) < 2):
+        if (not self.isValid()):
             return ''
 
         outStr = ['TRACK,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.width * 10000)]

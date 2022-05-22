@@ -39,7 +39,10 @@ class SprintPad(SprintComponent):
         self.padId = None
         self.connectToOtherPads = [] #从此焊盘到特定其他焊盘的直线
     
-    def updatePadLimit(self):
+    def isValid(self):
+        return (self.size > 0) if (self.padType == 'PAD') else ((self.sizeX > 0) and (self.sizeY > 0))
+        
+    def updateSelfBbox(self):
         if (self.padType == 'PAD'):
             size2 = self.size / 2
             self.updateLimit(self.pos[0] - size2, self.pos[1] + size2)
