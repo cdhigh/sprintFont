@@ -69,7 +69,7 @@ class I18n:
     " Cut": ("", " 剪切"),
     " Copy": ("", " 复制"),
     " Paste": ("", " 粘贴"),
-    "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA component ID: C + number (C can be omitted)",
+    "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)",
         "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (C可省略)"),
     "The content is not json format": ("", "内容不是json格式"),
     "The content is not a valid json format": ("", "内容不是正确的json格式"),

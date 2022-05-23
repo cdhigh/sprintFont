@@ -2,6 +2,7 @@
 #-*- coding:utf-8 -*-
 """
 将力创的封装库转换为Sprint-Layout的Text-IO格式
+文件格式：https://docs.lceda.cn/cn/DocumentFormat/EasyEDA-Format-Standard/index.html
 C80909 还有问题
 """
 import json
@@ -9,8 +10,13 @@ from urllib import request
 from comm_utils import *
 from sprint_struct.sprint_textio import *
 
+#全球节点
 LC_PRODUCT_URI = "https://easyeda.com/api/products/{}/svgs"
 LC_FOOTPRINT_INFO_URI = "https://easyeda.com/api/components/{}"
+
+#中国节点
+LC_PRODUCT_URI_CN = "https://lceda.cn/api/products/{}/svgs"
+LC_FOOTPRINT_INFO_URI_CN = "https://lceda.cn/api/components/{}"
 
 DEFAULT_WEB_TIMEOUT = 5
 webHeaders = {
@@ -73,8 +79,9 @@ class LcComponent:
         }
 
     #从立创ID创建
+    #easyEdaSite: 'cn'-使用中国节点，其他-使用国际节点
     @classmethod
-    def fromLcId(cls, lcId: str):
+    def fromLcId(cls, lcId: str, easyEdaSite: str):
         if not lcId:
             return None
 
@@ -83,7 +90,7 @@ class LcComponent:
             lcId = 'C' + lcId
 
         errMsg = None
-        errMsg, fpUuid = cls.getFootprintUuid(lcId)
+        errMsg, fpUuid = cls.getFootprintUuid(lcId, easyEdaSite)
 
         if not fpUuid:
             return errMsg
@@ -91,7 +98,7 @@ class LcComponent:
         #创建实例返回
         ins = LcComponent()
         ins.lcId = lcId
-        ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromUuid(fpUuid)
+        ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromUuid(fpUuid, easyEdaSite)
         #print(ins.fpShape) #TODO
         return ins
 
@@ -140,7 +147,10 @@ class LcComponent:
         #逐行扫描，调用对应的解析函数
         textIo = SprintTextIO(isComponent=True)
         for line in self.fpShape:
-            args = [elem for elem in line.split("~") if elem] #去掉空元素
+            args = line.split("~")
+            if len(args) <= 1:
+                continue
+
             model = args[0] #第一个元素为绘图种类
             if model in self.handlers:
                 self.handlers.get(model)(args[1:], textIo)
@@ -172,8 +182,10 @@ class LcComponent:
         
     #根据力创商城ID获取封装的UUID，返回 (errMsg, uuid)
     @classmethod
-    def getFootprintUuid(cls, lcId: str):
-        errMsg, lcJsonData = cls.fetchJsonFromLc(LC_PRODUCT_URI.format(lcId))
+    def getFootprintUuid(cls, lcId: str, easyEdaSite: str):
+        url = LC_PRODUCT_URI.format(lcId) if (easyEdaSite != 'cn') else LC_PRODUCT_URI_CN.format(lcId)
+        #print(url)
+        errMsg, lcJsonData = cls.fetchJsonFromLc(url)
         if errMsg:
             return (errMsg, '')
 
@@ -188,8 +200,9 @@ class LcComponent:
     
     #联网获取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
     @classmethod
-    def fetchFpInfoFromUuid(cls, fpUuid: str):
-        errMsg, lcJsonData = cls.fetchJsonFromLc(LC_FOOTPRINT_INFO_URI.format(fpUuid))
+    def fetchFpInfoFromUuid(cls, fpUuid: str, easyEdaSite: str):
+        url = LC_FOOTPRINT_INFO_URI.format(fpUuid) if (easyEdaSite != 'cn') else LC_FOOTPRINT_INFO_URI_CN.format(fpUuid)
+        errMsg, lcJsonData = cls.fetchJsonFromLc(url)
         if errMsg:
             print(errMsg)
             return ('', '', '', '')
@@ -257,19 +270,20 @@ class LcComponent:
     #TRACK~0.591~3~S$134~421.2009 298.189 421.2009 308.0315~gge132~0
     #TRACK~1~3~~4014.9999 3012.0358 3986.7795 3012.0358 3986.7795 3000.0358~gge95~0
     #stroke_width,layer_id,net,points,id,is_locked
+    #-1.[cmdKey]：图元标识符，TRACK
+    #0.[strokeWidth]:线宽
+    #1.[layerid]：所属层
+    #2.[net]：网络
+    #3.[pointArr]：坐标点数据
+    #4.[gId]：元素id
+    #5.[locked]：是否锁定
     def handleTrack(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+        if not data or not textIo or (len(data) < 4):
             return
             
         width = mil2mm(data[0])
-        points = [mil2mm(p) for p in data[2].split(" ") if p]
-        if (len(points) < 4):
-            points = [mil2mm(p) for p in data[3].split(" ") if p]
-            if (len(points) < 4):
-                #print("handleTrack skipping line")
-                return
-                
         layer = lcLayerMap.get(data[1], LAYER_S1)
+        points = [mil2mm(p) for p in data[3].split(" ") if p]
         for i in range(int(len(points) / 2) - 1):
             lcTra = SprintTrack(layer, width)
             lcTra.addPoint(points[2 * i], points[2 * i + 1])
@@ -277,9 +291,28 @@ class LcComponent:
             textIo.add(lcTra)
 
     #分析PAD对象
-    #shape,center_x,center_y,width,height,layer_id,net,number,hole_radius,points,rotation,id,hole_length,hole_point,is_plated,is_locked
     #PAD~RECT~3970.275~3002.756~4.3307~0.7874~1~~1~0~3968.1099 3002.3623 3972.4406 3002.3623 3972.4406 3003.1497 3968.1099 3003.1497~0~gge8~0~~Y~0~0~0.1969~3970.2754,3002.7561
     #PAD~ELLIPSE~619~-370.748~5.9055~5.9055~11~~17~1.7717~~90~rep7~0~~Y~0~0~0.2~619,-370.748
+    #-1.[cmdKey]：图元标识符，PAD
+    #0.[shape]：焊盘形状
+    #1.[x]：横坐标
+    #2.[y]：纵坐标
+    #3.[width]：宽度
+    #4.[height]：高度
+    #5.[layerid]：所属层
+    #6.[net]：网络
+    #7.[number]：编号
+    #8.[holeR]：孔直径
+    #9.[pointArr]：坐标点数据
+    #10.[rotation]：旋转角度
+    #11.[gId]：元素id
+    #12.[holeLength]：孔长度
+    #13.[slotPointArr]：孔的坐标点数据
+    #14.[plated]：是否金属化
+    #15.[locked]：是否锁定
+    #16.[pasteexpansion]：助焊扩展
+    #17.[solderexpansion]：阻焊扩展
+    #18.[holeCenter]：孔中心坐标
     def handlePad(self, data: list, textIo: SprintTextIO):
         if not data or not textIo:
             return
@@ -289,22 +322,26 @@ class LcComponent:
         y = mil2mm(data[2])
         width = mil2mm(data[3])
         height = mil2mm(data[4])
-        padNumber = data[6]
-        drill = mil2mm(data[7]) * 2 #转为直径
-        rotation = str_to_float(data[9])
+        padNumber = data[7]
+        drill = mil2mm(data[8]) * 2 #转为直径
+        rotation = str_to_float(data[10])
         via = True
-        if data[5] == "1": #data[5] 组装工艺
+        if data[5] == "1":
             #drill = 1
-            padType = 'SMDPAD'
+            padType = 'SMDPAD' if (drill == 0) else 'PAD'
             layer = LAYER_C1
+        elif data[5] == "2":
+            padType = 'SMDPAD' if (drill == 0) else 'PAD'
+            layer = LAYER_C2
         elif (data[5] == "11"):
             padType = 'PAD'
             layer = LAYER_C1
-            #if drill > 0:
-            #    via = True if (data[11] == 'Y') else False
         else:
             print("Skiping pad : {}".format(padNumber))
             return
+
+        if drill > 0:
+            via = True if (data[14] == 'Y') else False
         
         spPad = SprintPad(layerIdx=layer)
         spPad.pos = (x, y)
@@ -350,8 +387,16 @@ class LcComponent:
     #stroke_width,layer_id,net,path,helper_dots,id,is_locked
     #"ARC~1~3~~M4005.0049,3038.4907 A9.8425,9.8425 0 1 0 4005.0021,3038.4921~~gge43~0",
     #A radiusx radiusy x-axis-rotation large-arc-flag sweep-flag(1-顺时针) endx endy
+    #-1.[cmdKey]：图元标识符，ARC
+    #0.[strokeWidth]:线宽
+    #1.[layerid]：所属层
+    #2.[net]：网络
+    #3.[d]：路径数据
+    #4.[c_helper_dots]：辅助线路径数据
+    #5.[gId]：元素id
+    #6.[locked]：是否锁定
     def handleArc(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+        if not data or not textIo or (len(data) < 4):
             return
         
         width = mil2mm(data[0])
@@ -359,13 +404,8 @@ class LcComponent:
         if layer == LAYER_U: #不引入外形层的弧形
             return
         
-        if data[2][0] == "M":
-            arcCmd = [val for val in data[2].replace("M", " ").replace("A", " ").replace(",", " ").split(" ") if val]
-        elif data[3][0] == "M":
-            arcCmd = [val for val in data[3].replace("M", " ").replace("A", " ").replace(",", " ").split(" ") if val]
-        else:
-            arcCmd = []
-
+        arcCmd = [val for val in data[3].replace("M", " ").replace("A", " ").replace(",", " ").split(" ") if val]
+        
         if (len(arcCmd) < 9):
             print("handleArc : token unknown")
             return
@@ -390,8 +430,18 @@ class LcComponent:
     #处理圆形
     #cx,cy,radius,stroke_width,layer_id,id,is_locked
     #"CIRCLE~3970.472~2999.213~0.118~0.2362~101~gge555~0~~circle_gge556,circle_gge557",
+    #-1.[cmdKey]：图元标识符，CIRCLE
+    #0.[cx]：圆心x坐标
+    #1.[cy]：圆心y坐标
+    #2.[r]：半径
+    #3.[strokeWidth]：线宽
+    #4.[layerid]：所属层
+    #5.[gId]：元素id
+    #6.[locked]：是否锁定
+    #7.[net]：网络
+    #8.[transformarc]:由圆转换的两个半圆的id信息
     def handleCircle(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+        if not data or not textIo or (len(data) < 5):
             return
         
         layer = lcLayerMap.get(data[4], LAYER_S1)
@@ -416,10 +466,23 @@ class LcComponent:
     #x,y,width,height,layer_id,name,xx,stroke_width
     #不填充：RECT~3998.425~3004.477~5.906~1.181~12~gge158~0~1~none~~~
     #填充：  RECT~3998.425~3004.477~5.906~1.181~12~gge158~0~0~~~~
+    #-1.[cmdKey]：图元标识符，RECT
+    #0.[x]:横坐标
+    #1.[y]：纵坐标
+    #2.[width]：宽度
+    #3.[height]：高度
+    #4.[layerid]：所属层
+    #5.[gId]：元素id
+    #6.[locked]：是否锁定
+    #7.[strokeWidth]:线宽
+    #8.[fill]:填充颜色
+    #9.[transform]:偏移数据
+    #10.[net]：网络
+    #11.[c_etype]:c_etype属性值（自定义的用于细分图元类型的属性）
     def handleRect(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+        if not data or not textIo or (len(data) < 8):
             return
-        #print(data)
+
         layer = lcLayerMap.get(data[4], LAYER_S1)
         if layer == LAYER_U: #不引入外形层的矩形
             return
@@ -465,14 +528,31 @@ class LcComponent:
     
     #处理文本信息
     #TEXT~L~4018.5~3025.62~0.8~0~0~3~~5.9055~+~M 4020.92 3019.4999 L 4020.92 
+    #-1.[cmdKey]：图元标识符，TEXT
+    #0.[type]：文本标记，可选值：L(普通文本) | N(器件名称) | P(器件编号) | PK(封装名)
+    #1.[x]：横坐标   //弃用，参考pathStr
+    #2.[y]：纵坐标   //弃用，参考pathStr
+    #3.[strokeWidth]:线宽
+    #4.[rotation]：旋转角度    //弃用，参考pathStr
+    #5.[mirror]:是否镜像      //弃用，参考pathStr
+    #6.[layerid]：所属层
+    #7.[net]：网络
+    #8.[fontSize]：文字大小
+    #9.[text]：文本值        //弃用，参考pathStr
+    #10.[pathStr]：路径数据
+    #11.[display]：是否显示
+    #12.[gId]：元素id
+    #13.[fontFamily]：字体
+    #14.[locked]：是否锁定
+    #15.[c_etype]：c_etype属性值（c_etype是自定义的用于细分图元类型的属性）
     def handleText(self, data: list, textIo: SprintTextIO):
         if not data or not textIo or not self.importText:
             return
         
         layer = lcLayerMap.get(data[6], LAYER_S1)
         spText = SprintText(layerIdx=layer)
-        spText.text = data[8]
-        spText.height = mil2mm(data[7])
+        spText.text = data[9]
+        spText.height = mil2mm(data[8])
         if (spText.height <= 0.1):
             spText.height = 1
         
@@ -491,6 +571,14 @@ class LcComponent:
     #处理过孔，过孔被处理为双面焊盘
     #x,y,diameter,hole_radius
     #VIA~4001.969~2998.032~2.4~~0.6~gge1050~0
+    #-1.[cmdKey]：图元标识符，VIA
+    #0.[x]：横坐标
+    #1.[y]：纵坐标
+    #2.[diameter]：过孔直径
+    #3.[net]：网络
+    #4.[holeR]：过孔内径
+    #5.[gId]：元素id
+    #6.[locked]：是否锁定
     def handleVia(self, data: list, textIo: SprintTextIO):
         if not data or not textIo or not self.importText:
             return
@@ -498,7 +586,7 @@ class LcComponent:
         x = mil2mm(data[0])
         y = mil2mm(data[1])
         size = mil2mm(data[2])
-        drill = mil2mm(data[3]) * 2
+        drill = mil2mm(data[4]) * 2
         spPad = SprintPad(layerIdx=LAYER_C1)
         spPad.pos = (x, y)
         spPad.padType = 'PAD'
@@ -508,6 +596,3 @@ class LcComponent:
         spPad.via = True
         spPad.soldermask = False  #盖绿油
         textIo.add(spPad)
-
-
-

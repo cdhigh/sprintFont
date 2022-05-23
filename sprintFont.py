@@ -412,8 +412,9 @@ class Application(Application_ui):
         self.txtSvgFile.bind('<Button-3>', rightClicker, add='')
         
         #初始化多语种支持
+        self.sysLanguge = locale.getdefaultlocale()[0]
         I18n.init()
-        I18n.setLanguage(locale.getdefaultlocale()[0])
+        I18n.setLanguage(self.sysLanguge)
         self.language = ''
 
         #读取配置文件到内存
@@ -637,6 +638,13 @@ class Application(Application_ui):
             if (lastTab > 0):
                 self.setCurrentTabStripTab(lastTab)
 
+            #立创EDA的服务器节点
+            easyEdaSite = cfg.get('easyEdaSite', '').lower()
+            if (easyEdaSite in ('cn', 'global')):
+                self.easyEdaSite = easyEdaSite
+            else:
+                self.easyEdaSite = ''
+
     #保存当前配置数据
     def saveConfig(self):
         cfg = {'language': self.language, 'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
@@ -645,6 +653,7 @@ class Application(Application_ui):
             'importFootprintText': str(self.chkImportFootprintText.value()),
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
+            'easyEdaSite': self.easyEdaSite,
             'lastTab': str(self.getCurrentTabStripTab())}
         
         if (cfg != self.cfg):  #有变化再写配置文件
@@ -1020,7 +1029,11 @@ class Application(Application_ui):
             ins = LcComponent.fromFile(fileName)
             textIo = ins.createSprintTextIo(importText) if ins else None
         elif LcComponent.isLcedaComponent(fileName): #在线立创EDA
-            ins = LcComponent.fromLcId(fileName)
+            easyEdaSite = self.easyEdaSite
+            if not easyEdaSite:
+                easyEdaSite = 'cn' if self.sysLanguge.startswith('zh') else 'global'
+                
+            ins = LcComponent.fromLcId(fileName, easyEdaSite)
             if isinstance(ins, LcComponent):
                 textIo = ins.createSprintTextIo(importText)
             elif ins:
