@@ -58,9 +58,9 @@ class I18n:
     "Failed to parse file content": ("", "分析文件内容错误"),
     "Failed to parse content\nMaybe Id error or Internet disconnected?": ("", "分析内容错误：\n可能是ID错误或网络不通？"),
     "Input": ("", "输入"),
-    "Font": ("            Font            ", "            字体            "),    
-    "Footprint": ("            Footprint            ", "            封装            "),
-    "SVG": ("            SVG            ", "            SVG            "),
+    "TabFont": ("            Font            ", "            字体            "),    
+    "TabFootprint": ("            Footprint            ", "            封装            "),
+    "TabSVG": ("            SVG            ", "            SVG            "),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
     "easyEDA footprint": ("", "力创封装文件"),
@@ -79,11 +79,18 @@ class I18n:
     "The image height is invalid": ("", "图像高度数值非法"),
     "Polygon": ("", "多边形"),
     "Track": ("", "线条"),
-    "svg_features_tips": ("Note:\nOnly for simple images, complex images may fail to convert", "注意：\n仅适用于简单的图像，复杂的图像可能会转换失败"),
+    "svg_features_tips": ("Note:\nOnly for simple images, may fail to convert complex images", "注意：\n仅适用于简单的图像，复杂的图像可能会转换失败"),
     "File": ("", "文件"),
     "Mode": ("", "模式"),
     "svgHeight": ("Height (mm)", "高度 (mm)"),
     "The file format is not supported": ("", "此文件格式暂不支持"),
+    "  New version found, double-click to show details": ("", "  发现新版本，双击显示详情"),
+    "New version found": ("", "发现新版本"),
+    "Current version: v{}": ("", "当前版本：v{}"),
+    "Lastest version: v{}": ("", "最新版本：v{}"),
+    "Download": ("", "下载"),
+    "Skip this version": ("", "跳过此版本"),
+    "Later": ("", "稍后"),
     }
 
     #这个属性是可以在程序执行过程中修改的
@@ -124,9 +131,11 @@ class I18n:
 
         return -1
 
-    #获取翻译字符串，如果增加了翻译语种种类，则 (txt, txt) 元祖个数需要同步增加
+    #获取翻译字符串，如果增加了翻译语种种类
     @classmethod
     def tr(cls, txt: str):
-        ret = cls._translations.get(txt, (txt,))
-
-        return ret[cls._langIndex] if (cls._langIndex < len(ret)) else txt
+        ret = cls._translations.get(txt, '')
+        if (ret and (cls._langIndex < len(ret))):
+            return ret[cls._langIndex] or txt
+        else:
+            return txt

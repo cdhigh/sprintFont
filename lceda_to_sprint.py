@@ -3,7 +3,7 @@
 """
 将力创的封装库转换为Sprint-Layout的Text-IO格式
 文件格式：https://docs.lceda.cn/cn/DocumentFormat/EasyEDA-Format-Standard/index.html
-C80909 还有问题
+Author: cdhigh <https://github.com/cdhigh>
 """
 import json
 from urllib import request
@@ -56,6 +56,10 @@ lcPadShapeMap = {
     'POLYGON': PAD_FORM_OCTAGON,
 }
 
+#力创的单位系统
+#1 pixel = 10 mil
+#1 pixel = 0.254mm
+#1 pixel = 0.01inch
 def mil2mm(data: str):
     return str_to_float(data) / 3.937
     
@@ -347,7 +351,7 @@ class LcComponent:
         spPad.pos = (x, y)
         spPad.rotation = (360 - rotation) if rotation else 0  #Sprint-Layout和立创的焊盘旋转方向是相反的
         spPad.padType = padType
-        spPad.via = via
+        spPad.via = via  #via=True 双面焊盘
         
         if (padType == 'SMDPAD'):
             spPad.sizeX = width
@@ -378,8 +382,8 @@ class LcComponent:
 
         spPad.drill = drill
 
-        if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
-            spPad.soldermask = False
+        #if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
+        #    spPad.soldermask = False
 
         textIo.add(spPad)
     

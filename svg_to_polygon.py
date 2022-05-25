@@ -33,7 +33,7 @@ def svgToPolygon(svgFile: str, layerIdx: int=2, height: float=10, smooth: int=2,
     xMin, yMin, xMax, yMax = getSvgBoundingBox(svgCmds)
     svgWidth = xMax - xMin
     svgHeight = yMax - yMin
-    lineWidth = 0 #0.01 if (height <= 2.0) else 0.1
+    lineWidth = 0 if (height <= 3.0) else 0.1
 
     #计算缩放后的宽度
     width = (svgWidth * height) / svgHeight

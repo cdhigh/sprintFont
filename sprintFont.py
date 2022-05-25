@@ -12,8 +12,12 @@ cxfreeze --base-name=Win32GUI --icon=app.ico sprintFont.py
 -w: windows执行系统，不弹出cmd命令行
 -i: 图标
 pyinstaller.exe -F -w -i app.ico sprintFont.py
+==========================
+使用Nuitka打包，Nuitka打包时目录不能有中文名，打包完成后可以
+python -m nuitka --standalone --onefile --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico  sprintFont.py
+python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
-import os, sys, locale, json, threading, queue
+import os, sys, locale, json, threading, queue, datetime
 from tkinter import *
 from tkinter.font import Font, families
 from tkinter.ttk import *
@@ -30,7 +34,7 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 
 __VERSION__ = "1.1"
-__DATE__ = "20220515"
+__DATE__ = "20220525"
 __AUTHOR__ = "cdhigh"
 
 WIN_DIR = os.environ['WINDIR']
@@ -176,19 +180,19 @@ class Application_ui(Frame):
         self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
         self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
         self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
-        self.cmbWordSpacing.place(relx=0.755, rely=0.511, relwidth=0.204)
+        self.cmbWordSpacing.place(relx=0.782, rely=0.511, relwidth=0.177)
         self.cmbLineSpacingList = ['',]
         self.cmbLineSpacingVar = StringVar(value='')
         self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
         self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
         self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
-        self.cmbLineSpacing.place(relx=0.755, rely=0.639, relwidth=0.204)
+        self.cmbLineSpacing.place(relx=0.782, rely=0.639, relwidth=0.177)
         self.cmbFontHeightList = ['',]
         self.cmbFontHeightVar = StringVar(value='')
         self.cmbFontHeight = Combobox(self.tabStrip__Tab1, textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
         self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
         self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
-        self.cmbFontHeight.place(relx=0.755, rely=0.383, relwidth=0.204)
+        self.cmbFontHeight.place(relx=0.782, rely=0.383, relwidth=0.177)
         self.cmbFontList = ['',]
         self.cmbFontVar = StringVar(value='')
         self.cmbFont = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
@@ -218,13 +222,13 @@ class Application_ui(Frame):
         self.lblWordSpacing = Label(self.tabStrip__Tab1, text='Word spacing (mm)', textvariable=self.lblWordSpacingVar, style='TlblWordSpacing.TLabel')
         self.lblWordSpacing.setText = lambda x: self.lblWordSpacingVar.set(x)
         self.lblWordSpacing.text = lambda : self.lblWordSpacingVar.get()
-        self.lblWordSpacing.place(relx=0.513, rely=0.511, relwidth=0.231, relheight=0.08)
+        self.lblWordSpacing.place(relx=0.513, rely=0.511, relwidth=0.258, relheight=0.08)
         self.LblLineSpacingVar = StringVar(value='Line spacing (mm)')
         self.style.configure('TLblLineSpacing.TLabel', anchor='e', font=('微软雅黑',10))
         self.LblLineSpacing = Label(self.tabStrip__Tab1, text='Line spacing (mm)', textvariable=self.LblLineSpacingVar, style='TLblLineSpacing.TLabel')
         self.LblLineSpacing.setText = lambda x: self.LblLineSpacingVar.set(x)
         self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
-        self.LblLineSpacing.place(relx=0.513, rely=0.639, relwidth=0.231, relheight=0.08)
+        self.LblLineSpacing.place(relx=0.513, rely=0.639, relwidth=0.258, relheight=0.08)
         self.lblSaveAsVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAs = Label(self.tabStrip__Tab1, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
@@ -243,7 +247,7 @@ class Application_ui(Frame):
         self.lblFontHeight = Label(self.tabStrip__Tab1, text='Height (mm)', textvariable=self.lblFontHeightVar, style='TlblFontHeight.TLabel')
         self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
         self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
-        self.lblFontHeight.place(relx=0.513, rely=0.383, relwidth=0.231, relheight=0.08)
+        self.lblFontHeight.place(relx=0.513, rely=0.383, relwidth=0.258, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab1, text='Font')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
@@ -399,17 +403,11 @@ class Application(Application_ui):
         Application_ui.__init__(self, master)
         self.master.title('sprintFont v{} [github.com/cdhigh]'.format(__VERSION__))
         width = str_to_int(self.master.geometry().split('x')[0])
-        if (width > 16):
+        if (width > 16): #状态栏仅使用一个分栏，占满全部空间
             self.staBar.panelwidth(0, width)
 
-        #封装文件文本框响应回车事件
-        self.txtFootprintFile.bind('<Return>', self.txtFootprintFile_Return)
-        self.txtSvgFile.bind('<Return>', self.txtSvgFile_Return)
-
-        #绑定文本控件的右键菜单
-        self.txtMain.bind('<Button-3>', rightClicker, add='')
-        self.txtFootprintFile.bind('<Button-3>', rightClicker, add='')
-        self.txtSvgFile.bind('<Button-3>', rightClicker, add='')
+        #绑定额外的事件处理函数
+        self.bindWidgetEvents()
         
         #初始化多语种支持
         self.sysLanguge = locale.getdefaultlocale()[0]
@@ -444,19 +442,28 @@ class Application(Application_ui):
             self.inFileName = sys.argv[1]
             if not (os.path.exists(self.inFileName)):
                 self.inFileName = ''
-
+            
         #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
             inExts = os.path.splitext(self.inFileName)
             self.outFileName = '{}_out{}'.format(inExts[0], inExts[1] if (len(inExts) > 1) else '')
-            self.staBar.text(_("  In: {}").format(self.inFileName))
         else: #单独执行
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
-            self.staBar.text(_("  Standalone mode"))
+
+        #显示输入文件名或显示单独执行模式字符串
+        self.setStaBarByMode()
+
+        #版本更新检查，启动5s后检查一次更新
+        self.versionJson = {}
+        self.master.after(5000, self.periodicCheckUpdate)
 
         self.txtMain.focus_set()
+
+    #显示输入文件名或显示单独执行模式字符串
+    def setStaBarByMode(self):
+        self.staBar.text(_("  In: {}").format(self.inFileName) if self.inFileName else _("  Standalone mode"))
 
     #多页控件的当前页面发现改变
     def tabStrip_NotebookTabChanged(self, event):
@@ -484,6 +491,20 @@ class Application(Application_ui):
         if 0 <= tabNo < len(tabs):
             self.tabStrip.select(tabs[tabNo])
 
+    #绑定额外的事件处理函数
+    def bindWidgetEvents(self):
+        #绑定文件文本框的回车事件
+        self.txtFootprintFile.bind('<Return>', self.txtFootprintFile_Return)
+        self.txtSvgFile.bind('<Return>', self.txtSvgFile_Return)
+
+        #绑定文本控件的右键菜单
+        self.txtMain.bind('<Button-3>', rightClicker, add='')
+        self.txtFootprintFile.bind('<Button-3>', rightClicker, add='')
+        self.txtSvgFile.bind('<Button-3>', rightClicker, add='')
+
+        #绑定状态栏的双击事件
+        self.staBar.lbls[0].bind('<Double-Button-1>', self.staBar_Double_Button_1)
+
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
         self.cmdOk.setText(_("Ok"))
@@ -503,9 +524,9 @@ class Application(Application_ui):
         self.lblWordSpacing.setText(_("Word spacing (mm)"))
         self.LblLineSpacing.setText(_("Line spacing (mm)"))
         self.lblFootprintFile.setText(_("Input"))
-        self.tabStrip.tab(0, text=_("Font"))
-        self.tabStrip.tab(1, text=_("Footprint"))
-        self.tabStrip.tab(2, text=_("SVG"))
+        self.tabStrip.tab(0, text=_("TabFont"))
+        self.tabStrip.tab(1, text=_("TabFootprint"))
+        self.tabStrip.tab(2, text=_("TabSVG"))
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
         self.lblSvgTips.setText(_("svg_features_tips"))
@@ -514,7 +535,20 @@ class Application(Application_ui):
         self.lblSvgHeight.setText(_("svgHeight"))
         self.lblSvgLayer.setText(_("Layer"))
         self.lblSvgSmooth.setText(_("Smooth"))
-        
+    
+    #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
+    #此函数在程序启动后5s才会得到执行
+    def periodicCheckUpdate(self):
+        #一个月检查一个更新
+        now = datetime.datetime.now()
+        if ((not self.lastCheckUpdate) or ((now - self.lastCheckUpdate).days >= 30)):
+            self.lastCheckUpdate = now
+            try:
+                self.thVersionCheck = threading.Thread(target=self.versionCheckThread, daemon=True)
+                self.thVersionCheck.start()
+            except:
+                pass
+
     #初始化填充界面控件
     def populateWidgets(self):
         #获取系统已安装的字体列表
@@ -645,16 +679,29 @@ class Application(Application_ui):
             else:
                 self.easyEdaSite = ''
 
+            #版本更新检查
+            lastCheck = self.cfg.get('lastCheckUpdate', '')
+            try:
+                self.lastCheckUpdate = datetime.datetime.strptime(lastCheck, '%Y-%m-%d')
+            except:
+                self.lastCheckUpdate = None
+            self.skipVersion = self.cfg.get('skipVersion', '')
+
+
     #保存当前配置数据
     def saveConfig(self):
+        if self.versionJson: #如果检查到版本更新，则明天再检查一次
+            self.lastCheckUpdate = datetime.datetime.now() - datetime.timedelta(days=29)
+
         cfg = {'language': self.language, 'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
             'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
             'importFootprintText': str(self.chkImportFootprintText.value()),
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
-            'easyEdaSite': self.easyEdaSite,
-            'lastTab': str(self.getCurrentTabStripTab())}
+            'easyEdaSite': self.easyEdaSite, 'lastTab': str(self.getCurrentTabStripTab()),
+            'lastCheckUpdate': self.lastCheckUpdate.strftime('%Y-%m-%d') if self.lastCheckUpdate else '',
+            'skipVersion': str(self.skipVersion),}
         
         if (cfg != self.cfg):  #有变化再写配置文件
             self.cfg = cfg
@@ -1058,6 +1105,27 @@ class Application(Application_ui):
         textIo = svgToPolygon(fileName, layerIdx=layerIdx, height=height, smooth=smooth, usePolygon=usePolygon)
 
         return str(textIo) if (textIo and textIo.isValid()) else ''
+
+    #根据情况确定状态栏的双击响应方式
+    def staBar_Double_Button_1(self, event=None):
+        if self.versionJson:
+            from version_check import openNewVersionDialog
+            ret = openNewVersionDialog(self.master, __VERSION__, self.versionJson)
+            if (ret == 'skip'):
+                self.skipVersion = self.versionJson.get('lastest', '')
+
+            self.saveConfig()
+            self.versionJson = {} #只允许点击一次
+            self.setStaBarByMode() #恢复正常的状态栏显示
+
+    #联网检查更新线程
+    def versionCheckThread(self, arg=None):
+        #print('versionCheckThread')
+        from version_check import checkUpdate
+        self.versionJson = checkUpdate(__VERSION__, self.skipVersion)
+        #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
+        if self.versionJson:
+            self.staBar.text(_('  New version found, double-click to show details'))
 
 if __name__ == "__main__":
     top = Tk()

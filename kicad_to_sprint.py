@@ -2,6 +2,8 @@
 #-*- coding:utf-8 -*-
 """
 将kicad的封装库(.kicad_mod)转换为Sprint-Layout的Text-IO格式
+封装库格式：https://dev-docs.kicad.org/en/file-formats/sexpr-intro/index.html#_footprint
+Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys
 from io import StringIO
@@ -154,8 +156,8 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         #if kiPad['clearance']: #outline / convexhull
         #    spPad.clearance = kiPad['clearance']
 
-        if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
-            spPad.soldermask = False
+        #if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
+        #    spPad.soldermask = False
 
         textIo.add(spPad)
     
