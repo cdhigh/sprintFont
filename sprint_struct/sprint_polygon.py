@@ -4,10 +4,10 @@
 多边形数据结构和算法
 Author: cdhigh <https://github.com/cdhigh>
 """
-from .sprint_component import SprintComponent
+from .sprint_element import *
 
 #里面的长度单位都是mm
-class SprintPolygon(SprintComponent):
+class SprintPolygon(SprintElement):
     def __init__(self, layerIdx: int=2, lineWidth: float=0):
         super().__init__(layerIdx)
         self.reset(layerIdx, lineWidth)
@@ -34,7 +34,7 @@ class SprintPolygon(SprintComponent):
     def updateSelfBbox(self):
         return #addPoint()时就调用了
         #for (x, y) in self.points:
-        #    self.updateLimit(x, y)
+        #    self.updateBbox(x, y)
             
     def __str__(self):
         if (not self.isValid()):
@@ -44,13 +44,13 @@ class SprintPolygon(SprintComponent):
         if self.clearance:
             outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.cutout is not None:
-            outStr.append('CUTOUT={}'.format('true' if self.cutout else 'false'))
+            outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
-            outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
+            outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
         if self.hatch is not None:
-            outStr.append('HATCH={}'.format('true' if self.hatch else 'false'))
+            outStr.append('HATCH={}'.format(self.booleanStr(self.hatch)))
         if self.hatchAuto is not None:
-            outStr.append('HATCH_AUTO={}'.format('true' if self.hatchAuto else 'false'))
+            outStr.append('HATCH_AUTO={}'.format(self.booleanStr(self.hatchAuto)))
         if self.hatchWidth:
             outStr.append('HATCH_WIDTH={:0.0f}'.format(self.hatchWidth * 10000))
 
@@ -60,9 +60,19 @@ class SprintPolygon(SprintComponent):
 
         return ','.join(outStr) + ';'
 
+    #重载等号运算符，判断两个是否相等
+    def __eq__(self, other):
+        if not isinstance(other, SprintPolygon):
+            return False
+
+        if ((self.layerIdx != other.layerIdx) or (self.lineWidth != other.lineWidth) or (self.points != other.points)):
+            return False
+        else:
+            return True
+
     #增加一个点
     def addPoint(self, x: float, y: float):
-        self.updateLimit(x, y) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
+        self.updateBbox(x, y) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
         self.points.append((x, y))
 
     #生成器，用于迭代里面所有的线段
@@ -84,7 +94,7 @@ class SprintPolygon(SprintComponent):
     #判断一个点是否在此多边形内，此算法专门为字体优化，不判断很多特殊情况
     def encircle(self, x: float, y: float):
         #先判断极限情况，如果在外包矩形外，就是在多边形外
-        if ((x < self.xMin) or (x > self.xMax) or (y < self.yMin) or (y > self.yMax)):
+        if ((x <= self.xMin) or (x >= self.xMax) or (y <= self.yMin) or (y >= self.yMax)):
             return False
 
         #W. Randolph Franklin 的PNPoly算法
@@ -140,6 +150,23 @@ class SprintPolygon(SprintComponent):
 
             segIdx += 1
 
+    #复制一个自身，并且将坐标相对某个新原点进行移动，
+    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
+    #ox/oy: 新的原点坐标
+    def cloneToNewOrigin(self, ox: float, oy: float):
+        ins = SprintPolygon(self.layerIdx, self.lineWidth)
+        ins.points = [(round((pt[0] - ox) * 1000), round((pt[1] - oy) * 1000)) for pt in self.points]
+        ins._ptIdx = self._ptIdx
+        ins._segIdx = self._segIdx
+        ins.clearance = self.clearance
+        ins.cutout = self.cutout
+        ins.soldermask = self.soldermask
+        ins.hatch = self.hatch
+        ins.hatchAuto = self.hatchAuto
+        ins.hatchWidth = self.hatchWidth
+        for (x, y) in ins.points:
+            ins.updateBbox(x, y)
+        return ins
 
 #判断一个点是否在线段上，使用向量法
 def pointInLineSeg(x: float, y: float, x1: float, y1: float, x2: float, y2: float):

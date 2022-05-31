@@ -1,12 +1,15 @@
 """
 Library for handling KiCad's footprint files (`*.kicad_mod`).
 https://gitlab.com/kicad/libraries/kicad-library-utils/-/tree/master/common
-已经修改过，使用时注意ARC的新老版本定义不一样，要判断arc_dict["mid"]是否为空
+已经修改过：基于Gitlab上的2022-04-13版本修改
+1. 使用时注意ARC的新老版本定义不一样，要判断arc_dict["mid"]是否为空
+2. 打开文件时使用不同的解码策略
 """
 
 import copy
 import math
 import time
+import locale
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from .sexpr import parse_sexp, SexprBuilder
@@ -62,8 +65,16 @@ class KicadMod:
         self.filename: str = filename
 
         # read the s-expression data
-        f = open(filename)
-        sexpr_data = "".join(f.readlines())
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                sexpr_data = "".join(f.readlines())
+        except UnicodeDecodeError:
+            try:
+                with open(filename, 'r', encoding=locale.getpreferredencoding()) as f:
+                    sexpr_data = "".join(f.readlines())
+            except UnicodeDecodeError:  #如果还失败，则让其抛出异常，在外面捕获
+                with open(filename, 'r', encoding='latin-1') as f:
+                    sexpr_data = "".join(f.readlines())
 
         # parse s-expr
         sexpr_data = parse_sexp(sexpr_data)

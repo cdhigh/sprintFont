@@ -149,7 +149,8 @@ class LcComponent:
         self.importText = importText
 
         #逐行扫描，调用对应的解析函数
-        textIo = SprintTextIO(isComponent=True)
+        textIo = SprintTextIO()
+        component = SprintComponent()
         for line in self.fpShape:
             args = line.split("~")
             if len(args) <= 1:
@@ -157,15 +158,18 @@ class LcComponent:
 
             model = args[0] #第一个元素为绘图种类
             if model in self.handlers:
-                self.handlers.get(model)(args[1:], textIo)
+                self.handlers.get(model)(args[1:], component)
 
         #添加一些辅助信息
-        if textIo.isValid():
-            textIo.name = self.prefix
-            textIo.comment = '{} ({})'.format(self.fpName, self.lcId)
-            textIo.package = self.packageName
-
-        return textIo
+        if component.isValid():
+            component.name = self.prefix
+            component.nameVisible = True if self.prefix else False
+            component.comment = '{} ({})'.format(self.fpName, self.lcId)
+            component.package = self.packageName
+            textIo.add(component)
+            return textIo
+        else:
+            return None
 
     #联网获取一个json信息，返回 (errMsg, jsonObj)
     @classmethod
@@ -281,8 +285,8 @@ class LcComponent:
     #3.[pointArr]：坐标点数据
     #4.[gId]：元素id
     #5.[locked]：是否锁定
-    def handleTrack(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or (len(data) < 4):
+    def handleTrack(self, data: list, component: SprintComponent):
+        if not data or not component or (len(data) < 4):
             return
             
         width = mil2mm(data[0])
@@ -292,7 +296,7 @@ class LcComponent:
             lcTra = SprintTrack(layer, width)
             lcTra.addPoint(points[2 * i], points[2 * i + 1])
             lcTra.addPoint(points[2 * i + 2], points[2 * i + 3])
-            textIo.add(lcTra)
+            component.add(lcTra)
 
     #分析PAD对象
     #PAD~RECT~3970.275~3002.756~4.3307~0.7874~1~~1~0~3968.1099 3002.3623 3972.4406 3002.3623 3972.4406 3003.1497 3968.1099 3003.1497~0~gge8~0~~Y~0~0~0.1969~3970.2754,3002.7561
@@ -317,8 +321,8 @@ class LcComponent:
     #16.[pasteexpansion]：助焊扩展
     #17.[solderexpansion]：阻焊扩展
     #18.[holeCenter]：孔中心坐标
-    def handlePad(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+    def handlePad(self, data: list, component: SprintComponent):
+        if not data or not component:
             return
             
         shape = lcPadShapeMap.get(data[0], PAD_FORM_ROUND)
@@ -385,7 +389,7 @@ class LcComponent:
         #if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
         #    spPad.soldermask = False
 
-        textIo.add(spPad)
+        component.add(spPad)
     
     #处理弧形，立创的弧形直接使用SVG的画圆弧命令
     #stroke_width,layer_id,net,path,helper_dots,id,is_locked
@@ -399,8 +403,8 @@ class LcComponent:
     #4.[c_helper_dots]：辅助线路径数据
     #5.[gId]：元素id
     #6.[locked]：是否锁定
-    def handleArc(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or (len(data) < 4):
+    def handleArc(self, data: list, component: SprintComponent):
+        if not data or not component or (len(data) < 4):
             return
         
         width = mil2mm(data[0])
@@ -429,7 +433,7 @@ class LcComponent:
         spCir.setByStartEndRadius(startX, startY, radiusX, radiusY, 
             axisAngle, bigArc, clockwise, endX, endY)
         
-        textIo.add(spCir)
+        component.add(spCir)
             
     #处理圆形
     #cx,cy,radius,stroke_width,layer_id,id,is_locked
@@ -444,8 +448,8 @@ class LcComponent:
     #6.[locked]：是否锁定
     #7.[net]：网络
     #8.[transformarc]:由圆转换的两个半圆的id信息
-    def handleCircle(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or (len(data) < 5):
+    def handleCircle(self, data: list, component: SprintComponent):
+        if not data or not component or (len(data) < 5):
             return
         
         layer = lcLayerMap.get(data[4], LAYER_S1)
@@ -464,7 +468,7 @@ class LcComponent:
         spCir.center = (centerX, centerY)
         spCir.width = width
         spCir.radius = radius
-        textIo.add(spCir)
+        component.add(spCir)
     
     #处理矩形
     #x,y,width,height,layer_id,name,xx,stroke_width
@@ -483,8 +487,8 @@ class LcComponent:
     #9.[transform]:偏移数据
     #10.[net]：网络
     #11.[c_etype]:c_etype属性值（自定义的用于细分图元类型的属性）
-    def handleRect(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or (len(data) < 8):
+    def handleRect(self, data: list, component: SprintComponent):
+        if not data or not component or (len(data) < 8):
             return
 
         layer = lcLayerMap.get(data[4], LAYER_S1)
@@ -504,19 +508,19 @@ class LcComponent:
             lcTra.addPoint(x1 + width, y1 + height)
             lcTra.addPoint(x1, y1 + height)
             lcTra.addPoint(x1, y1)
-            textIo.add(lcTra)
+            component.add(lcTra)
         else: #填充的话，使用多边形组成
             polygon = SprintPolygon(layer, strokeWidth)
             polygon.addPoint(x1, y1)
             polygon.addPoint(x1 + width, y1)
             polygon.addPoint(x1 + width, y1 + height)
             polygon.addPoint(x1, y1 + height)
-            textIo.add(polygon)
+            component.add(polygon)
     
     #开孔实现为内外径相等的过孔
     #center_x,center_y,radius,id,is_locked
-    def handleHole(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo:
+    def handleHole(self, data: list, component: SprintComponent):
+        if not data or not component:
             return
             
         x = mil2mm(data[0])
@@ -528,7 +532,7 @@ class LcComponent:
         spPad.size = size
         spPad.drill = spPad.size
         spPad.form = PAD_FORM_ROUND
-        textIo.add(spPad)
+        component.add(spPad)
     
     #处理文本信息
     #TEXT~L~4018.5~3025.62~0.8~0~0~3~~5.9055~+~M 4020.92 3019.4999 L 4020.92 
@@ -549,8 +553,8 @@ class LcComponent:
     #13.[fontFamily]：字体
     #14.[locked]：是否锁定
     #15.[c_etype]：c_etype属性值（c_etype是自定义的用于细分图元类型的属性）
-    def handleText(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or not self.importText:
+    def handleText(self, data: list, component: SprintComponent):
+        if not data or not component or not self.importText:
             return
         
         layer = lcLayerMap.get(data[6], LAYER_S1)
@@ -570,7 +574,7 @@ class LcComponent:
         #mirror = str_to_int(data[5])
         #net = data[7]
         
-        textIo.add(spText)
+        component.add(spText)
         
     #处理过孔，过孔被处理为双面焊盘
     #x,y,diameter,hole_radius
@@ -583,8 +587,8 @@ class LcComponent:
     #4.[holeR]：过孔内径
     #5.[gId]：元素id
     #6.[locked]：是否锁定
-    def handleVia(self, data: list, textIo: SprintTextIO):
-        if not data or not textIo or not self.importText:
+    def handleVia(self, data: list, component: SprintComponent):
+        if not data or not component or not self.importText:
             return
 
         x = mil2mm(data[0])
@@ -599,4 +603,4 @@ class LcComponent:
         spPad.drill = drill
         spPad.via = True
         spPad.soldermask = False  #盖绿油
-        textIo.add(spPad)
+        component.add(spPad)

@@ -5,10 +5,10 @@ Track定义
 Author: cdhigh <https://github.com/cdhigh>
 """
 
-from .sprint_component import SprintComponent
+from .sprint_element import *
 
 #里面的长度单位都是mm
-class SprintTrack(SprintComponent):
+class SprintTrack(SprintElement):
     def __init__(self, layerIdx: int=1, width: float=0):
         super().__init__(layerIdx)
         self.width = width
@@ -24,7 +24,7 @@ class SprintTrack(SprintComponent):
 
     def updateSelfBbox(self):
         for (x, y) in self.points:
-            self.updateLimit(x, y)
+            self.updateBbox(x, y)
 
     #增加一个点
     def addPoint(self, x: float, y: float):
@@ -38,16 +38,41 @@ class SprintTrack(SprintComponent):
         if self.clearance:
             outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.cutout is not None:
-            outStr.append('CUTOUT={}'.format('true' if self.cutout else 'false'))
+            outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
-            outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
+            outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
         if self.flatstart is not None:
-            outStr.append('FLATSTART={}'.format('true' if self.flatstart else 'false'))
+            outStr.append('FLATSTART={}'.format(self.booleanStr(self.flatstart)))
         if self.flatend is not None:
-            outStr.append('FLATEND={}'.format('true' if self.flatend else 'false'))
+            outStr.append('FLATEND={}'.format(self.booleanStr(self.flatend)))
         
         #点列表
         for idx, (x, y) in enumerate(self.points):
             outStr.append('P{}={:0.0f}/{:0.0f}'.format(idx, x * 10000, y * 10000))
 
         return ','.join(outStr) + ';'
+
+    #重载等号运算符，判断两个Track是否相等
+    def __eq__(self, other):
+        if not isinstance(other, SprintTrack):
+            return False
+
+        if ((self.layerIdx != other.layerIdx) or (self.width != other.width) or (self.points != other.points)):
+            return False
+            
+        return True
+
+    #复制一个自身，并且将坐标相对某个新原点进行移动，
+    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
+    #ox/oy: 新的原点坐标
+    def cloneToNewOrigin(self, ox: float, oy: float):
+        ins = SprintTrack(self.layerIdx, self.width)
+        ins.points = [(round((pt[0] - ox) * 1000), round((pt[1] - oy) * 1000)) for pt in self.points]
+        ins.clearance = self.clearance
+        ins.cutout = self.cutout
+        ins.soldermask = self.soldermask
+        ins.flatstart = self.flatstart
+        ins.flatend = self.flatend
+        ins.updateSelfBbox()
+        return ins
+        

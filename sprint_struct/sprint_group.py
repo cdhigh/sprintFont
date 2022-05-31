@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+#-*- coding:utf-8 -*-
+"""
+表示一个锁定的组件，锁定组件内可以包含多种绘图元素
+Author: cdhigh <https://github.com/cdhigh>
+"""
+from .sprint_element import *
+
+class SprintGroup(SprintElement):
+    def __init__(self):
+        super().__init__(self)
+        self.elements = [] #各种绘图元素，都是SprintElement的子类
+    
+    def isValid(self):
+        return (len(self.elements) > 0)
+
+    #转换为字符串TextIO
+    def __str__(self):
+        if not self.isValid():
+            return ''
+
+        outStr = ['GROUP;']
+        #逐个添加里面的绘图元素
+        outStr.extend([str(obj) for obj in self.elements])
+        outStr.append('END_GROUP;')
+        
+        #合并绘图元素，并去掉可能的空字符串
+        return '\n'.join([s for s in outStr if s])
+
+    #统一的添加绘图元素接口
+    def add(self, elem: SprintElement):
+        if elem:
+            elem.updateSelfBbox()
+            self.elements.append(elem)
+
+    #添加列表中所有元素
+    def addAll(self, elemList: list):
+        for elem in elemList:
+            self.add(elem)
+
+    #更新元件所占的外框
+    def updateSelfBbox(self):
+        for elem in self.elements:
+            elem.updateSelfBbox()
+
+    #获取特定板层的所有元素，返回一个列表
+    def getAllElementsInLayer(self, layerIdx: int):
+        return [elem for elem in self.elements if elem.layerIdx == layerIdx]
+    
+    #获取所有的下层绘图元素，返回一个列表
+    def children(self):
+        from .sprint_component import SprintComponent
+        elems = []
+        for elem in self.elements:
+            if isinstance(elem, (SprintComponent, SprintGroup)):
+                elems.extend(elem.children())
+            else:
+                elems.append(elem)
+        return elems
+
+    #复制一个自身，并且将坐标相对某个新原点进行移动，
+    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
+    #ox/oy: 新的原点坐标
+    def cloneToNewOrigin(self, ox: float, oy: float):
+        ins = SprintGroup()
+        for elem in self.elements:
+            if hasattr(elem, 'cloneToNewOrigin'):
+                ins.elements.append(elem.cloneToNewOrigin(ox, oy))
+        return ins
+
+

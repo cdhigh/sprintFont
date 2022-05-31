@@ -58,9 +58,9 @@ class I18n:
     "Failed to parse file content": ("", "分析文件内容错误"),
     "Failed to parse content\nMaybe Id error or Internet disconnected?": ("", "分析内容错误：\n可能是ID错误或网络不通？"),
     "Input": ("", "输入"),
-    "TabFont": ("            Font            ", "            字体            "),    
-    "TabFootprint": ("            Footprint            ", "            封装            "),
-    "TabSVG": ("            SVG            ", "            SVG            "),
+    "TabFont":      ("            Font            ", "            字体            "),    
+    "TabFootprint": ("          Footprint         ", "            封装            "),
+    "TabSVG":       ("         SVG/Qrcode         ", "         SVG/二维码         "),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
     "easyEDA footprint": ("", "力创封装文件"),
@@ -70,7 +70,7 @@ class I18n:
     " Copy": ("", " 复制"),
     " Paste": ("", " 粘贴"),
     "Footprint_features_tips": ("Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)",
-        "当前支持：\n1. Kicad封装文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (C可省略)"),
+        "当前支持：\n1. Kicad 封装库文件：*.kicad_mod\n2. 力创商城元件编号：C + 若干位数字 (C可省略)"),
     "The content is not json format": ("", "内容不是json格式"),
     "The content is not a valid json format": ("", "内容不是正确的json格式"),
     "Error from easyEDA:\n{}": ("", "来自立创的错误信息：\n{}"),
@@ -91,6 +91,7 @@ class I18n:
     "Download": ("", "下载"),
     "Skip this version": ("", "跳过此版本"),
     "Later": ("", "稍后"),
+    "Qrcode": ("", "二维码"),
     }
 
     #这个属性是可以在程序执行过程中修改的

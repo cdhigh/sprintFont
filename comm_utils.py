@@ -190,6 +190,32 @@ def radian(ux, uy, vx, vy):
     
     return rad
 
-#3986.7795 3000.0358 A 4.5001 4.5001 0 1 1 3995.7795 3000.0358
-#print(svgArcToCenterParam(3986.7795, 3000.0358, 4.5001, 4.5001, 0, 1, 1, 3995.7795, 3000.0358))
+
+#获得圆心坐标为center 半径为r的圆cutNum等分后的圆上坐标
+#cx/cy: 圆心坐标
+#radius: 半径
+#cutNum: 需要多少等分
+#返回一个列表 [(x,y),...]
+def cutCircle(cx: float, cy: float, radius: float, cutNum: int):
+    points = []
+    angle = 360 / cutNum
+    for idx in range(cutNum):
+        radians = (math.pi / 180) * ((idx + 1) * angle)
+        points.append((cx + math.sin(radians) * radius, cy + math.cos(radians) * radius))
+    
+    return points
+
+
+#以(cx, cy)为旋转中心点，
+#已经知道旋转前点的位置(x1,y1)和旋转的角度a，求旋转后点的新位置(x2,y2)
+def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, clockwise: int=0):
+    if clockwise: #顺时针旋转
+        x2 = (x1 - cx) * math.cos(angle) + (y1 - cy) * math.sin(angle) + cx
+        y2 = (y1 - cy) * math.cos(angle) - (x1 - cx) * math.sin(angle) + cy
+    else:         #逆时针旋转
+        x2 = (x1 - cx) * math.cos(angle) - (y1 - cy) * math.sin(angle) + cx
+        y2 = (y1 - cy) * math.cos(angle) + (x1 - cx) * math.sin(angle) + cy
+
+    return (x2, y2)
+
 

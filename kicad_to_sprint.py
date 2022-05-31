@@ -33,7 +33,7 @@ kicadLayerMap = {
     "Edge.Cuts": LAYER_U,
     "Margin":  LAYER_U,
     "In1.Cu": LAYER_I1,
-    "In1.Cu": LAYER_I2,
+    "In2.Cu": LAYER_I2,
 }
 
 #kicad焊盘形状和Sprint-Layout的对应关系
@@ -51,12 +51,13 @@ kicadPadShapeMap = {
 #kicadFile: kicad_mod文件名
 #importText: 是否输出文本信息
 def kicadModToTextIo(kicadFile: str, importText: int):
-    #try:
-    kicadMod = KicadMod(kicadFile)
-    #except:
-    #    return None
+    try:
+        kicadMod = KicadMod(kicadFile)
+    except:
+        return None
     
-    textIo = SprintTextIO(isComponent=True)
+    textIo = SprintTextIO()
+    component = SprintComponent()
 
     #线
     for kiLine in kicadMod.lines:
@@ -66,7 +67,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         kiTra = SprintTrack(layerIdx, kiLine['width'] if kiLine['width'] else 0)
         kiTra.addPoint(kiLine['start']['x'], kiLine['start']['y'])
         kiTra.addPoint(kiLine['end']['x'], kiLine['end']['y'])
-        textIo.add(kiTra)
+        component.add(kiTra)
     
     #多边形
     for kiPoly in kicadMod.polys:
@@ -76,7 +77,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         polygon = SprintPolygon(layerIdx, kiPoly['width'])
         for pt in kiPoly['points']:
             polygon.addPoint(pt['x'], pt['y'])
-        textIo.add(polygon)
+        component.add(polygon)
     
     #矩形
     for kiRect in kicadMod.rects:
@@ -92,7 +93,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         polygon.addPoint(x2, y1)
         polygon.addPoint(x2, y2)
         polygon.addPoint(x1, y2)
-        textIo.add(polygon)
+        component.add(polygon)
     
     #焊盘
     for kiPad in kicadMod.pads:
@@ -159,7 +160,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         #if 0.0 < spPad.drill <= 0.51: #小于0.51mm的过孔默认盖绿油
         #    spPad.soldermask = False
 
-        textIo.add(spPad)
+        component.add(spPad)
     
     #文本
     if importText:
@@ -187,7 +188,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             
             #spText.thickness = 2
 
-            textIo.add(spText)
+            component.add(spText)
     
     #圆形
     for kiCir in kicadMod.circles:
@@ -198,7 +199,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         spCir.center = (kiCir['center']['x'], kiCir['center']['y'])
         spCir.width = kiCir['width']
         spCir.setRadiusByArcPoint(kiCir['end']['x'], kiCir['end']['y']) #通过end计算半径
-        textIo.add(spCir)
+        component.add(spCir)
     
     #弧形
     for kiArc in kicadMod.arcs:
@@ -214,12 +215,14 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             spCir.setArcByCenterStartAngle(kiArc['start']['x'], kiArc['start']['y'], kiArc['end']['x'], 
                 kiArc['end']['y'], kiArc['angle'])
         
-        textIo.add(spCir)
+        component.add(spCir)
 
-    if textIo.isValid():
-        textIo.comment = '{}'.format(kicadMod.name)
-        
-    return textIo
+    if component.isValid():
+        component.comment = '{}'.format(kicadMod.name)
+        textIo.add(component)
+        return textIo
+    else:
+        return None
 
     #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
     bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
@@ -241,7 +244,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         for (x, y) in midPoints[::-1]:
             polygon.addPoint(x, y)
 
-        textIo.add(polygon)
+        component.add(polygon)
 
-    return str(textIo)
+    return textIo
 

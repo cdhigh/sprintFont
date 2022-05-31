@@ -14,7 +14,7 @@ from sprint_struct.sprint_textio import *
 from comm_utils import *
 
 #SVG转换为spring-layout的多边形
-#svgFile: svg文件
+#svgFile: svg文件或SVG字符串
 #layerIdx: 电路板图层索引，从1开始
 #height: 绘制高度，单位为毫米
 #smooth: 曲线平滑系数，参见 SMOOTH_MAP
@@ -22,12 +22,20 @@ from comm_utils import *
 #返回SprintTextIO实例
 #字体坐标原点在屏幕左下角，但Sprint-Layout坐标原点在左上角，所以字形需要垂直翻转
 def svgToPolygon(svgFile: str, layerIdx: int=2, height: float=10, smooth: int=2, usePolygon: bool=True):
-    try:
-        svg = SVGPath(svgFile)
-        pen = SVGPathPen(None)
-        svg.draw(pen)
-    except:
-        return None
+    if svgFile.lstrip().startswith('<svg'): #从字符串创建
+        try:
+            svg = SVGPath.fromstring(svgFile)
+            pen = SVGPathPen(None)
+            svg.draw(pen)
+        except:
+            return None
+    else:
+        try:
+            svg = SVGPath(svgFile)
+            pen = SVGPathPen(None)
+            svg.draw(pen)
+        except:
+            return None
 
     svgCmds = pen._commands  #提取绘制语句
     xMin, yMin, xMax, yMax = getSvgBoundingBox(svgCmds)

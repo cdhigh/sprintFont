@@ -33,8 +33,8 @@ from widget_right_click import rightClicker
 from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 
-__VERSION__ = "1.1"
-__DATE__ = "20220525"
+__VERSION__ = "1.2"
+__DATE__ = "20220529"
 __AUTHOR__ = "cdhigh"
 
 WIN_DIR = os.environ['WINDIR']
@@ -98,8 +98,8 @@ class Application_ui(Frame):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (361 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,361,x,y))
+        y = (hs / 2) - (360 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,360,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -140,7 +140,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.867)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.869)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -386,12 +386,12 @@ class Application_ui(Frame):
         self.lblSvgTips.setText = lambda x: self.lblSvgTipsVar.set(x)
         self.lblSvgTips.text = lambda : self.lblSvgTipsVar.get()
         self.lblSvgTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.208)
-        self.lblSvgFileVar = StringVar(value='File')
-        self.style.configure('TlblSvgFile.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblSvgFile = Label(self.tabStrip__Tab3, text='File', textvariable=self.lblSvgFileVar, style='TlblSvgFile.TLabel')
-        self.lblSvgFile.setText = lambda x: self.lblSvgFileVar.set(x)
-        self.lblSvgFile.text = lambda : self.lblSvgFileVar.get()
-        self.lblSvgFile.place(relx=0.027, rely=0.319, relwidth=0.11, relheight=0.08)
+        self.cmbSvgQrcodeList = ['',]
+        self.cmbSvgQrcodeVar = StringVar(value='')
+        self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
+        self.cmbSvgQrcode.setText = lambda x: self.cmbSvgQrcodeVar.set(x)
+        self.cmbSvgQrcode.text = lambda : self.cmbSvgQrcodeVar.get()
+        self.cmbSvgQrcode.place(relx=0.013, rely=0.319, relwidth=0.164)
         self.tabStrip.add(self.tabStrip__Tab3, text='SVG')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
@@ -435,13 +435,25 @@ class Application(Application_ui):
         self.restoreConfig()
         self.translateWidgets()
 
-        #分析Sprint-Layout传入的参数，目前仅使用输入文件，其他的忽略
+        #分析Sprint-Layout传入的参数
         self.inFileName = ''
         self.outFileName = ''
+        self.pcbWidth = 0
+        self.pcbHeight = 0
+        self.pcbAll = False
         if (len(sys.argv) >= 2): #第二个参数为临时文件名
             self.inFileName = sys.argv[1]
             if not (os.path.exists(self.inFileName)):
                 self.inFileName = ''
+                
+            w = [arg for arg in sys.argv if arg.startswith('/W:')] #板子宽度
+            h = [arg for arg in sys.argv if arg.startswith('/H:')] #板子高度
+            a = [arg for arg in sys.argv if arg == '/A']  #如果是整板导出，则有此参数
+            if w and h:
+                self.pcbWidth = str_to_int(w[0][3:]) / 10000
+                self.pcbHeight = str_to_int(h[0][3:]) / 10000
+                
+            self.pcbAll = True if a else False
             
         #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
@@ -530,7 +542,7 @@ class Application(Application_ui):
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
         self.lblSvgTips.setText(_("svg_features_tips"))
-        self.lblSvgFile.setText(_("File"))
+        #self.lblSvgFile.setText(_("File"))
         self.lblSvgMode.setText(_("Mode"))
         self.lblSvgHeight.setText(_("svgHeight"))
         self.lblSvgLayer.setText(_("Layer"))
@@ -595,6 +607,11 @@ class Application(Application_ui):
         self.cmbSvgSmooth.configure(values=self.cmbSmoothList)
         self.cmbSvgSmooth.current(2)
 
+        #SVG/QRCODE选择
+        self.cmbSvgQrcodeList = [_("SVG"), _("Qrcode")]
+        self.cmbSvgQrcode.configure(values=self.cmbSvgQrcodeList)
+        self.cmbSvgQrcode.current(0)
+
         #SVG生成方法
         self.cmbSvgModeList = [_("Track"), _("Polygon")]
         self.cmbSvgMode.configure(values=self.cmbSvgModeList)
@@ -655,6 +672,9 @@ class Application(Application_ui):
                 self.chkImportFootprintText.setValue(1)
 
             #SVG页面
+            svgQrcode = str_to_int(cfg.get('svgQrcode', '0'), 100)
+            if 0 <= svgQrcode < len(self.cmbSvgQrcodeList):
+                self.cmbSvgQrcode.current(svgQrcode)
             svgMode = str_to_int(cfg.get('svgMode', '2'), 100)
             if 0 <= svgMode < len(self.cmbSvgModeList):
                 self.cmbSvgMode.current(svgMode)
@@ -697,6 +717,7 @@ class Application(Application_ui):
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
             'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
             'importFootprintText': str(self.chkImportFootprintText.value()),
+            'svgQrcode': str(self.cmbSvgQrcode.current()),
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
             'easyEdaSite': self.easyEdaSite, 'lastTab': str(self.getCurrentTabStripTab()),
@@ -843,16 +864,36 @@ class Application(Application_ui):
     def lblSaveAsSvg_Button_1(self, event):
         self.saveConfig()
         fileName = self.txtSvgFile.text().strip()
+        isQrcode = self.cmbSvgQrcode.current()
         
-        if (not self.verifyFileName(fileName)):
+        #如果是SVG模式，校验文件，否则直接使用文本
+        if (not self.verifyFileName(fileName, (lambda x: isQrcode) if isQrcode else None)):
             return
-        
-        retStr = self.generateSvg(fileName)
+
+        #生成二维码
+        if isQrcode:
+            retStr = self.generateSvg(self.textToQrcodeStr(fileName), 1)
+        elif fileName.lower().endswith('.svg'):
+            retStr = self.generateSvg(fileName, 0)
+        else:
+            showinfo(_('info'), _('The file format is not supported'))
+            return
+
         if not retStr:
             showinfo(_('info'), _('Convert svg image failed'))
         else:
             self.saveTextFile(retStr)
-            
+    
+    #将输入的文本转换为二维码文本
+    def textToQrcodeStr(self, txt: str):
+        from qrcode import QRCode
+        from qrcode.image.svg import SvgPathImage
+        qr = QRCode(image_factory=SvgPathImage)
+        qr.add_data(txt)
+        qr.make(fit=True)
+        img = qr.make_image()
+        return img.to_string().decode('utf-8')
+
     #在SVG文件文本框中回车，根据情况自动执行响应的命令
     def txtSvgFile_Return(self, event=None):
         if (str(self.cmdOkSvg['state']) == 'disabled') or (not self.txtSvgFile.text().strip()):
@@ -863,16 +904,22 @@ class Application(Application_ui):
     #点击了将SVG文件转换为Sprint-Layout的按钮
     def cmdOkSvg_Cmd(self, event=None):
         self.saveConfig()
-        fileName = self.txtSvgFile.text().strip().lower()
+        fileName = self.txtSvgFile.text().strip()
+        isQrcode = self.cmbSvgQrcode.current()
         
-        if (not self.verifyFileName(fileName)):
+        #如果是SVG模式，校验文件，否则直接使用文本
+        if (not self.verifyFileName(fileName, (lambda x: isQrcode) if isQrcode else None)):
             return
 
-        if not fileName.endswith('.svg'):
+        #生成二维码
+        if isQrcode:
+            retStr = self.generateSvg(self.textToQrcodeStr(fileName), 1)
+        elif fileName.lower().endswith('.svg'):
+            retStr = self.generateSvg(fileName, 0)
+        else:
             showinfo(_('info'), _('The file format is not supported'))
             return
-        
-        retStr = self.generateSvg(fileName)
+
         if not retStr:
             showinfo(_('info'), _('Convert svg image failed'))
         else:
@@ -1091,11 +1138,13 @@ class Application(Application_ui):
         return (msg, str(textIo) if (textIo and textIo.isValid()) else '')
 
     #将SVG文件转换为Sprint-Layout格式
+    #fileName: SVG文件名或二维码文本
+    #isQrcode: True则为生成二维码
     #返回：生成的textIo字符串
-    def generateSvg(self, fileName: str):
+    def generateSvg(self, fileName: str, isQrcode: bool):
         from svg_to_polygon import svgToPolygon
 
-        usePolygon = self.cmbSvgMode.current() #0-线条, 1-多边形
+        usePolygon = 1 if isQrcode else self.cmbSvgMode.current()  #0-线条, 1-多边形，二维码固定为多边形
         layerIdx = self.cmbSvgLayer.current() + 1 #Sprint-Layout的板层定义从1开始
         smooth = self.cmbSvgSmooth.current()
         height = str_to_float(self.cmbSvgHeight.text())

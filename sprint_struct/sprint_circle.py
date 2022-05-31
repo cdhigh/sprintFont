@@ -5,18 +5,18 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
-from .sprint_component import SprintComponent
+from .sprint_element import *
 from comm_utils import euclideanDistance, svgArcToCenterParam, radiansToDegrees
 
 #里面的长度单位都是mm
-class SprintCircle(SprintComponent):
+class SprintCircle(SprintElement):
     def __init__(self, layerIdx: int=1):
         super().__init__(layerIdx)
         self.center = (0, 0)
         self.width = 0
         self.radius = 0
         self.clearance = None
-        self.cutout = None
+        self.cutout = None  #是否为开孔区域
         self.soldermask = None
         self.start = None  #起始角度，0为3点钟方向，逆时针计算，单位为角度
         self.stop = None   #结束角度，0为3点钟方向，逆时针计算，单位为角度
@@ -26,8 +26,8 @@ class SprintCircle(SprintComponent):
         return (self.radius > 0)
 
     def updateSelfBbox(self):
-        self.updateLimit(self.center[0] - self.radius, self.center[1] + self.radius)
-        self.updateLimit(self.center[0] + self.radius, self.center[1] - self.radius)
+        self.updateBbox(self.center[0] - self.radius, self.center[1] + self.radius)
+        self.updateBbox(self.center[0] + self.radius, self.center[1] - self.radius)
         
     #Kicad没有直接指定半径，而是指定处于圆弧上的一个点来定义半径
     #注意调用此函数前请先保证设置了圆心坐标
@@ -74,14 +74,43 @@ class SprintCircle(SprintComponent):
         if self.clearance:
             outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.cutout is not None:
-            outStr.append('CUTOUT={}'.format('true' if self.cutout else 'false'))
+            outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
-            outStr.append('SOLDERMASK={}'.format('true' if self.soldermask else 'false'))
+            outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
         if self.start is not None:
             outStr.append('START={:0.0f}'.format(self.start * 1000))
         if self.stop is not None:
             outStr.append('STOP={:0.0f}'.format(self.stop * 1000))
         if self.fill is not None:
-            outStr.append('FILL={}'.format('true' if self.fill else 'false'))
+            outStr.append('FILL={}'.format(self.booleanStr(self.fill)))
         
         return ','.join(outStr) + ';'
+
+    #重载等号运算符，判断两个是否相等
+    def __eq__(self, other):
+        if not isinstance(other, SprintCircle):
+            return False
+
+        if ((self.layerIdx != other.layerIdx) or (self.center != other.center) or (self.width != other.width)
+            or (self.radius != other.radius) or (self.start != other.start) or (self.stop != other.stop)
+            or (self.fill != other.fill)):
+            return False
+        else:
+            return True
+    
+    #复制一个自身，并且将坐标相对某个新原点进行移动，
+    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
+    #ox/oy: 新的原点坐标
+    def cloneToNewOrigin(self, ox: float, oy: float):
+        ins = SprintCircle(self.layerIdx)
+        ins.center = (round((self.center[0] - ox) * 1000), round((self.center[1] - oy) * 1000))
+        ins.width = self.width
+        ins.radius = self.radius
+        ins.clearance = self.clearance
+        ins.cutout = self.cutout
+        ins.soldermask = self.soldermask
+        ins.start = self.start
+        ins.stop = self.stop
+        ins.fill = self.fill
+        ins.updateSelfBbox()
+        return ins
