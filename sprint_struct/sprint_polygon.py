@@ -8,18 +8,18 @@ from .sprint_element import *
 
 #里面的长度单位都是mm
 class SprintPolygon(SprintElement):
-    def __init__(self, layerIdx: int=2, lineWidth: float=0):
+    def __init__(self, layerIdx: int=2, width: float=0):
         super().__init__(layerIdx)
-        self.reset(layerIdx, lineWidth)
+        self.reset(layerIdx, width)
 
-    def reset(self, layerIdx: int=2, lineWidth: float=0):
+    def reset(self, layerIdx: int=2, width: float=0):
         self.xMin = self.yMin = 10000 * 10000
         self.xMax = self.yMax = -10000 * 10000
         self.points = [] #元素为 (x,y)
         self._ptIdx = 0
         self._segIdx = 0
         self.layerIdx = layerIdx
-        self.lineWidth = lineWidth if lineWidth else 0
+        self.width = width if width else 0 #线宽
         self.clearance = None
         self.cutout = None  #是否为禁止布线区
         self.soldermask = None  #是否为阻焊区
@@ -40,7 +40,7 @@ class SprintPolygon(SprintElement):
         if (not self.isValid()):
             return ''
 
-        outStr = ['ZONE,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.lineWidth * 10000)]
+        outStr = ['ZONE,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.width * 10000)]
         if self.clearance:
             outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
         if self.cutout is not None:
@@ -65,7 +65,7 @@ class SprintPolygon(SprintElement):
         if not isinstance(other, SprintPolygon):
             return False
 
-        if ((self.layerIdx != other.layerIdx) or (self.lineWidth != other.lineWidth) or (self.points != other.points)):
+        if ((self.layerIdx != other.layerIdx) or (self.width != other.width) or (self.points != other.points)):
             return False
         else:
             return True
@@ -151,11 +151,10 @@ class SprintPolygon(SprintElement):
             segIdx += 1
 
     #复制一个自身，并且将坐标相对某个新原点进行移动，
-    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
-        ins = SprintPolygon(self.layerIdx, self.lineWidth)
-        ins.points = [(round((pt[0] - ox) * 1000), round((pt[1] - oy) * 1000)) for pt in self.points]
+        ins = SprintPolygon(self.layerIdx, self.width)
+        ins.points = [(round(pt[0] - ox, 2), round(pt[1] - oy, 2)) for pt in self.points]
         ins._ptIdx = self._ptIdx
         ins._segIdx = self._segIdx
         ins.clearance = self.clearance

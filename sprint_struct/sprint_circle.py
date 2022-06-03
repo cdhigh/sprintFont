@@ -99,11 +99,10 @@ class SprintCircle(SprintElement):
             return True
     
     #复制一个自身，并且将坐标相对某个新原点进行移动，
-    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
         ins = SprintCircle(self.layerIdx)
-        ins.center = (round((self.center[0] - ox) * 1000), round((self.center[1] - oy) * 1000))
+        ins.center = (round(self.center[0] - ox, 2), round(self.center[1] - oy, 2))
         ins.width = self.width
         ins.radius = self.radius
         ins.clearance = self.clearance

@@ -38,28 +38,49 @@ class SprintGroup(SprintElement):
         for elem in elemList:
             self.add(elem)
 
-    #更新元件所占的外框
+    #更新组合所占的外框
     def updateSelfBbox(self):
         for elem in self.elements:
             elem.updateSelfBbox()
+            self.updateBbox(elem)
+            
+    #根据绘图元素，更新组合自己的外框
+    def updateBbox(self, elem):
+        if elem.xMin < self.xMin:
+            self.xMin = elem.xMin
+        if elem.xMax > self.xMax:
+            self.xMax = elem.xMax
+        if elem.yMin < self.yMin:
+            self.yMin = elem.yMin
+        if elem.yMax > self.yMax:
+            self.yMax = elem.yMax
 
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):
         return [elem for elem in self.elements if elem.layerIdx == layerIdx]
     
-    #获取所有的下层绘图元素，返回一个列表
+    #获取所有的下层绘图元素(元件当作一个绘图元素)，返回一个列表
     def children(self):
-        from .sprint_component import SprintComponent
         elems = []
         for elem in self.elements:
-            if isinstance(elem, (SprintComponent, SprintGroup)):
+            if isinstance(elem, SprintGroup):
                 elems.extend(elem.children())
             else:
                 elems.append(elem)
         return elems
 
+    #获取所有的下层基本绘图元素(元件要展开，显示里面的基本绘图元素)，返回一个列表
+    def baseDrawElements(self):
+        from .sprint_component import SprintComponent
+        elems = []
+        for elem in self.elements:
+            if isinstance(elem, (SprintComponent, SprintGroup)):
+                elems.extend(elem.baseDrawElements())
+            else:
+                elems.append(elem)
+        return elems
+        
     #复制一个自身，并且将坐标相对某个新原点进行移动，
-    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
         ins = SprintGroup()

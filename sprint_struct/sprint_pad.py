@@ -45,17 +45,20 @@ class SprintPad(SprintElement):
     def updateSelfBbox(self):
         if (self.padType == 'PAD'):
             size2 = self.size / 2
-            self.updateBbox(self.pos[0] - size2, self.pos[1] + size2)
-            self.updateBbox(self.pos[0] + size2, self.pos[1] - size2)
+            self.updateBbox(self.pos[0] - size2, self.pos[1] - size2)
+            self.updateBbox(self.pos[0] + size2, self.pos[1] + size2)
         else:
-            self.updateBbox(self.pos[0] - self.sizeX / 2, self.pos[1] + self.sizeY / 2)
-            self.updateBbox(self.pos[0] + self.sizeX / 2, self.pos[1] - self.sizeY / 2)
+            self.updateBbox(self.pos[0] - self.sizeX / 2, self.pos[1] - self.sizeY / 2)
+            self.updateBbox(self.pos[0] + self.sizeX / 2, self.pos[1] + self.sizeY / 2)
 
     def __str__(self):
-        return self._toStrPad() if self.padType == 'PAD' else self._toStrSmdPad()
+        return self.toStr()
+
+    def toStr(self, overwritePadId=None):
+        return self.toStrPad(overwritePadId) if self.padType == 'PAD' else self.toStrSmdPad(overwritePadId)
 
     #生成通孔焊盘的字符串
-    def _toStrPad(self):
+    def toStrPad(self, overwritePadId=None):
         outStr = ['PAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE={:0.0f},DRILL={:0.0f},FORM={}'.format(
             self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.size * 10000, self.drill * 10000, self.form)]
         if self.clearance is not None:
@@ -74,15 +77,18 @@ class SprintPad(SprintElement):
             outStr.append('THERMAL_TRACKS_INDIVIDUAL={}'.format(self.booleanStr(self.thermalTracksIndividual)))
         if self.thermalTracks:
             outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
-        if self.padId is not None:
-            outStr.append('PAD_ID={}'.format(self.padId))
-        for conIdx, con in enumerate(self.connectToOtherPads):
-            outStr.append('CON{}={}'.format(conIdx, con))
+        if overwritePadId is not None:
+            outStr.append('PAD_ID={}'.format(overwritePadId))
+        else:
+            if self.padId is not None:
+                outStr.append('PAD_ID={}'.format(self.padId))
+            for conIdx, con in enumerate(self.connectToOtherPads):
+                outStr.append('CON{}={}'.format(conIdx, con))
 
         return ','.join(outStr) + ';'
 
     #生成贴片焊盘的字符串
-    def _toStrSmdPad(self):
+    def toStrSmdPad(self, overwritePadId=None):
         outStr = ['SMDPAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE_X={:0.0f},SIZE_Y={:0.0f}'.format(
             self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.sizeX * 10000, self.sizeY * 10000)]
         if self.clearance:
@@ -97,10 +103,13 @@ class SprintPad(SprintElement):
             outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth * 10000))
         if self.thermalTracks:
             outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
-        if self.padId is not None:
-            outStr.append('PAD_ID={}'.format(self.padId))
-        for conIdx, con in enumerate(self.connectToOtherPads):
-            outStr.append('CON{}={}'.format(conIdx, con))
+        if overwritePadId is not None:
+            outStr.append('PAD_ID={}'.format(overwritePadId))
+        else:
+            if self.padId is not None:
+                outStr.append('PAD_ID={}'.format(self.padId))
+            for conIdx, con in enumerate(self.connectToOtherPads):
+                outStr.append('CON{}={}'.format(conIdx, con))
 
         return ','.join(outStr) + ';'
         
@@ -131,11 +140,10 @@ class SprintPad(SprintElement):
         return name.replace('.', '_')
 
     #复制一个自身，并且将坐标相对某个新原点进行移动，
-    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
     #ox/oy: 新的原点坐标
-    def cloneToNewOrigin(self, ox: float, oy: float):
+    def cloneToNewOrigin(self, ox: float, oy: float, overwritePadId=None):
         ins = SprintPad(self.padType, self.layerIdx)
-        ins.pos = (round((self.pos[0] - ox) * 1000), round((self.pos[1] - oy) * 1000))
+        ins.pos = (round(self.pos[0] - ox, 2), round(self.pos[1] - oy, 2))
         ins.size = self.size
         ins.sizeX = self.sizeX
         ins.sizeY = self.sizeY
@@ -149,7 +157,7 @@ class SprintPad(SprintElement):
         ins.thermalTracksWidth = self.thermalTracksWidth
         ins.thermalTracksIndividual = self.thermalTracksIndividual
         ins.thermalTracks = self.thermalTracks
-        ins.padId = self.padId
+        ins.padId = overwritePadId if overwritePadId is not None else self.padId
         ins.connectToOtherPads = self.connectToOtherPads[:]
         ins.updateSelfBbox()
         return ins

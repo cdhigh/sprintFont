@@ -3,10 +3,10 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5400
+   ClientHeight    =   5385
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   9375
+   ClientWidth     =   9360
    BeginProperty Font 
       Name            =   "Î¢ÈíÑÅºÚ"
       Size            =   10.5
@@ -19,14 +19,166 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5400
-   ScaleWidth      =   9375
+   ScaleHeight     =   5385
+   ScaleWidth      =   9360
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab4 
+      Caption         =   "AutoRouter"
+      Height          =   4695
+      Left            =   3000
+      TabIndex        =   58
+      Top             =   5760
+      Width           =   8895
+      Begin MSComctlLib.TreeView treRules 
+         Height          =   1455
+         Left            =   1560
+         TabIndex        =   60
+         Top             =   2160
+         Width           =   6495
+         _ExtentX        =   11456
+         _ExtentY        =   2566
+         _Version        =   393217
+         Style           =   7
+         Appearance      =   1
+      End
+      Begin VB.VScrollBar VSrlRules 
+         Height          =   1455
+         Left            =   8040
+         TabIndex        =   54
+         Top             =   2160
+         Width           =   255
+      End
+      Begin VB.CommandButton cmdImportSes 
+         Caption         =   "Import"
+         Height          =   450
+         Left            =   2760
+         TabIndex        =   56
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.TextBox txtSesFile 
+         Height          =   420
+         Left            =   1560
+         TabIndex        =   51
+         Top             =   1560
+         Width           =   6495
+      End
+      Begin VB.CommandButton cmdSesFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   8160
+         TabIndex        =   52
+         Top             =   1560
+         Width           =   495
+      End
+      Begin VB.CommandButton cmdCancelAutoRouter 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   5160
+         TabIndex        =   57
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.CommandButton cmdExportDsn 
+         Caption         =   "Export"
+         Height          =   450
+         Left            =   360
+         TabIndex        =   55
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.TextBox txtDsnFile 
+         Height          =   420
+         Left            =   1560
+         TabIndex        =   48
+         Top             =   960
+         Width           =   6495
+      End
+      Begin VB.CommandButton cmdDsnFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   8160
+         TabIndex        =   49
+         Top             =   960
+         Width           =   495
+      End
+      Begin VB.Label lblRules 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Rules"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   53
+         Top             =   2400
+         Width           =   975
+      End
+      Begin VB.Label lblSesFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Ses file"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   50
+         Top             =   1560
+         Width           =   975
+      End
+      Begin VB.Label lblSaveAsAutoRouter 
+         Caption         =   "Save as"
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   10.5
+            Charset         =   134
+            Weight          =   400
+            Underline       =   -1  'True
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00FF0000&
+         Height          =   375
+         Left            =   7800
+         TabIndex        =   59
+         Top             =   3960
+         Width           =   975
+      End
+      Begin VB.Label lblAutoRouterTips 
+         Caption         =   "AutoRouter_features_tips"
+         Height          =   615
+         Left            =   1560
+         TabIndex        =   46
+         Top             =   240
+         Width           =   6855
+      End
+      Begin VB.Label lblDsnFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Dsn file"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   47
+         Top             =   960
+         Width           =   975
+      End
+   End
    Begin VB.Frame tabStrip__Tab3 
       Caption         =   "SVG"
       Height          =   4695
-      Left            =   4680
+      Left            =   1920
       TabIndex        =   30
       Top             =   5760
       Width           =   8895
@@ -176,7 +328,7 @@ Begin VB.Form frmMain
    Begin VB.Frame tabStrip__Tab2 
       Caption         =   "Footprint"
       Height          =   4695
-      Left            =   2760
+      Left            =   840
       TabIndex        =   21
       Top             =   5760
       Width           =   8895
@@ -286,9 +438,9 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5055
-      Width           =   9375
-      _ExtentX        =   16536
+      Top             =   5040
+      Width           =   9360
+      _ExtentX        =   16510
       _ExtentY        =   609
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
@@ -300,7 +452,7 @@ Begin VB.Form frmMain
    Begin VB.Frame tabStrip__Tab1 
       Caption         =   "Font"
       Height          =   4695
-      Left            =   600
+      Left            =   120
       TabIndex        =   2
       Top             =   5760
       Width           =   8895
@@ -472,6 +624,10 @@ Private Sub lblSaveAs_Click()
 
 End Sub
 
+Private Sub lblSaveAsAutoRouter_Click()
+
+End Sub
+
 Private Sub lblSaveAsFootprint_Click()
 
 End Sub
@@ -481,5 +637,9 @@ Private Sub lblSaveAsSvg_Click()
 End Sub
 
 Private Sub tabStrip_Click()
+
+End Sub
+
+Private Sub treRules_DblClick()
 
 End Sub

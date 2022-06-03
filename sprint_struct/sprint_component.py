@@ -5,6 +5,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 from .sprint_element import *
+from .sprint_pad import SprintPad
 
 class SprintComponent(SprintElement):
     def __init__(self):
@@ -25,35 +26,34 @@ class SprintComponent(SprintElement):
         self.valueVisible = True
         self.pickRotation = None #仅适用于贴片机的旋转，不是真实元件的旋转，单位为度
         self.elements = [] #各种绘图元素，都是SprintElement的子类
-        
-    #复制一个自身，并且将内部的坐标都相对自己外框的左下角做为新原点进行移动，
-    #并且为了避免小数点误差，方便计算两个对象是否相等，单位转换为不带小数点的微米/度
-    def cloneToSelfOrigin(self):
-        ins = SprintComponent()
-        ins.name = self.name
-        ins.value = self.value
-        ins.comment = self.comment
-        ins.package = self.package
-        ins.usePickplace = self.usePickplace
-        ins.txtHeight = self.txtHeight
-        ins.txtThickness = self.txtThickness
-        ins.txtStyle = self.txtStyle
-        ins.namePos = self.namePos
-        ins.valuePos = self.valuePos
-        ins.nameLayer = self.nameLayer
-        ins.valueLayer = self.valueLayer
-        ins.nameVisible = self.nameVisible
-        ins.valueVisible = self.valueVisible
-        ins.pickRotation = self.pickRotation
-        ins.elements = [elem.cloneToNewOrigin(self.xMin, self.yMin) for elem in self.elements]
-        ins.updateSelfBbox()
-        return ins
 
+    #元件的板层不能直接使用layerIdx属性，需要使用此函数获取
+    def getLayer(self):
+        padLayer = LAYER_C1
+        padVia = False
+        for pad in self.getPads():
+            padLayer = pad.layerIdx
+            if (pad.padType == 'SMDPAD'):
+                return pad.layerIdx #如果有贴片焊盘，则贴片焊盘的板层就是贴片元件的板层
+            elif pad.via:
+                padVia = True
+
+        #插件元件需要区分对待，双面焊盘就使用名字的丝印板层对应的铜层
+        if padVia:
+            return LAYER_C1 if (self.nameLayer == LAYER_S1) else LAYER_C2
+        else: #单面插件焊盘使用对面的板层做为元件面
+            return LAYER_C2 if (padLayer == LAYER_S1) else LAYER_C1
+        
     def isValid(self):
         return (len(self.elements) > 0)
 
     #转换为字符串TextIO
     def __str__(self):
+        return self.toStr(forCompare=False)
+
+    #转换为字符串
+    #forCompare: 是否用于比较两个元件是否相等，忽略焊盘ID和连接/名字等信息
+    def toStr(self, forCompare=False):
         if not self.isValid():
             return ''
 
@@ -89,33 +89,42 @@ class SprintComponent(SprintElement):
             valuePos = (self.xMin + (self.xMax - self.xMin) / 2 - 1, self.yMin - 1)
         
         #名字
-        nameVisible = 'true' if (self.nameVisible and self.name) else 'false'
-        idText = ['ID_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
-            nameVisible, self.nameLayer, namePos[0] * 10000, namePos[1] * 10000, self.txtHeight * 10000)]
-        if (self.txtThickness != 1):
-            idText.append('THICKNESS={}'.format(self.txtThickness))
-        if (self.txtStyle != 1):
-            idText.append('STYLE={}'.format(self.txtStyle))
-        if (self.nameLayer in (LAYER_C2, LAYER_S2)):
-            idText.append('MIRROR_HORZ=true')
-        idText.append('TEXT=|{}|;'.format(self.name)) #注意最后有一个分号
-        outStr.append(','.join(idText))
+        if not forCompare:
+            nameVisible = 'true' if (self.nameVisible and self.name) else 'false'
+            idText = ['ID_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
+                nameVisible, self.nameLayer, namePos[0] * 10000, namePos[1] * 10000, self.txtHeight * 10000)]
+            if (self.txtThickness != 1):
+                idText.append('THICKNESS={}'.format(self.txtThickness))
+            if (self.txtStyle != 1):
+                idText.append('STYLE={}'.format(self.txtStyle))
+            if (self.nameLayer in (LAYER_C2, LAYER_S2)):
+                idText.append('MIRROR_HORZ=true')
+            idText.append('TEXT=|{}|;'.format(self.name)) #注意最后有一个分号
+            outStr.append(','.join(idText))
 
-        #数值
-        valueVisible = 'true' if (self.valueVisible and self.value) else 'false'
-        valueText = ['VALUE_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
-            valueVisible, self.valueLayer, valuePos[0] * 10000, valuePos[1] * 10000, self.txtHeight * 10000)]
-        if (self.txtThickness != 1):
-            valueText.append('THICKNESS={}'.format(self.txtThickness))
-        if (self.txtStyle != 1):
-            valueText.append('STYLE={}'.format(self.txtStyle))
-        if (self.valueLayer in (LAYER_C2, LAYER_S2)):
-            valueText.append('MIRROR_HORZ=true')
-        valueText.append('TEXT=|{}|;'.format(self.value)) #注意最后有一个分号
-        outStr.append(','.join(valueText))
+            #数值
+            valueVisible = 'true' if (self.valueVisible and self.value) else 'false'
+            valueText = ['VALUE_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
+                valueVisible, self.valueLayer, valuePos[0] * 10000, valuePos[1] * 10000, self.txtHeight * 10000)]
+            if (self.txtThickness != 1):
+                valueText.append('THICKNESS={}'.format(self.txtThickness))
+            if (self.txtStyle != 1):
+                valueText.append('STYLE={}'.format(self.txtStyle))
+            if (self.valueLayer in (LAYER_C2, LAYER_S2)):
+                valueText.append('MIRROR_HORZ=true')
+            valueText.append('TEXT=|{}|;'.format(self.value)) #注意最后有一个分号
+            outStr.append(','.join(valueText))
 
-        #逐个添加里面的绘图元素
-        outStr.extend([str(obj) for obj in self.elements])
+            #逐个添加里面的绘图元素
+            outStr.extend([str(obj) for obj in self.elements])
+        else: #用于比较为目的的转换字符串
+            padId = 1
+            for obj in self.baseDrawElements():
+                if isinstance(obj, SprintPad):
+                    outStr.append(obj.toStr(overwritePadId=padId))
+                    padId += 1
+                else:
+                    outStr.append(str(obj))
         
         outStr.append('END_COMPONENT;')
         
@@ -125,7 +134,6 @@ class SprintComponent(SprintElement):
     #统一的添加绘图元素接口
     def add(self, elem: SprintElement):
         if elem:
-            #print('component add ', elem)
             elem.updateSelfBbox()
             self.updateBbox(elem)
             self.elements.append(elem)
@@ -148,21 +156,57 @@ class SprintComponent(SprintElement):
 
     #更新元件所占的外框
     def updateSelfBbox(self):
+        self.xMin = self.yMin = 100000.0
+        self.xMax = self.yMax = -100000.0
         for elem in self.elements:
             elem.updateSelfBbox()
+            self.updateBbox(elem)
     
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):
         return [elem for elem in self.elements if elem.layerIdx == layerIdx]
     
-    #获取所有的下层绘图元素，返回一个列表
-    def children(self):
+    #获取所有的下层基本绘图元素，返回一个列表
+    def baseDrawElements(self):
         from .sprint_group import SprintGroup
         elems = []
         for elem in self.elements:
-            if isinstance(elem, (SprintComponent, SprintGroup)):
-                elems.extend(elem.children())
+            if isinstance(elem, SprintGroup):
+                elems.extend(elem.baseDrawElements())
             else:
                 elems.append(elem)
         return elems
 
+    #返回此元件的所有焊盘
+    def getPads(self):
+        return [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
+
+    #复制一个自身，并且将内部的坐标都相对自己外框的左下角做为新原点进行移动，
+    def cloneToSelfOrigin(self):
+        ins = SprintComponent()
+        self.updateSelfBbox()
+        ins.name = self.name
+        ins.value = self.value
+        ins.comment = self.comment
+        ins.package = self.package
+        ins.usePickplace = self.usePickplace
+        ins.txtHeight = self.txtHeight
+        ins.txtThickness = self.txtThickness
+        ins.txtStyle = self.txtStyle
+        ins.namePos = self.namePos
+        ins.valuePos = self.valuePos
+        ins.nameLayer = self.nameLayer
+        ins.valueLayer = self.valueLayer
+        ins.nameVisible = self.nameVisible
+        ins.valueVisible = self.valueVisible
+        ins.pickRotation = self.pickRotation
+        padId = 1
+        for elem in self.elements:
+            #元件内的焊盘重新编号，从1开始
+            if isinstance(elem, SprintPad):
+                ins.elements.append(elem.cloneToNewOrigin(self.xMin, self.yMin, padId))
+                padId += 1
+            else:
+                ins.elements.append(elem.cloneToNewOrigin(self.xMin, self.yMin))
+        ins.updateSelfBbox()
+        return ins

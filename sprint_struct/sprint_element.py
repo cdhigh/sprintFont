@@ -25,11 +25,22 @@ sprintLayerMap = {
     LAYER_U: 'Edge.cuts',
 }
 
+#DSN/SES里面的板层对应到Sprint-Layout的板层索引
+sprintLayerMapSes = {
+    'F.Cu': LAYER_C1,
+    'F.SilkS': LAYER_S1,
+    'B.Cu': LAYER_C2,
+    'B.SilkS': LAYER_S2,
+    'In1.Cu': LAYER_I1,
+    'In2.Cu': LAYER_I2,
+    'Edge.cuts': LAYER_U,
+}
+
 class SprintElement:
     def __init__(self, layerIdx: int=1):
         self.layerIdx = layerIdx
-        self.xMin = self.yMin = 100000
-        self.xMax = self.yMax = -100000
+        self.xMin = self.yMin = 100000.0
+        self.xMax = self.yMax = -100000.0
     
     #子类实现是否有效的函数
     def isValid(self):

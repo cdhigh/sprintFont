@@ -17,7 +17,7 @@ pyinstaller.exe -F -w -i app.ico sprintFont.py
 python -m nuitka --standalone --onefile --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico  sprintFont.py
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
-import os, sys, locale, json, threading, queue, datetime
+import os, sys, locale, json, threading, queue, datetime, pickle
 from tkinter import *
 from tkinter.font import Font, families
 from tkinter.ttk import *
@@ -25,16 +25,17 @@ from tkinter.ttk import *
 from tkinter.messagebox import *
 #Usage:f=tkFileDialog.askopenfilename(initialdir='E:/Python')
 import tkinter.filedialog as tkFileDialog
-#import tkinter.simpledialog as tkSimpleDialog  #askstring()
+import tkinter.simpledialog as tkSimpleDialog  #askstring()
 from fontTools.ttLib.ttFont import TTFont
 from i18n import I18n
 from comm_utils import *
 from widget_right_click import rightClicker
 from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
+from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.2"
-__DATE__ = "20220529"
+__VERSION__ = "1.3"
+__DATE__ = "20220603"
 __AUTHOR__ = "cdhigh"
 
 WIN_DIR = os.environ['WINDIR']
@@ -97,9 +98,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (360 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,360,x,y))
+        x = (ws / 2) - (624 / 2)
+        y = (hs / 2) - (359 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (624,359,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -140,7 +141,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.869)
+        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.872)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -302,6 +303,12 @@ class Application_ui(Frame):
         self.tabStrip.add(self.tabStrip__Tab2, text='Footprint')
 
         self.tabStrip__Tab3 = Frame(self.tabStrip)
+        self.cmbSvgQrcodeList = ['',]
+        self.cmbSvgQrcodeVar = StringVar(value='')
+        self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
+        self.cmbSvgQrcode.setText = lambda x: self.cmbSvgQrcodeVar.set(x)
+        self.cmbSvgQrcode.text = lambda : self.cmbSvgQrcodeVar.get()
+        self.cmbSvgQrcode.place(relx=0.013, rely=0.319, relwidth=0.164)
         self.cmbSvgModeList = ['',]
         self.cmbSvgModeVar = StringVar(value='')
         self.cmbSvgMode = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgModeVar, values=self.cmbSvgModeList, font=('微软雅黑',10))
@@ -386,13 +393,88 @@ class Application_ui(Frame):
         self.lblSvgTips.setText = lambda x: self.lblSvgTipsVar.set(x)
         self.lblSvgTips.text = lambda : self.lblSvgTipsVar.get()
         self.lblSvgTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.208)
-        self.cmbSvgQrcodeList = ['',]
-        self.cmbSvgQrcodeVar = StringVar(value='')
-        self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
-        self.cmbSvgQrcode.setText = lambda x: self.cmbSvgQrcodeVar.set(x)
-        self.cmbSvgQrcode.text = lambda : self.cmbSvgQrcodeVar.get()
-        self.cmbSvgQrcode.place(relx=0.013, rely=0.319, relwidth=0.164)
         self.tabStrip.add(self.tabStrip__Tab3, text='SVG')
+
+        self.tabStrip__Tab4 = Frame(self.tabStrip)
+        self.VSrlRules = Scrollbar(self.tabStrip__Tab4, orient='vertical')
+        self.VSrlRules.place(relx=0.904, rely=0.46, relwidth=0.029, relheight=0.31)
+        self.style.configure('TtreRules.Treeview', font=('微软雅黑',10))
+        self.treRules = Treeview(self.tabStrip__Tab4, show='tree', yscrollcommand=self.VSrlRules.set, style='TtreRules.Treeview')
+        self.treRules.place(relx=0.175, rely=0.46, relwidth=0.73, relheight=0.31)
+        self.treRules.bind('<Double-Button-1>', self.treRules_Double_Button_1)
+        self.VSrlRules['command'] = self.treRules.yview
+        self.cmdImportSesVar = StringVar(value='Import')
+        self.style.configure('TcmdImportSes.TButton', font=('微软雅黑',10))
+        self.cmdImportSes = Button(self.tabStrip__Tab4, text='Import', textvariable=self.cmdImportSesVar, command=self.cmdImportSes_Cmd, style='TcmdImportSes.TButton')
+        self.cmdImportSes.setText = lambda x: self.cmdImportSesVar.set(x)
+        self.cmdImportSes.text = lambda : self.cmdImportSesVar.get()
+        self.cmdImportSes.place(relx=0.31, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.txtSesFileVar = StringVar(value='')
+        self.txtSesFile = Entry(self.tabStrip__Tab4, textvariable=self.txtSesFileVar, font=('微软雅黑',10))
+        self.txtSesFile.setText = lambda x: self.txtSesFileVar.set(x)
+        self.txtSesFile.text = lambda : self.txtSesFileVar.get()
+        self.txtSesFile.place(relx=0.175, rely=0.332, relwidth=0.73, relheight=0.089)
+        self.cmdSesFileVar = StringVar(value='...')
+        self.style.configure('TcmdSesFile.TButton', font=('Arial',9))
+        self.cmdSesFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdSesFileVar, command=self.cmdSesFile_Cmd, style='TcmdSesFile.TButton')
+        self.cmdSesFile.setText = lambda x: self.cmdSesFileVar.set(x)
+        self.cmdSesFile.text = lambda : self.cmdSesFileVar.get()
+        self.cmdSesFile.place(relx=0.917, rely=0.332, relwidth=0.056, relheight=0.08)
+        self.cmdCancelAutoRouterVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancelAutoRouter.TButton', font=('微软雅黑',10))
+        self.cmdCancelAutoRouter = Button(self.tabStrip__Tab4, text='Cancel', textvariable=self.cmdCancelAutoRouterVar, command=self.cmdCancelAutoRouter_Cmd, style='TcmdCancelAutoRouter.TButton')
+        self.cmdCancelAutoRouter.setText = lambda x: self.cmdCancelAutoRouterVar.set(x)
+        self.cmdCancelAutoRouter.text = lambda : self.cmdCancelAutoRouterVar.get()
+        self.cmdCancelAutoRouter.place(relx=0.58, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmdExportDsnVar = StringVar(value='Export')
+        self.style.configure('TcmdExportDsn.TButton', font=('微软雅黑',10))
+        self.cmdExportDsn = Button(self.tabStrip__Tab4, text='Export', textvariable=self.cmdExportDsnVar, command=self.cmdExportDsn_Cmd, style='TcmdExportDsn.TButton')
+        self.cmdExportDsn.setText = lambda x: self.cmdExportDsnVar.set(x)
+        self.cmdExportDsn.text = lambda : self.cmdExportDsnVar.get()
+        self.cmdExportDsn.place(relx=0.04, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.txtDsnFileVar = StringVar(value='')
+        self.txtDsnFile = Entry(self.tabStrip__Tab4, textvariable=self.txtDsnFileVar, font=('微软雅黑',10))
+        self.txtDsnFile.setText = lambda x: self.txtDsnFileVar.set(x)
+        self.txtDsnFile.text = lambda : self.txtDsnFileVar.get()
+        self.txtDsnFile.place(relx=0.175, rely=0.204, relwidth=0.73, relheight=0.089)
+        self.cmdDsnFileVar = StringVar(value='...')
+        self.style.configure('TcmdDsnFile.TButton', font=('Arial',9))
+        self.cmdDsnFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdDsnFileVar, command=self.cmdDsnFile_Cmd, style='TcmdDsnFile.TButton')
+        self.cmdDsnFile.setText = lambda x: self.cmdDsnFileVar.set(x)
+        self.cmdDsnFile.text = lambda : self.cmdDsnFileVar.get()
+        self.cmdDsnFile.place(relx=0.917, rely=0.204, relwidth=0.056, relheight=0.08)
+        self.lblRulesVar = StringVar(value='Rules')
+        self.style.configure('TlblRules.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRules = Label(self.tabStrip__Tab4, text='Rules', textvariable=self.lblRulesVar, style='TlblRules.TLabel')
+        self.lblRules.setText = lambda x: self.lblRulesVar.set(x)
+        self.lblRules.text = lambda : self.lblRulesVar.get()
+        self.lblRules.place(relx=0.027, rely=0.511, relwidth=0.11, relheight=0.08)
+        self.lblSesFileVar = StringVar(value='Ses file')
+        self.style.configure('TlblSesFile.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblSesFile = Label(self.tabStrip__Tab4, text='Ses file', textvariable=self.lblSesFileVar, style='TlblSesFile.TLabel')
+        self.lblSesFile.setText = lambda x: self.lblSesFileVar.set(x)
+        self.lblSesFile.text = lambda : self.lblSesFileVar.get()
+        self.lblSesFile.place(relx=0.027, rely=0.332, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsAutoRouterVar = StringVar(value='Save as')
+        self.style.configure('TlblSaveAsAutoRouter.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.lblSaveAsAutoRouter = Label(self.tabStrip__Tab4, text='Save as', textvariable=self.lblSaveAsAutoRouterVar, style='TlblSaveAsAutoRouter.TLabel')
+        self.lblSaveAsAutoRouter.setText = lambda x: self.lblSaveAsAutoRouterVar.set(x)
+        self.lblSaveAsAutoRouter.text = lambda : self.lblSaveAsAutoRouterVar.get()
+        self.lblSaveAsAutoRouter.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsAutoRouter.bind('<Button-1>', self.lblSaveAsAutoRouter_Button_1)
+        self.lblAutoRouterTipsVar = StringVar(value='AutoRouter_features_tips')
+        self.style.configure('TlblAutoRouterTips.TLabel', anchor='w', font=('微软雅黑',10))
+        self.lblAutoRouterTips = Label(self.tabStrip__Tab4, text='AutoRouter_features_tips', textvariable=self.lblAutoRouterTipsVar, style='TlblAutoRouterTips.TLabel')
+        self.lblAutoRouterTips.setText = lambda x: self.lblAutoRouterTipsVar.set(x)
+        self.lblAutoRouterTips.text = lambda : self.lblAutoRouterTipsVar.get()
+        self.lblAutoRouterTips.place(relx=0.175, rely=0.051, relwidth=0.771, relheight=0.131)
+        self.lblDsnFileVar = StringVar(value='Dsn file')
+        self.style.configure('TlblDsnFile.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblDsnFile = Label(self.tabStrip__Tab4, text='Dsn file', textvariable=self.lblDsnFileVar, style='TlblDsnFile.TLabel')
+        self.lblDsnFile.setText = lambda x: self.lblDsnFileVar.set(x)
+        self.lblDsnFile.text = lambda : self.lblDsnFileVar.get()
+        self.lblDsnFile.place(relx=0.027, rely=0.204, relwidth=0.11, relheight=0.08)
+        self.tabStrip.add(self.tabStrip__Tab4, text='AutoRouter')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
@@ -406,6 +488,16 @@ class Application(Application_ui):
         if (width > 16): #状态栏仅使用一个分栏，占满全部空间
             self.staBar.panelwidth(0, width)
 
+        #这三行代码是修正python3.7的treeview颜色设置不生效的BUG，其他版本可能不需要
+        #fixed_map = lambda op: [elm for elm in style.map("Treeview", query_opt=op) if elm[:2] != ("!disabled", "!selected")]
+        #style = Style() #in ttk package
+        #style.map("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
+
+        self.treRules.configure(columns=['Item', 'Value'])
+        self.treRules.configure(show='') #'headings'
+        self.treRules.configure(selectmode='browse') #只允许单行选择
+        #self.treRules.tag_configure('gray_row', background='#cccccc')
+
         #绑定额外的事件处理函数
         self.bindWidgetEvents()
         
@@ -414,6 +506,7 @@ class Application(Application_ui):
         I18n.init()
         I18n.setLanguage(self.sysLanguge)
         self.language = ''
+        self.pcbRule = PcbRule()
 
         #读取配置文件到内存
         self.cfg = {}
@@ -459,10 +552,16 @@ class Application(Application_ui):
         if self.inFileName:
             inExts = os.path.splitext(self.inFileName)
             self.outFileName = '{}_out{}'.format(inExts[0], inExts[1] if (len(inExts) > 1) else '')
+            if not self.pcbAll:
+                self.cmdExportDsn.configure(state='disabled')
+                self.cmdImportSes.configure(state='disabled')
+                self.lblAutoRouterTips.setText(_("Please deselect all items before launching the plugin"))
         else: #单独执行
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
+            self.cmdExportDsn.configure(state='disabled')
+            self.cmdImportSes.configure(state='disabled')
 
         #显示输入文件名或显示单独执行模式字符串
         self.setStaBarByMode()
@@ -487,6 +586,8 @@ class Application(Application_ui):
                 self.txtFootprintFile.focus_set()
             elif (tabNo == 2):
                 self.txtSvgFile.focus_set()
+            elif (tabNo == 3):
+                self.txtDsnFile.focus_set()
         except:
             pass
 
@@ -539,15 +640,23 @@ class Application(Application_ui):
         self.tabStrip.tab(0, text=_("TabFont"))
         self.tabStrip.tab(1, text=_("TabFootprint"))
         self.tabStrip.tab(2, text=_("TabSVG"))
+        self.tabStrip.tab(3, text=_("TabAutoRouter"))
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
         self.lblSvgTips.setText(_("svg_features_tips"))
-        #self.lblSvgFile.setText(_("File"))
         self.lblSvgMode.setText(_("Mode"))
         self.lblSvgHeight.setText(_("svgHeight"))
         self.lblSvgLayer.setText(_("Layer"))
         self.lblSvgSmooth.setText(_("Smooth"))
-    
+        self.lblAutoRouterTips.setText(_("autorouter_features_tips"))
+        self.lblDsnFile.setText(_("DSN file"))
+        self.lblSesFile.setText(_("SES file"))
+        self.lblRules.setText(_("Rules"))
+        self.cmdExportDsn.setText(_("Export"))
+        self.cmdImportSes.setText(_("Import"))
+        self.cmdCancelAutoRouter.setText(_("Cancel"))
+        self.lblSaveAsAutoRouter.setText(_("Save as"))
+
     #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
     #此函数在程序启动后5s才会得到执行
     def periodicCheckUpdate(self):
@@ -591,9 +700,9 @@ class Application(Application_ui):
         self.cmbFontHeight.current(1) #字高默认2mm
         
         #字间距
-        self.cmbWordSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
+        self.cmbWordSpacingList = [-0.8, -0.5, -0.2, 0, 0.2, 0.5]
         self.cmbWordSpacing.configure(values=self.cmbWordSpacingList)
-        self.cmbWordSpacing.current(1) #默认-0.2，电路板空间比较宝贵，文字可以相互靠近一些
+        self.cmbWordSpacing.current(2) #默认-0.2，电路板空间比较宝贵，文字可以相互靠近一些
         
         #行间距
         self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
@@ -707,6 +816,20 @@ class Application(Application_ui):
                 self.lastCheckUpdate = None
             self.skipVersion = self.cfg.get('skipVersion', '')
 
+            #自动布线规则
+            trackWidth = str_to_float(self.cfg.get('trackWidth', '0.3'))
+            viaDiameter = str_to_float(self.cfg.get('viaDiameter', '0.4'))
+            viaDrill = str_to_float(self.cfg.get('viaDrill', '0.3'))
+            clearance = str_to_float(self.cfg.get('clearance', '0.2'))
+            smdSmdClearance = str_to_float(self.cfg.get('smdSmdClearance', '0.05'))
+            self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
+            self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.4
+            self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
+            self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.2
+            self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.05
+            if (self.pcbRule.viaDiameter <= self.pcbRule.viaDrill):
+                self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
+            self.updateRuleView()
 
     #保存当前配置数据
     def saveConfig(self):
@@ -722,7 +845,10 @@ class Application(Application_ui):
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
             'easyEdaSite': self.easyEdaSite, 'lastTab': str(self.getCurrentTabStripTab()),
             'lastCheckUpdate': self.lastCheckUpdate.strftime('%Y-%m-%d') if self.lastCheckUpdate else '',
-            'skipVersion': str(self.skipVersion),}
+            'skipVersion': str(self.skipVersion),
+            'trackWidth': str(self.pcbRule.trackWidth), 'viaDiameter': str(self.pcbRule.viaDiameter),
+            'viaDrill': str(self.pcbRule.viaDrill), 'clearance': str(self.pcbRule.clearance),
+            'smdSmdClearance': str(self.pcbRule.smdSmdClearance)}
         
         if (cfg != self.cfg):  #有变化再写配置文件
             self.cfg = cfg
@@ -746,6 +872,19 @@ class Application(Application_ui):
         if ret:
             self.txtSvgFile.setText(ret)
 
+    #选择一个DSN文件
+    def cmdDsnFile_Cmd(self, event=None):
+        retFile = tkFileDialog.asksaveasfilename(filetypes=[(_("Specctra DSN files"), '*.dsn'), (_("All files"), '*.*')])
+        if retFile:
+            self.txtDsnFile.setText(retFile)
+            self.txtSesFile.setText(os.path.splitext(retFile)[0] + '.ses')
+
+    #选择一个SES文件
+    def cmdSesFile_Cmd(self, event=None):
+        retFile = tkFileDialog.askopenfilename(filetypes=[(_("Specctra session files"),"*.ses"), (_("All Files"), "*.*")])
+        if retFile:
+            self.txtSesFile.setText(retFile)
+            
     #取消退出
     def cmdCancel_Cmd(self, event=None):
         self.destroy()
@@ -758,6 +897,11 @@ class Application(Application_ui):
 
     #取消退出
     def cmdCancelSvg_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(0)
+
+    #取消退出
+    def cmdCancelAutoRouter_Cmd(self, event=None):
         self.destroy()
         sys.exit(0)
 
@@ -944,7 +1088,7 @@ class Application(Application_ui):
             return True
 
         if (not os.path.isfile(fileName)) or (not os.path.exists(fileName)):
-            showinfo(_('info'), _('File does not exist'))
+            showinfo(_('info'), _("File does not exist\n{}").format(fileName))
             return False
         
         return True
@@ -1175,6 +1319,163 @@ class Application(Application_ui):
         #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
         if self.versionJson:
             self.staBar.text(_('  New version found, double-click to show details'))
+
+    #将自动布线参数更新到界面控件
+    def updateRuleView(self):
+        treRules = self.treRules
+        treRules.delete(*treRules.get_children())
+        treRules.heading('Item', text=_("Item"))
+        treRules.heading('Value', text=_("Value"))
+        treRules.insert('', 'end', values=[_("Track width"), str(self.pcbRule.trackWidth)])
+        treRules.insert('', 'end', values=[_("Via diameter"), str(self.pcbRule.viaDiameter)])
+        treRules.insert('', 'end', values=[_("Via drill"), str(self.pcbRule.viaDrill)])
+        treRules.insert('', 'end', values=[_("Clearance"), str(self.pcbRule.clearance)])
+        treRules.insert('', 'end', values=[_("Smd-Smd Clearance"), str(self.pcbRule.smdSmdClearance)])
+        
+
+    #双击自动布线参数，弹出对话框修改
+    def treRules_Double_Button_1(self, event):
+        sel = self.treRules.selection()
+        if not sel:
+            return
+
+        item = self.treRules.item(sel[0])
+        if (not item) or (not item.get('values')) or (len(item.get('values')) < 2):
+            return
+
+        record = item.get('values')
+        itemName = record[0]
+        msg = _("\nPlease enter a new value for the parameter '{}'\nThe unit is mm\n").format(itemName)
+
+        ret = tkSimpleDialog.askfloat(_("Edit parameter"), msg, initialvalue=str_to_float(record[1]))
+        if ret and ret > 0.1:
+            if (itemName == _("Track width")):
+                self.pcbRule.trackWidth = ret
+            elif (itemName == _("Via diameter")):
+                self.pcbRule.viaDiameter = ret
+            elif (itemName == _("Via drill")):
+                self.pcbRule.viaDrill = ret
+            elif (itemName == _("Clearance")):
+                self.pcbRule.clearance = ret
+            elif (itemName == _("Smd-Smd Clearance")):
+                self.pcbRule.smdSmdClearance = ret
+            self.updateRuleView()
+            self.saveConfig()
+        
+    #输出自动布线的DSN文件
+    def cmdExportDsn_Cmd(self, event=None):
+        from sprint_struct.sprint_textio_parser import SprintTextIoParser
+        self.saveConfig()
+        dsnFile = self.txtDsnFile.text().strip()
+        dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
+        
+        if (not self.verifyFileName(dsnFile)):
+            return
+        
+        if not dsnFile.lower().endswith('.dsn'):
+            showinfo(_("info"), _('The file format is not supported'))
+            return
+
+        parser = SprintTextIoParser()
+        try:
+            textIo = parser.parse(self.inFileName)
+        except Exception as e:
+            showinfo(_("info"), _("Error parsing input file:\n{}").format(str(e)))
+            return
+        
+        exporter = SprintExportDsn(textIo, self.pcbRule, dsnFile)
+        ret = exporter.export()
+        if isinstance(ret, str): #错误信息
+            showinfo(_("info"), ret if ret else _("Unknown error"))
+        else:
+            try:
+                with open(dsnFile, 'w', encoding='utf-8') as f:
+                    f.write(ret.output)
+                
+                with open(dsnPickleFile, 'wb') as f:
+                    pickle.dump(exporter, f)
+                showinfo(_("info"), _("Export Specctra DSN file successfully"))
+            except Exception as e:
+                showinfo(_("info"), str(e))
+
+
+    #导入自动布线的SES文件
+    def cmdImportSes_Cmd(self, event=None):
+        self.saveConfig()
+        sesFile = self.txtSesFile.text().strip()
+        dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
+        
+        if ((not self.verifyFileName(sesFile)) or (not self.verifyFileName(dsnPickleFile))):
+            return
+        
+        if not sesFile.lower().endswith('.ses'):
+            showinfo(_("info"), _("The file format is not supported"))
+            return
+
+        ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
+        if not ret:
+            return
+
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile)
+        if not ret:
+            return
+        elif isinstance(ret, str):
+            showinfo(_("info"), ret)
+            return
+        else:
+            try:
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
+                    f.write(str(ret))
+            except Exception as e:
+                showinfo(_("info"), str(e))
+                return
+
+        self.destroy()
+        #Sprint-Layout的插件返回码定义
+        #0: = 中止/无动作
+        #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
+        #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
+        #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
+        #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
+        sys.exit(1)
+
+    #将自动布线结果另存为
+    def lblSaveAsAutoRouter_Button_1(self, event=None):
+        self.saveConfig()
+        sesFile = self.txtSesFile.text().strip()
+        dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
+        
+        if ((not self.verifyFileName(sesFile)) or (not self.verifyFileName(dsnPickleFile))):
+            return
+        
+        if not sesFile.lower().endswith('.ses'):
+            showinfo(_("info"), _("The file format is not supported"))
+            return
+
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile)
+        if not ret:
+            return
+        elif isinstance(ret, str):
+            showinfo(_("info"), ret)
+            return
+        else:
+            self.saveTextFile(str(ret))
+
+    #从SES中生成TextIo实例对象
+    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str):
+        from sprint_struct.sprint_import_ses import SprintImportSes
+        try:
+            with open(dsnPickleFile, 'rb') as f:
+                dsn = pickle.load(f)
+        except Exception as e:
+            return str(e)
+            
+        ses = SprintImportSes(sesFile, dsn)
+        try:
+            textIo = ses.importSes()
+            return textIo
+        except Exception as e:
+            return str(e)
 
 if __name__ == "__main__":
     top = Tk()

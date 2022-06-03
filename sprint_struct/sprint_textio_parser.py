@@ -75,6 +75,7 @@ class SprintTextIoParser:
             self.handlers.get(elemType, self.handleUnknown)(elems)
 
         self.textIo.updateSelfBbox()
+
         return self.textIo if self.textIo.isValid() else None
 
     #字符串转换为电路板层
@@ -131,7 +132,8 @@ class SprintTextIoParser:
     #结束新元件
     def handleEndComponent(self, elems: list):
         if self.containers:
-            self.containers.pop(-1)
+            comp = self.containers.pop(-1)
+            #comp.updateSelfBbox()
 
     #元件的名字
     #ID_TEXT,LAYER=2,CLEAR=0,POS=9176/111689,HEIGHT=13000,THICKNESS=2,STYLE=2,TEXT=|r1|;
@@ -187,7 +189,6 @@ class SprintTextIoParser:
     #TRACK,LAYER=2,WIDTH=1500,P0=9900/167100,P1=58200/215400;
     def handleTrack(self, elems: list):
         track = SprintTrack()
-        self.containers[-1].add(track)
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
             if (key == 'LAYER'):
@@ -213,10 +214,11 @@ class SprintTextIoParser:
         for ptIdx, (x, y) in pointsList:
             track.addPoint(x, y)
 
+        self.containers[-1].add(track)
+
     #分析PAD/SMDPAD
     def handlePad(self, elems: list):
         pad = SprintPad(padType=elems[0].strip())
-        self.containers[-1].add(pad)
         for key, value in elems[1:]:
             if (key == 'LAYER'):
                 pad.layerIdx = self.parseLayerStr(value)
@@ -252,17 +254,17 @@ class SprintTextIoParser:
                 pad.padId = str_to_int(value)
             elif (key.startswith('CON') and (len(key) > 3)): #网络连接
                 pad.connectToOtherPads.append(str_to_int(value))
-                
+        self.containers[-1].add(pad)
+
     #分析ZONE多边形
     def handleZone(self, elems: list):
         poly = SprintPolygon()
-        self.containers[-1].add(poly)
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
             if (key == 'LAYER'):
                 poly.layerIdx = self.parseLayerStr(value)
             elif (key == 'WIDTH'):
-                poly.lineWidth = str_to_int(value) / 10000
+                poly.width = str_to_int(value) / 10000
             elif (key == 'CLEAR'):
                 poly.clearance = str_to_int(value) / 10000
             elif (key == 'CUTOUT'):
@@ -284,10 +286,11 @@ class SprintTextIoParser:
         for ptIdx, (x, y) in pointsList:
             poly.addPoint(x, y)
 
+        self.containers[-1].add(poly)
+
     #Text
     def handleText(self, elems: list):
         text = SprintText()
-        self.containers[-1].add(text)
         for key, value in elems[1:]:
             if (key == 'LAYER'):
                 text.layerIdx = self.parseLayerStr(value)
@@ -313,11 +316,12 @@ class SprintTextIoParser:
                 text.mirrorH = self.parseBooleanStr(value)
             elif (key == 'MIRROR_VERT'):
                 text.mirrorV = self.parseBooleanStr(value)
+
+        self.containers[-1].add(text)
             
     #Circle
     def handleCircle(self, elems: list):
         cir = SprintCircle()
-        self.containers[-1].add(cir)
         for key, value in elems[1:]:
             if (key == 'LAYER'):
                 cir.layerIdx = self.parseLayerStr(value)
@@ -339,8 +343,6 @@ class SprintTextIoParser:
                 cir.stop = str_to_int(value) / 1000
             elif (key == 'FILL'):
                 cir.fill = self.parseBooleanStr(value)
+
+        self.containers[-1].add(cir)
         
-
-
-            
-

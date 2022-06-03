@@ -9,14 +9,14 @@ import math
 #字符串转整数，出错则返回defaultValue
 def str_to_int(txt: str, defaultValue: int=0):
     try:
-        return int(txt.strip())
+        return int(str(txt).strip())
     except:
         return defaultValue
 
 #字符串转浮点数，出错则返回defaultValue
 def str_to_float(txt: str, defaultValue: int=0.0):
     try:
-        return float(txt.strip())
+        return float(str(txt).strip())
     except:
         return defaultValue
 
@@ -195,16 +195,22 @@ def radian(ux, uy, vx, vy):
 #cx/cy: 圆心坐标
 #radius: 半径
 #cutNum: 需要多少等分
+#start/end: 圆弧的开始角度和结束角度，如果提供的话
 #返回一个列表 [(x,y),...]
-def cutCircle(cx: float, cy: float, radius: float, cutNum: int):
+def cutCircle(cx: float, cy: float, radius: float, cutNum: int, start: int=None, stop: int=None):
     points = []
-    angle = 360 / cutNum
+    if ((start is None) or (stop is None)):
+        angle = 360 / cutNum
+        startAngle = 0
+    else:
+        angle = abs(start - stop) / cutNum
+        startAngle = min(start, stop)
+
     for idx in range(cutNum):
-        radians = (math.pi / 180) * ((idx + 1) * angle)
+        radians = (math.pi / 180) * ((idx + 1) * angle + startAngle)
         points.append((cx + math.sin(radians) * radius, cy + math.cos(radians) * radius))
     
     return points
-
 
 #以(cx, cy)为旋转中心点，
 #已经知道旋转前点的位置(x1,y1)和旋转的角度a，求旋转后点的新位置(x2,y2)
@@ -218,4 +224,22 @@ def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, 
 
     return (x2, y2)
 
+
+#计算任意多边形的面积，顶点按照顺时针或者逆时针方向排列
+def ComputePolygonArea(points: list):
+    pointNum = len(points)
+    if pointNum < 3: #至少需要三个点
+        return 0.0
+
+    #如果最后一个点和第一个点重合，则去掉最后一个点
+    if points[0] == points[-1]:
+        points = points[:-1]
+        pointNum -= 1
+        if pointNum < 3: #至少需要三个点
+            return 0.0
+
+    s = points[0][1] * (points[-1][0] - points[1][0])
+    for idx in range(pointNum):
+        s += points[idx][1] * (points[idx - 1][0] - points[(idx + 1) % pointNum][0])
+    return abs(s / 2.0)
 
