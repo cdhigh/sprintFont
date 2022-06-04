@@ -89,4 +89,10 @@ class SprintGroup(SprintElement):
                 ins.elements.append(elem.cloneToNewOrigin(ox, oy))
         return ins
 
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        for elem in self.elements:
+            if hasattr(elem, 'moveByOffset'):
+                elem.moveByOffset(offsetX, offsetY)
+        self.updateSelfBbox()
 

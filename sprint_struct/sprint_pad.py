@@ -43,6 +43,8 @@ class SprintPad(SprintElement):
         return (self.size > 0) if (self.padType == 'PAD') else ((self.sizeX > 0) and (self.sizeY > 0))
         
     def updateSelfBbox(self):
+        self.xMin = self.yMin = 100000.0
+        self.xMax = self.yMax = -100000.0
         if (self.padType == 'PAD'):
             size2 = self.size / 2
             self.updateBbox(self.pos[0] - size2, self.pos[1] - size2)
@@ -161,3 +163,9 @@ class SprintPad(SprintElement):
         ins.connectToOtherPads = self.connectToOtherPads[:]
         ins.updateSelfBbox()
         return ins
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        self.pos = (round(self.pos[0] - offsetX, 2), round(self.pos[1] - offsetY, 2))
+        self.updateSelfBbox()
+        

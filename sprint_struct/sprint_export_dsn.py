@@ -62,8 +62,17 @@ class SprintExportDsn:
         se = self.se
         textIo = self.textIo
 
-        if len(self.uElems) < 1:
+        #确认线路板外框有效
+        if len([e for e in self.uElems if (e.layerIdx == LAYER_U)]) < 1:
             return _("The boundary (layer U) of the board is not defined")
+
+        #判断是否有重复的文件名
+        names = set()
+        for comp in self.compList:
+            if comp.name in names:
+                return _("There are some components with the same name: {}").format(comp.name)
+            else:
+                names.add(comp.name)
         
         #头部的说明性内容
         se.addItem(self.name or 'NoName', newline=False)
@@ -149,6 +158,10 @@ class SprintExportDsn:
         #所以规定如果使用线条，则一次画完首位相接（至少需要5个点，第一个点和最后一个点重合）
         areas = [] #每个图像的面积
         for elem in self.uElems:
+            if (elem.layerIdx != LAYER_U): #仅计算U层的面积
+                areas.append(0.0)
+                continue
+
             if isinstance(elem, SprintPolygon):
                 areas.append(ComputePolygonArea(elem.points))
             elif isinstance(elem, SprintCircle):
@@ -160,28 +173,35 @@ class SprintExportDsn:
 
         maxAreaIdx = areas.index(max(areas))
 
+        #将U层最大外框移到第一个元素位置
+        maxElem = self.uElems.pop(maxAreaIdx)
+        self.uElems.insert(0, maxElem)
+
         #PCB大小范围
-        for idx, elem in enumerate(self.uElems):
-            #最大的一个为线路板轮廓，其他的为禁布区
-            bbPath = ['pcb', 0] if (idx == maxAreaIdx) else ['F.Cu', 0] #第一个参数是信号层，第二个参数是线宽
+        pcbBoundary = True
+        for elem in self.uElems:
+            #第一个为线路板轮廓，其他的为禁布区
+            bbPath = ['pcb', 0] if pcbBoundary else ['F.Cu', 0] #第一个参数是信号层，第二个参数是线宽
             if isinstance(elem, (SprintTrack, SprintPolygon)):
                 for (x, y) in elem.points:
                     bbPath.append(mm2um(x))
                     bbPath.append(self.umY(y))
             elif isinstance(elem, SprintCircle):
-                points = cutCircle(elem.center[0], elem.center[1], elem.radius, 36)
+                points = cutCircle(elem.center[0], elem.center[1], elem.radius, 36) #将圆切分为36分
                 for (x, y) in points:
                     bbPath.append(mm2um(x))
                     bbPath.append(self.umY(y))
             else:
                 continue
 
-            if (idx == maxAreaIdx):
+            if (pcbBoundary):
                 se.addItem({'boundary': {'path': bbPath}})
             else:
                 se.addItem({'keepout': ["", {'polygon': bbPath}]})
-                bbPath[0] = 'B.Cu' #正反面都不允许布线
+                bbPath[0] = 'B.Cu' #对应禁止布线区，正反面都不允许布线
                 se.addItem({'keepout': ["", {'polygon': bbPath}]})
+
+            pcbBoundary = False
 
     #收集所有U层元素和其他层的禁布区
     def getAllLayerUAndKeepoutZone(self):
@@ -201,9 +221,9 @@ class SprintExportDsn:
             compIndent = True
             for comp in compList:
                 compLayer = 'front' if (comp.getLayer() == LAYER_C1) else 'back'
-                pn = {'PN': comp.value if comp.value else ''}
-                se.addItem({'place': [comp.name, mm2um(comp.xMin), 
-                    self.umY(comp.yMin), compLayer, 0, pn]}, indent=compIndent)
+                #pn = {'PN': comp.value if comp.value else ''}
+                se.addItem({'place': [comp.name, mm2um(comp.pos[0]), 
+                    self.umY(comp.pos[1]), compLayer, 0, {'PN': ''}]}, indent=compIndent)
                 compIndent = False
             se.endGroup(newline=True) #component end
         se.endGroup(newline=True) #placement end
@@ -222,15 +242,13 @@ class SprintExportDsn:
             outlineFirstIndent = True
             for elem in image.baseDrawElements():
                 if isinstance(elem, SprintTrack):
-                    params = ['signal', mm2um(elem.width)]
-                    for x, y in elem.points:
-                        params.append(mm2um(x))
-                        params.append(-mm2um(y))
-                    #for x, y in elem.points[::-1][1:]: #再原样回来
-                    #    params.append(mm2um(x))
-                    #    params.append(mm2um(imgyMax - y))
-                    se.addItem({'outline': {'path': params}}, indent=outlineFirstIndent)
-                    outlineFirstIndent = False
+                    #为避免freerouting将Track封闭，这里两两组成线条
+                    for idx in range(len(elem.points) - 1):
+                        x1, y1 = elem.points[idx]
+                        x2, y2 = elem.points[idx + 1]
+                        params = ['signal', mm2um(elem.width), mm2um(x1), -mm2um(y1), mm2um(x2), -mm2um(y2)]
+                        se.addItem({'outline': {'path': params}}, indent=outlineFirstIndent)
+                        outlineFirstIndent = False
                 elif isinstance(elem, SprintPolygon):
                     params = ['signal', mm2um(elem.width)]
                     for x, y in elem.points:
@@ -263,47 +281,35 @@ class SprintExportDsn:
         firstIndent = False #上面的Image已经缩进了
         for name in padDict:
             pad = padDict[name][0]
+            if (pad.layerIdx not in (LAYER_C1, LAYER_C2)):
+                continue
+
             se.startGroup('padstack', indent=firstIndent)
             firstIndent = False
             se.addItem(name, newline=False)
             rotation = pad.rotation
+            form = pad.form
             padIndent = True
-            if (pad.padType == 'PAD'): #插件焊盘
-                form = pad.form
+            if ((pad.padType == 'PAD') and (form not in (PAD_FORM_SQUARE, PAD_FORM_RECT_H, PAD_FORM_RECT_V))): #插件焊盘
                 size = pad.size
                 via = pad.via
-                if (form in (PAD_FORM_ROUND, PAD_FORM_OCTAGON)): #则两种焊盘当作一种
-                    if (via or (pad.layerIdx == LAYER_C1)):
-                        se.addItem({'shape': {'path': ['F.Cu', mm2um(size), 0, 0, 0, 0]}}, indent=padIndent)
-                        padIndent = False
-                    if (via or (pad.layerIdx == LAYER_C2)):
-                        se.addItem({'shape': {'path': ['B.Cu', mm2um(size), 0, 0, 0, 0]}}, indent=padIndent)
-                        padIndent = False
-                elif (form in (PAD_FORM_SQUARE, PAD_FORM_RECT_H, PAD_FORM_RECT_V)):
-                    width = (size * 2) if (form == PAD_FORM_RECT_H) else size
-                    height = (size * 2) if (form == PAD_FORM_RECT_V) else size
-                    if not rotation:
-                        if (via or (pad.layerIdx == LAYER_C1)):
-                            se.addItem({'shape': {'rect': ['F.Cu', mm2um(-width/2), mm2um(-height/2), 
-                                mm2um(width/2), mm2um(height/2)]}}, indent=padIndent)
-                            padIndent = False
-                        if (via or (pad.layerIdx == LAYER_C2)):
-                            se.addItem({'shape': {'rect': ['B.Cu', mm2um(-width/2), mm2um(-height/2), 
-                                mm2um(width/2), mm2um(height/2)]}}, indent=padIndent)
-                            padIndent = False
-                    else:
-                        #假定中心坐标为(0, 0)，则如果不旋转，左下角坐标为(-width/2, -height/2)，右上角坐标为(width/2, height/2)
-                        #将左下角和右上角绕中心逆时针选择一个rotation角度
-                        (x1, y1) = pointAfterRotated(-width/2, -height/2, 0, 0, rotation, clockwise=0)
-                        (x2, y2) = pointAfterRotated(width/2, height/2, 0, 0, rotation, clockwise=0)
-                        if (via or (pad.layerIdx == LAYER_C1)):
-                            se.addItem({'shape': {'rect': ['F.Cu', mm2um(x1), mm2um(y1), mm2um(x2), mm2um(y2)]}}, indent=padIndent)
-                            padIndent = False
-                        if (via or (pad.layerIdx == LAYER_C2)):
-                            se.addItem({'shape': {'rect': ['B.Cu', mm2um(x1), mm2um(y1), mm2um(x2), mm2um(y2)]}}, indent=padIndent)
-                            padIndent = False
+                if via:
+                    layerStrs = ['F.Cu', 'B.Cu']
+                elif (pad.layerIdx == LAYER_C1):
+                    layerStrs = ['F.Cu']
                 else:
-                    if form in (PAD_FORM_RECT_ROUND_H, PAD_FORM_RECT_OCTAGON_H): #横长条
+                    layerStrs = ['B.Cu']
+
+                if (form == PAD_FORM_ROUND): #圆焊盘
+                    for layerStr in layerStrs:
+                        se.addItem({'shape': {'circle': [layerStr, mm2um(size)]}}, indent=padIndent)
+                        padIndent = False
+                elif (form == PAD_FORM_OCTAGON): #八角焊盘
+                    for layerStr in layerStrs:
+                        se.addItem({'shape': {'path': [layerStr, mm2um(size), 0, 0, 0, 0, {'aperture_type': 'square'}]}}, indent=padIndent)
+                        padIndent = False
+                else:
+                    if (form in (PAD_FORM_RECT_ROUND_H, PAD_FORM_RECT_OCTAGON_H)): #横长条
                         (x1, y1) = -size/2, 0
                         (x2, y2) = size/2, 0
                     else: #竖长条
@@ -313,27 +319,55 @@ class SprintExportDsn:
                     if rotation: #绕中心点旋转一个角度
                         (x1, y1) = pointAfterRotated(x1, y1, 0, 0, rotation, clockwise=0)
                         (x2, y2) = pointAfterRotated(x2, y2, 0, 0, rotation, clockwise=0)
+                        if x1 > x2:
+                            x1, x2 = x2, x1
+                            y1, y2 = y2, y1
 
-                    if (via or (pad.layerIdx == LAYER_C1)):
-                        se.addItem({'shape': {'path': ['F.Cu', mm2um(size), mm2um(x1), mm2um(y1), 
-                            mm2um(x2), mm2um(y2)]}}, indent=padIndent)
+                    for layerStr in layerStrs:
+                        se.addItem({'shape': {'path': [layerStr, mm2um(size), mm2um(x1), self.umY(y1), 
+                            mm2um(x2), self.umY(y2)]}}, indent=padIndent)
                         padIndent = False
-                    if (via or (pad.layerIdx == LAYER_C2)):
-                        se.addItem({'shape': {'path': ['B.Cu', mm2um(size), mm2um(x1), mm2um(y1), 
-                            mm2um(x2), mm2um(y2)]}}, indent=padIndent)
-                        padIndent = False
-            else: #SMDPAD
-                width = pad.sizeX
-                height = pad.sizeY
-                layerStr = 'F.Cu' if (pad.layerIdx == LAYER_C1) else 'B.Cu'
-                if not rotation:
-                    se.addItem({'shape': {'rect': [layerStr, mm2um(-width/2), mm2um(height/2), mm2um(width/2), mm2um(-height/2)]}}, indent=True)
+            else: #SMDPAD或方形的插件焊盘
+                if (pad.padType == 'SMDPAD'):
+                    width, height = pad.sizeX, pad.sizeY
+                    layerStrs = ['F.Cu'] if (pad.layerIdx == LAYER_C1) else ['B.Cu']
+                    clockwise = 1
                 else:
-                    #假定中心坐标为(0, 0)，则如果不旋转，左下角坐标为(-width/2, -height/2)，右上角坐标为(width/2, height/2)
-                    #将左下角和右上角绕中心逆时针选择一个rotation角度
-                    (x1, y1) = pointAfterRotated(-width/2, height/2, 0, 0, rotation, clockwise=0)
-                    (x2, y2) = pointAfterRotated(width/2, -height/2, 0, 0, rotation, clockwise=0)
-                    se.addItem({'shape': {'rect': [layerStr, mm2um(x1), mm2um(y1), mm2um(x2), mm2um(y2)]}}, indent=True)
+                    if (form == PAD_FORM_SQUARE):
+                        width, height = pad.size, pad.size
+                    elif (form == PAD_FORM_RECT_H):
+                        width, height = pad.size * 2, pad.size
+                    else: #PAD_FORM_RECT_V
+                        width, height = pad.size, pad.size * 2
+                    if pad.via:
+                        layerStrs = ['F.Cu', 'B.Cu']
+                    elif (pad.layerIdx == LAYER_C1):
+                        layerStrs = ['F.Cu']
+                    else:
+                        layerStrs = ['B.Cu']
+                    clockwise = 0
+                
+                if not rotation:
+                    x1, y1 = -mm2um(width/2), -mm2um(height/2)
+                    x2, y2 = -x1, -y1
+                    for layerStr in layerStrs:
+                        se.addItem({'shape': {'rect': [layerStr, x1, y1, x2, y2]}}, indent=padIndent)
+                        padIndent = False
+                else:
+                    #如果旋转了，就不能用矩形了，freerouting的矩形都是水平的，要使用多边形构成
+                    #假定中心坐标为(0, 0)
+                    x1, y1 = -width / 2, -height / 2
+                    x2, y2 = x1, height / 2
+                    x3, y3 = width / 2, y2
+                    x4, y4 = x3, y1
+                    (x1, y1) = pointAfterRotated(x1, y1, 0, 0, rotation, clockwise=clockwise)
+                    (x2, y2) = pointAfterRotated(x2, y2, 0, 0, rotation, clockwise=clockwise)
+                    (x3, y3) = pointAfterRotated(x3, y3, 0, 0, rotation, clockwise=clockwise)
+                    (x4, y4) = pointAfterRotated(x4, y4, 0, 0, rotation, clockwise=clockwise)
+                    for layerStr in layerStrs:
+                        se.addItem({'shape': {'polygon': [layerStr, 0, mm2um(x1), self.umY(y1), mm2um(x2), self.umY(y2),
+                            mm2um(x3), self.umY(y3), mm2um(x4), self.umY(y4)]}}, indent=padIndent)
+                        padIndent = False
             se.addItem({'attach': 'off'})
             se.endGroup(newline=True) #padstack end
 
@@ -367,6 +401,7 @@ class SprintExportDsn:
 
         #网表里面去掉重复的焊盘ID
         netList = [set(net) for net in netList]
+        #print(netList)
         padIdSeqDict = self.padIdSeqDict
 
         se.startGroup('network')
@@ -430,7 +465,7 @@ if __name__ == '__main__':
     p = SprintTextIoParser()
     textIo = p.parse(r'C:\Users\su\Desktop\testSprint\1.txt')
     dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn'
-    exporter = SprintExportDsn(textIo, 40, 30)
+    exporter = SprintExportDsn(textIo)
     ret = exporter.export()
     with open(dsnFile, 'w', encoding='utf-8') as f:
         f.write(ret.output)

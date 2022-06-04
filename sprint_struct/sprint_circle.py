@@ -26,6 +26,8 @@ class SprintCircle(SprintElement):
         return (self.radius > 0)
 
     def updateSelfBbox(self):
+        self.xMin = self.yMin = 100000.0
+        self.xMax = self.yMax = -100000.0
         self.updateBbox(self.center[0] - self.radius, self.center[1] + self.radius)
         self.updateBbox(self.center[0] + self.radius, self.center[1] - self.radius)
         
@@ -113,3 +115,8 @@ class SprintCircle(SprintElement):
         ins.fill = self.fill
         ins.updateSelfBbox()
         return ins
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        self.center = (round(self.center[0] - offsetX, 2), round(self.center[1] - offsetY, 2))
+        self.updateSelfBbox()

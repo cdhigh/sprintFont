@@ -32,6 +32,10 @@ def isHexString(txt: str):
 def radiansToDegrees(ra):
     return ra / math.pi * 180
 
+#角度转弧度
+def degreesToRadians(angle):
+    return math.pi / 180 * angle
+
 #计算二维空间两点之间的距离
 def euclideanDistance(x1: float, y1: float, x2: float, y2: float):
     return math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
@@ -208,13 +212,14 @@ def cutCircle(cx: float, cy: float, radius: float, cutNum: int, start: int=None,
 
     for idx in range(cutNum):
         radians = (math.pi / 180) * ((idx + 1) * angle + startAngle)
-        points.append((cx + math.sin(radians) * radius, cy + math.cos(radians) * radius))
+        points.append((round(cx + math.sin(radians) * radius, 3), round(cy + math.cos(radians) * radius, 3)))
     
     return points
 
 #以(cx, cy)为旋转中心点，
 #已经知道旋转前点的位置(x1,y1)和旋转的角度a，求旋转后点的新位置(x2,y2)
 def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, clockwise: int=0):
+    angle = degreesToRadians(angle)
     if clockwise: #顺时针旋转
         x2 = (x1 - cx) * math.cos(angle) + (y1 - cy) * math.sin(angle) + cx
         y2 = (y1 - cy) * math.cos(angle) - (x1 - cx) * math.sin(angle) + cy
@@ -222,8 +227,9 @@ def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, 
         x2 = (x1 - cx) * math.cos(angle) - (y1 - cy) * math.sin(angle) + cx
         y2 = (y1 - cy) * math.cos(angle) + (x1 - cx) * math.sin(angle) + cy
 
-    return (x2, y2)
+    return (round(x2, 3), round(y2, 3))
 
+#print(pointAfterRotated(-5, 0, 0, 0, 180))
 
 #计算任意多边形的面积，顶点按照顺时针或者逆时针方向排列
 def ComputePolygonArea(points: list):

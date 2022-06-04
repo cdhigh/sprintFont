@@ -23,6 +23,8 @@ class SprintTrack(SprintElement):
         return (len(self.points) >= 2)
 
     def updateSelfBbox(self):
+        self.xMin = self.yMin = 100000.0
+        self.xMax = self.yMax = -100000.0
         for (x, y) in self.points:
             self.updateBbox(x, y)
 
@@ -74,4 +76,9 @@ class SprintTrack(SprintElement):
         ins.flatend = self.flatend
         ins.updateSelfBbox()
         return ins
-        
+    
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        for idx in range(len(self.points)):
+            self.points[idx] = (round(self.points[idx][0] - offsetX, 2), round(self.points[idx][1] - offsetY, 2))
+        self.updateSelfBbox()

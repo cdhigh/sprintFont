@@ -98,9 +98,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (624 / 2)
-        y = (hs / 2) - (359 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (624,359,x,y))
+        x = (ws / 2) - (625 / 2)
+        y = (hs / 2) - (365 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,365,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -141,7 +141,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.872)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.858)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -487,6 +487,7 @@ class Application(Application_ui):
         width = str_to_int(self.master.geometry().split('x')[0])
         if (width > 16): #状态栏仅使用一个分栏，占满全部空间
             self.staBar.panelwidth(0, width)
+        self.txtDsnFile.setText(r'C:/Users/su/Desktop/testSprint/dsnex.dsn') #TODO
 
         #这三行代码是修正python3.7的treeview颜色设置不生效的BUG，其他版本可能不需要
         #fixed_map = lambda op: [elm for elm in style.map("Treeview", query_opt=op) if elm[:2] != ("!disabled", "!selected")]
@@ -506,6 +507,8 @@ class Application(Application_ui):
         I18n.init()
         I18n.setLanguage(self.sysLanguge)
         self.language = ''
+
+        #self.dsnExported = False #在本次程序执行过程中是否已经导出过DSN文件
         self.pcbRule = PcbRule()
 
         #读取配置文件到内存
@@ -562,7 +565,7 @@ class Application(Application_ui):
             self.cmdOkSvg.configure(state='disabled')
             self.cmdExportDsn.configure(state='disabled')
             self.cmdImportSes.configure(state='disabled')
-
+            
         #显示输入文件名或显示单独执行模式字符串
         self.setStaBarByMode()
 
@@ -617,6 +620,9 @@ class Application(Application_ui):
 
         #绑定状态栏的双击事件
         self.staBar.lbls[0].bind('<Double-Button-1>', self.staBar_Double_Button_1)
+
+        #导入SES时如果安装Shift则仅导入布线
+        self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
 
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
@@ -754,6 +760,8 @@ class Application(Application_ui):
     #从配置文件中恢复以前的配置数据
     def restoreConfig(self):
         cfg = self.cfg
+        self.lastCheckUpdate = None
+        self.skipVersion = ''
         if isinstance(cfg, dict):
             #字体界面
             lastFont = cfg.get('font', '')
@@ -809,19 +817,19 @@ class Application(Application_ui):
                 self.easyEdaSite = ''
 
             #版本更新检查
-            lastCheck = self.cfg.get('lastCheckUpdate', '')
+            lastCheck = cfg.get('lastCheckUpdate', '')
             try:
                 self.lastCheckUpdate = datetime.datetime.strptime(lastCheck, '%Y-%m-%d')
             except:
                 self.lastCheckUpdate = None
-            self.skipVersion = self.cfg.get('skipVersion', '')
+            self.skipVersion = cfg.get('skipVersion', '')
 
-            #自动布线规则
-            trackWidth = str_to_float(self.cfg.get('trackWidth', '0.3'))
-            viaDiameter = str_to_float(self.cfg.get('viaDiameter', '0.4'))
-            viaDrill = str_to_float(self.cfg.get('viaDrill', '0.3'))
-            clearance = str_to_float(self.cfg.get('clearance', '0.2'))
-            smdSmdClearance = str_to_float(self.cfg.get('smdSmdClearance', '0.05'))
+            #自动布线规则和其他配置
+            trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
+            viaDiameter = str_to_float(cfg.get('viaDiameter', '0.4'))
+            viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
+            clearance = str_to_float(cfg.get('clearance', '0.2'))
+            smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.05'))
             self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
             self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.4
             self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
@@ -845,7 +853,7 @@ class Application(Application_ui):
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
             'easyEdaSite': self.easyEdaSite, 'lastTab': str(self.getCurrentTabStripTab()),
             'lastCheckUpdate': self.lastCheckUpdate.strftime('%Y-%m-%d') if self.lastCheckUpdate else '',
-            'skipVersion': str(self.skipVersion),
+            'skipVersion': str(self.skipVersion), 
             'trackWidth': str(self.pcbRule.trackWidth), 'viaDiameter': str(self.pcbRule.viaDiameter),
             'viaDrill': str(self.pcbRule.viaDrill), 'clearance': str(self.pcbRule.clearance),
             'smdSmdClearance': str(self.pcbRule.smdSmdClearance)}
@@ -1364,29 +1372,37 @@ class Application(Application_ui):
         
     #输出自动布线的DSN文件
     def cmdExportDsn_Cmd(self, event=None):
-        from sprint_struct.sprint_textio_parser import SprintTextIoParser
-        self.saveConfig()
         dsnFile = self.txtDsnFile.text().strip()
-        dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
-        
-        if (not self.verifyFileName(dsnFile)):
+        if not dsnFile:
+            showinfo(_('info'), _('DSN file is empty'))
+            self.txtDsnFile.focus_set()
             return
+        self.exportDsn(dsnFile)
+
+    #导出布线到DSN文件，成功返回True
+    def exportDsn(self, dsnFile: str):
+        from sprint_struct.sprint_textio_parser import SprintTextIoParser
+        
+        self.saveConfig()
         
         if not dsnFile.lower().endswith('.dsn'):
             showinfo(_("info"), _('The file format is not supported'))
-            return
+            return False
+
+        dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
 
         parser = SprintTextIoParser()
         try:
             textIo = parser.parse(self.inFileName)
         except Exception as e:
             showinfo(_("info"), _("Error parsing input file:\n{}").format(str(e)))
-            return
+            return False
         
         exporter = SprintExportDsn(textIo, self.pcbRule, dsnFile)
         ret = exporter.export()
         if isinstance(ret, str): #错误信息
             showinfo(_("info"), ret if ret else _("Unknown error"))
+            return False
         else:
             try:
                 with open(dsnFile, 'w', encoding='utf-8') as f:
@@ -1397,10 +1413,12 @@ class Application(Application_ui):
                 showinfo(_("info"), _("Export Specctra DSN file successfully"))
             except Exception as e:
                 showinfo(_("info"), str(e))
+                return False
 
+        return True
 
     #导入自动布线的SES文件
-    def cmdImportSes_Cmd(self, event=None):
+    def cmdImportSes_Cmd(self, event=None, trackOnly=False):
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -1412,11 +1430,12 @@ class Application(Application_ui):
             showinfo(_("info"), _("The file format is not supported"))
             return
 
-        ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
-        if not ret:
-            return
+        if not trackOnly:
+            ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
+            if not ret:
+                return
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile)
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trackOnly=trackOnly)
         if not ret:
             return
         elif isinstance(ret, str):
@@ -1437,7 +1456,11 @@ class Application(Application_ui):
         #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
         #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
         #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
-        sys.exit(1)
+        sys.exit(4 if trackOnly else 1)
+
+    #按住Shift点击导入则仅导入布线线条
+    def cmdImportSes_Shift_Button_1(self, event=None):
+        self.cmdImportSes_Cmd(trackOnly=True)
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
@@ -1452,7 +1475,7 @@ class Application(Application_ui):
             showinfo(_("info"), _("The file format is not supported"))
             return
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile)
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trackOnly=False)
         if not ret:
             return
         elif isinstance(ret, str):
@@ -1462,7 +1485,7 @@ class Application(Application_ui):
             self.saveTextFile(str(ret))
 
     #从SES中生成TextIo实例对象
-    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str):
+    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str, trackOnly=False):
         from sprint_struct.sprint_import_ses import SprintImportSes
         try:
             with open(dsnPickleFile, 'rb') as f:
@@ -1472,7 +1495,7 @@ class Application(Application_ui):
             
         ses = SprintImportSes(sesFile, dsn)
         try:
-            textIo = ses.importSes()
+            textIo = ses.importSes(trackOnly=trackOnly)
             return textIo
         except Exception as e:
             return str(e)

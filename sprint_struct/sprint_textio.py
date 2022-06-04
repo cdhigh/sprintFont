@@ -113,13 +113,16 @@ class SprintTextIO(SprintElement):
                 pad.padId = maxId
                 maxId += 1
 
-    #保证所有的元件都有名字，这个函数要尽早调用
+    #保证所有的元件都有名字，如果有名字，名字里面不能有非法字符，这个函数要尽早调用
     def ensureComponentHasName(self):
         idx = 0
         for elem in self.children():
-            if isinstance(elem, SprintComponent) and not elem.name:
-                #print('There are some unnamed components')
-                elem.name = f'unnamed_{idx}'
+            if isinstance(elem, SprintComponent):
+                if elem.name:
+                    elem.name = elem.name.replace('"', '_').replace("'", '_') #避免freerouting解析出错
+                    elem.value = elem.value.replace('"', '_').replace("'", '_') #避免freerouting解析出错
+                else:
+                    elem.name = f'unnamed_{idx}'
                 idx += 1
     
     #将所有的元件分类，同样的元件存为一个列表，坐标为左下角，名字格式为 Component_0
@@ -132,27 +135,28 @@ class SprintTextIO(SprintElement):
             idx = 0
             for pad in pads:
                 padComp = SprintComponent()
-                padComp.name = f'PadComp{idx}'
+                padComp.name = f'PaDcOmP{idx}'
+                idx += 1
                 padComp.add(pad)
                 comps.append(padComp)
                 #print(padComp.xMin, padComp.xMax)
 
         #将每个元件都克隆一份，以自身左下角为原点，方便下面判断元件是否相等
-        compsOrigin = [elem.cloneToSelfOrigin() for elem in comps]
+        compsOrigin = [elem.cloneToOrigin() for elem in comps]
 
         #判断两个元件是否是一样的元件的方法是将其转换为字符串，然后再通过最快的内置hash()函数计算出来一个整数
         #hash相等则认为相等，注意每次执行一个新的python实例，hash()返回的数值是不同的
         #但是每个python实例执行期间，字符串相等则hash值相等
         compsOriginHash = [hash(elem.toStr(forCompare=True)) for elem in compsOrigin]
-        compsOriginHashUni = list(set(compsOriginHash))
+        compsOriginHashUnique = list(set(compsOriginHash))
         compDict = {}
         for idx, comp in enumerate(comps):
             comp.updateSelfBbox()
-            name = 'Component_{}'.format(compsOriginHashUni.index(compsOriginHash[idx]))
+            name = 'Component_{}'.format(compsOriginHashUnique.index(compsOriginHash[idx]))
             if name in compDict:
                 compDict[name]['instance'].append(comp)
             else:
                 compDict[name] = {'image': compsOrigin[idx], 'instance': [comp]}
         return compDict
 
-        
+

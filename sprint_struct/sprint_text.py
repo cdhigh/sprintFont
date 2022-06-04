@@ -26,6 +26,11 @@ class SprintText(SprintElement):
     def isValid(self):
         return (self.height > 0)
 
+    #文本比较特殊，很难确定其确切的外框，所以使用中心点
+    def updateSelfBbox(self):
+        self.xMin = self.xMax = self.pos[0]
+        self.yMin = self.yMax = self.pos[1]
+
     def __str__(self):
         self.text = str(self.text).replace(';', '_').replace(',', '_').replace('|', '_')
 
@@ -78,4 +83,10 @@ class SprintText(SprintElement):
         ins.rotation = self.rotation
         ins.mirrorH = self.mirrorH
         ins.mirrorV = self.mirrorV
+        ins.updateSelfBbox()
         return ins
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        self.pos = (round(self.pos[0] - offsetX, 2), round(self.pos[1] - offsetY, 2))
+        self.updateSelfBbox()

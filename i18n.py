@@ -94,11 +94,11 @@ class I18n:
     "Later": ("", "稍后"),
     "Qrcode": ("", "二维码"),
     "Please deselect all items before launching the plugin": ("", "请取消全部选择然后再执行此插件"),
-    "autorouter_features_tips": ("Open the exported DSN file with freerouting for autorouting", "使用freerouting打开导出后的DSN文件进行自动布线"),
+    "autorouter_features_tips": ("Open the exported DSN file with Freerouting for autorouting", "使用 Freerouting 打开导出后的DSN文件进行自动布线"),
     "DSN file": ("", "DSN文件"),
     "SES file": ("", "SES文件"),
     "Specctra DSN files": ("", "Specctra DSN文件"),
-    "Specctra session files": ("", "Specctra SES文件"),
+    "Specctra session files": ("", "Specctra session文件"),
     "Rules": ("", "布线规则"),
     "Export": ("", "导出DSN"),
     "Import": ("", "导入SES"),
@@ -117,6 +117,9 @@ class I18n:
     "Export Specctra DSN file successfully": ("", "导出 Specctra DSN 文件成功"),
     "This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?": 
             ("", "这个操作将会全部替换电路板上的已有元件和布线。\n需要继续吗？"),
+    "Freerouting program": ("", "Freerouting 程序文件"),
+    "DSN file is empty": ("", "DSN文件为空"),
+    "There are some components with the same name: {}": ("", "存在重名的元件：{}"),
     }
 
     #这个属性是可以在程序执行过程中修改的

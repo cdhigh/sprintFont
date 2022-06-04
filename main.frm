@@ -3,10 +3,10 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5385
+   ClientHeight    =   5475
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   9360
+   ClientWidth     =   9375
    BeginProperty Font 
       Name            =   "Î¢ÈíÑÅºÚ"
       Size            =   10.5
@@ -19,8 +19,8 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5385
-   ScaleWidth      =   9360
+   ScaleHeight     =   5475
+   ScaleWidth      =   9375
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
    Begin VB.Frame tabStrip__Tab4 
@@ -438,9 +438,9 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5040
-      Width           =   9360
-      _ExtentX        =   16510
+      Top             =   5130
+      Width           =   9375
+      _ExtentX        =   16536
       _ExtentY        =   609
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 

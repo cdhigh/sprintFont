@@ -32,9 +32,10 @@ class SprintPolygon(SprintElement):
         return (len(self.points) >= 2)
     
     def updateSelfBbox(self):
-        return #addPoint()时就调用了
-        #for (x, y) in self.points:
-        #    self.updateBbox(x, y)
+        self.xMin = self.yMin = 10000 * 10000
+        self.xMax = self.yMax = -10000 * 10000
+        for (x, y) in self.points:
+            self.updateBbox(x, y)
             
     def __str__(self):
         if (not self.isValid()):
@@ -163,9 +164,15 @@ class SprintPolygon(SprintElement):
         ins.hatch = self.hatch
         ins.hatchAuto = self.hatchAuto
         ins.hatchWidth = self.hatchWidth
-        for (x, y) in ins.points:
-            ins.updateBbox(x, y)
+        ins.updateSelfBbox()
         return ins
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        for idx in range(len(self.points)):
+            self.points[idx] = (round(self.points[idx][0] - offsetX, 2), round(self.points[idx][1] - offsetY, 2))
+        self.updateSelfBbox()
+        
 
 #判断一个点是否在线段上，使用向量法
 def pointInLineSeg(x: float, y: float, x1: float, y1: float, x2: float, y2: float):

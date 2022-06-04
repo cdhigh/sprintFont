@@ -33,7 +33,8 @@ class SprintImportSes:
         return round(str_to_float(value) / self.resolution, 2)
 
     #开始导入，生成一个SprintTextIO对象
-    def importSes(self):
+    #trackOnly: True-仅导入布线，False-导入全部
+    def importSes(self, trackOnly=False):
         try:
             with open(self.sesFile, 'r', encoding='utf-8') as f:
                 sexprData = "".join(f.readlines())
@@ -46,9 +47,8 @@ class SprintImportSes:
                     sexprData = "".join(f.readlines())
 
         self.ses = sexpr.parse_sexp(sexprData)
-        textIo = self.dsn.textIo
-        yMax = textIo.yMax
-
+        textIo = SprintTextIO() if trackOnly else self.dsn.textIo
+        
         #先分析ses内使用的单位
         self.analyzeResolution(self.ses)
 
@@ -73,8 +73,7 @@ class SprintImportSes:
                 y = self.scale(path[idx + 1])
                 track.addPoint(x, -y)
             textIo.add(track)
-            #print(str(track))
-
+            
         #添加过孔
         #(via Via_800x400 21946 -13811)
         vias = self._getArray(self.ses, 'via')
@@ -91,6 +90,23 @@ class SprintImportSes:
             viaPad.via = True
             viaPad.pos = (self.scale(via[2]), -self.scale(via[3]))
             textIo.add(viaPad)
+
+        #如果有元件位置移动，则需要更新到TextIo
+        #(place r1 15362 -19807 front 0)
+        placements = self._getArray(self.ses, 'place')
+        compList = self.dsn.compList
+        for place in placements:
+            if len(place) < 6:
+                continue
+
+            name = place[1]
+            x = self.scale(place[2])
+            y = -self.scale(place[3])
+            for comp in compList:
+                if ((comp.name == name) and (abs(x - round(comp.xMin, 2)) > 0.01) 
+                    and (abs(y - round(comp.yMin, 2)) > 0.01)):
+                    #print(f'{name}, {x}, {comp.xMin}, {y}, {comp.yMin}') #TODO
+                    comp.moveByOffset(comp.xMin - x, comp.yMin - y)
 
         #将textIo里面的网络连线删除
         pads = [elem for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]

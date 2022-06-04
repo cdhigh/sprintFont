@@ -10,6 +10,7 @@ from .sprint_pad import SprintPad
 class SprintComponent(SprintElement):
     def __init__(self):
         super().__init__(self)
+        self.pos = (0, 0) #用于导出DSN使用，默认使用第一个焊盘的坐标，如果没有焊盘，使用第一个元素的坐标
         self.name = '' #用于元件的名字，比如R1
         self.value = '' #用于元件的值，比如10k
         self.comment = '' #元件注释
@@ -137,7 +138,8 @@ class SprintComponent(SprintElement):
             elem.updateSelfBbox()
             self.updateBbox(elem)
             self.elements.append(elem)
-
+            self.updatePos()
+            
     #添加列表中所有元素
     def addAll(self, elemList: list):
         for elem in elemList:
@@ -181,8 +183,19 @@ class SprintComponent(SprintElement):
     def getPads(self):
         return [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
 
-    #复制一个自身，并且将内部的坐标都相对自己外框的左下角做为新原点进行移动，
-    def cloneToSelfOrigin(self):
+    #刷新元件的定位点
+    def updatePos(self):
+        pads = self.getPads()
+        if pads:
+            pos = pads[0].pos
+            self.pos = (pos[0], pos[1])
+        else:
+            self.pos = (self.elements[0].xMin, self.elements[0].yMin)
+
+    #复制一个自身，
+    #x/y: 新的原点
+    #如果不提供原点，则将内部的坐标都相对自己的定位点做为新原点进行移动
+    def cloneToOrigin(self, x: float=None, y: float=None):
         ins = SprintComponent()
         self.updateSelfBbox()
         ins.name = self.name
@@ -200,13 +213,24 @@ class SprintComponent(SprintElement):
         ins.nameVisible = self.nameVisible
         ins.valueVisible = self.valueVisible
         ins.pickRotation = self.pickRotation
+
+        self.updatePos()
+        if x is None or y is None:
+            x, y = self.pos
+            
         padId = 1
         for elem in self.elements:
             #元件内的焊盘重新编号，从1开始
             if isinstance(elem, SprintPad):
-                ins.elements.append(elem.cloneToNewOrigin(self.xMin, self.yMin, padId))
+                ins.elements.append(elem.cloneToNewOrigin(x, y, padId))
                 padId += 1
             else:
-                ins.elements.append(elem.cloneToNewOrigin(self.xMin, self.yMin))
+                ins.elements.append(elem.cloneToNewOrigin(x, y))
         ins.updateSelfBbox()
         return ins
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        for elem in self.elements:
+            elem.moveByOffset(offsetX, offsetY)
+        self.updateSelfBbox()
