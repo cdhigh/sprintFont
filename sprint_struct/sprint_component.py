@@ -92,8 +92,8 @@ class SprintComponent(SprintElement):
         #名字
         if not forCompare:
             nameVisible = 'true' if (self.nameVisible and self.name) else 'false'
-            idText = ['ID_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
-                nameVisible, self.nameLayer, namePos[0] * 10000, namePos[1] * 10000, self.txtHeight * 10000)]
+            idText = ['ID_TEXT,VISIBLE={},LAYER={},POS={}/{},HEIGHT={}'.format(nameVisible, self.nameLayer, 
+                self.mm2um01(namePos[0]), self.mm2um01(namePos[1]), self.mm2um01(self.txtHeight))]
             if (self.txtThickness != 1):
                 idText.append('THICKNESS={}'.format(self.txtThickness))
             if (self.txtStyle != 1):
@@ -105,8 +105,8 @@ class SprintComponent(SprintElement):
 
             #数值
             valueVisible = 'true' if (self.valueVisible and self.value) else 'false'
-            valueText = ['VALUE_TEXT,VISIBLE={},LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
-                valueVisible, self.valueLayer, valuePos[0] * 10000, valuePos[1] * 10000, self.txtHeight * 10000)]
+            valueText = ['VALUE_TEXT,VISIBLE={},LAYER={},POS={}/{},HEIGHT={}'.format(valueVisible, self.valueLayer, 
+                self.mm2um01(valuePos[0]), self.mm2um01(valuePos[1]), self.mm2um01(self.txtHeight))]
             if (self.txtThickness != 1):
                 valueText.append('THICKNESS={}'.format(self.txtThickness))
             if (self.txtStyle != 1):

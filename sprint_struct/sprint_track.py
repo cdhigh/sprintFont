@@ -36,9 +36,9 @@ class SprintTrack(SprintElement):
         if (not self.isValid()):
             return ''
 
-        outStr = ['TRACK,LAYER={},WIDTH={:0.0f}'.format(self.layerIdx, self.width * 10000)]
+        outStr = ['TRACK,LAYER={},WIDTH={}'.format(self.layerIdx, self.mm2um01(self.width))]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
+            outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.cutout is not None:
             outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
@@ -50,7 +50,7 @@ class SprintTrack(SprintElement):
         
         #点列表
         for idx, (x, y) in enumerate(self.points):
-            outStr.append('P{}={:0.0f}/{:0.0f}'.format(idx, x * 10000, y * 10000))
+            outStr.append('P{}={}/{}'.format(idx, self.mm2um01(x), self.mm2um01(y )))
 
         return ','.join(outStr) + ';'
 
@@ -68,7 +68,7 @@ class SprintTrack(SprintElement):
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
         ins = SprintTrack(self.layerIdx, self.width)
-        ins.points = [(round(pt[0] - ox, 2), round(pt[1] - oy, 2)) for pt in self.points]
+        ins.points = [(round(pt[0] - ox, 4), round(pt[1] - oy, 4)) for pt in self.points]
         ins.clearance = self.clearance
         ins.cutout = self.cutout
         ins.soldermask = self.soldermask
@@ -80,5 +80,5 @@ class SprintTrack(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         for idx in range(len(self.points)):
-            self.points[idx] = (round(self.points[idx][0] - offsetX, 2), round(self.points[idx][1] - offsetY, 2))
+            self.points[idx] = (round(self.points[idx][0] - offsetX, 4), round(self.points[idx][1] - offsetY, 4))
         self.updateSelfBbox()

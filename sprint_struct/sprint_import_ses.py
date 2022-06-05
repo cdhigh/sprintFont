@@ -15,9 +15,9 @@ from kicad_pcb import sexpr
 from sprint_struct.sprint_textio import *
 from sprint_struct.sprint_export_dsn import SprintExportDsn, mm2um, PcbRule
 
-#微米转换为毫米
+#整数微米转换为浮点毫米
 def um2mm(value: int):
-    return round(str_to_float(value) / 1000, 2)
+    return round(str_to_float(value) / 1000, 4)
 
 class SprintImportSes:
     #sesFile: ses文件名
@@ -28,9 +28,9 @@ class SprintImportSes:
         self.dsn = dsn
         self.resolution = 1000 #默认为 (resolution um 1)
         
-    #将ses文件内的数值转换为mm为单位
+    #将ses文件内的数值转换为mm为单位，返回浮点数
     def scale(self, value: float):
-        return round(str_to_float(value) / self.resolution, 2)
+        return round(str_to_float(value) / self.resolution, 4)
 
     #开始导入，生成一个SprintTextIO对象
     #trackOnly: True-仅导入布线，False-导入全部
@@ -71,7 +71,7 @@ class SprintImportSes:
 
                 x = self.scale(path[idx])
                 y = self.scale(path[idx + 1])
-                track.addPoint(x, -y)
+                track.addPoint(x, -y) #负号是因为两个系统的坐标系Y轴方向相反
             textIo.add(track)
             
         #添加过孔
@@ -103,10 +103,10 @@ class SprintImportSes:
             x = self.scale(place[2])
             y = -self.scale(place[3])
             for comp in compList:
-                if ((comp.name == name) and (abs(x - round(comp.xMin, 2)) > 0.01) 
-                    and (abs(y - round(comp.yMin, 2)) > 0.01)):
-                    #print(f'{name}, {x}, {comp.xMin}, {y}, {comp.yMin}') #TODO
-                    comp.moveByOffset(comp.xMin - x, comp.yMin - y)
+                if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
+                    and (abs(y - round(comp.pos[1], 3)) > 0.01)):
+                    #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
+                    comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
 
         #将textIo里面的网络连线删除
         pads = [elem for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]

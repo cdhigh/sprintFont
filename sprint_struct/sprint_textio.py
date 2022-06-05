@@ -77,6 +77,20 @@ class SprintTextIO(SprintElement):
                 elems.append(elem)
         return elems
 
+    #获取可以当作元件的Group，标准是
+    #1. 内部不包含元件
+    #2. 内部包含至少一个焊盘
+    #3. Group嵌套层次中合适条件的最上层
+    def compLikeGroups(self, elems=None):
+        if elems is None:
+            elems = []
+        for elem in self.elements:
+            if isinstance(elem, SprintComponent):
+                return [] #本Group里面有元件，则此Group不能当作元件
+            #elif isinstance(elem, SprintGroup): #看下层是否合适
+
+        return elems
+
     #获取所有的下层基本绘图元素，如果碰到分组/元件则先展开，返回一个列表
     def baseDrawElements(self):
         elems = []
@@ -128,10 +142,14 @@ class SprintTextIO(SprintElement):
     #将所有的元件分类，同样的元件存为一个列表，坐标为左下角，名字格式为 Component_0
     #includeFreePads: 是否包含游离的焊盘，如果包含，则将游离的焊盘生成一个临时元件包装起来，元件名已PadComp开头
     #返回格式{'Component_0': {'image': comp, 'instance': ins}, }
-    def categorizeComponents(self, includeFreePads: bool=True):
-        comps = [elem for elem in self.children() if isinstance(elem, SprintComponent)]
+    def categorizeComponents(self, includeFreePads: bool=True, includeGroups: bool=True):
+        children = self.children()
+        comps = [elem for elem in children if isinstance(elem, SprintComponent)]
+        #if includeGroups: #将内部不包含元件的Group当作元件
+        #    for elem in children:
+
         if includeFreePads: #包含游离焊盘
-            pads = [elem for elem in self.children() if isinstance(elem, SprintPad)]
+            pads = [elem for elem in children if isinstance(elem, SprintPad)]
             idx = 0
             for pad in pads:
                 padComp = SprintComponent()

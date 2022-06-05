@@ -13,22 +13,22 @@ if __name__ == '__main__':
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from sprint_struct.sprint_textio import *
-from comm_utils import pointAfterRotated, cutCircle, ComputePolygonArea
+from comm_utils import pointAfterRotated, cutCircle, ComputePolygonArea, str_to_float
 from kicad_pcb import sexpr
 
-#毫米转换为微米
+#浮点毫米转换为整数微米
 def mm2um(value: float):
-    return round(float(value) * 1000)
+    return int(str_to_float(value) * 1000)
 
 class PcbRule:
     def __init__(self):
         #单位为mm
-        self.trackWidth = 0.3 #最小布线宽度
-        self.viaDiameter = 0.4
-        self.viaDrill = 0.3
-        self.clearance = 0.25 #最小孔到孔间隙
-        self.smdSmdClearance = 0.05
-
+        self.trackWidth = 0.3  #最小布线宽度
+        self.viaDiameter = 0.7 #过孔外径
+        self.viaDrill = 0.3    #过孔内径
+        self.clearance = 0.25  #最小孔到孔间隙
+        self.smdSmdClearance = 0.06 #贴片贴片间隙
+        
     #根据过孔大小返回过孔名字
     def viaName(self):
         return 'Via_{}x{}'.format(mm2um(self.viaDiameter), mm2um(self.viaDrill))
@@ -246,7 +246,7 @@ class SprintExportDsn:
                     for idx in range(len(elem.points) - 1):
                         x1, y1 = elem.points[idx]
                         x2, y2 = elem.points[idx + 1]
-                        params = ['signal', mm2um(elem.width), mm2um(x1), -mm2um(y1), mm2um(x2), -mm2um(y2)]
+                        params = ['signal', mm2um(elem.width), mm2um(x1), self.umY(y1), mm2um(x2), self.umY(y2)]
                         se.addItem({'outline': {'path': params}}, indent=outlineFirstIndent)
                         outlineFirstIndent = False
                 elif isinstance(elem, SprintPolygon):
@@ -261,17 +261,29 @@ class SprintExportDsn:
                         se.addItem({'outline': {'circle': ['signal', mm2um(elem.radius * 2),
                             mm2um(elem.center[0]), -mm2um(elem.center[1])]}}, indent=outlineFirstIndent)
                         outlineFirstIndent = False
-                    else:  #圆弧
-                        pts = cutCircle(elem.center[0], elem.center[1], elem.radius, 10, elem.start, elem.stop)
-                        params = ['signal', mm2um(elem.width)]
-                        for x, y in pts:
-                            params.append(mm2um(x))
-                            params.append(-mm2um(y))
-                        se.addItem({'outline': {'path': params}}, indent=outlineFirstIndent)
-                        outlineFirstIndent = False
+                    if 0:  #圆弧
+                        pts = cutCircle(elem.center[0], elem.center[1], elem.radius, 10, elem.stop, elem.start)
+                        #为避免freerouting将Track封闭，这里两两组成线条
+                        for idx in range(len(pts) - 1):
+                            x1, y1 = pts[idx]
+                            x2, y2 = pts[idx + 1]
+                            params = ['signal', mm2um(elem.width), mm2um(x1), self.umY(y1), mm2um(x2), self.umY(y2)]
+                            se.addItem({'outline': {'path': params}}, indent=outlineFirstIndent)
+                            outlineFirstIndent = False
                 elif isinstance(elem, SprintPad):
-                    se.addItem({'pin': [elem.generateDsnName(), elem.padId, mm2um(elem.pos[0]), -mm2um(elem.pos[1])]}, indent=outlineFirstIndent)
-                    outlineFirstIndent = False
+                    #如果外径和内径相同，则认为是开孔，而不是插件焊盘
+                    if ((elem.padType == 'PAD') and (elem.size == elem.drill) and (elem.drill > 0)):
+                        cirParams = ['F.Cu', mm2um(elem.drill), mm2um(elem.pos[0]), self.umY(elem.pos[1])]
+                        se.addItem({'keepout': ['', {'circle': cirParams}]}, indent=outlineFirstIndent)
+                        outlineFirstIndent = False
+                        cirParams[0] = 'B.Cu'
+                        se.addItem({'keepout': ['', {'circle': cirParams}]})
+                    else:
+                        pinParams = [elem.generateDsnName(), elem.padId, mm2um(elem.pos[0]), self.umY(elem.pos[1])]
+                        if elem.rotation: #很奇怪，在freerouting中插件焊盘和贴片焊盘的旋转方向是相反的
+                            pinParams.insert(1, {'rotate': (360 - elem.rotation) if (elem.padType == 'PAD') else elem.rotation})
+                        se.addItem({'pin': pinParams}, indent=outlineFirstIndent)
+                        outlineFirstIndent = False
 
             se.endGroup(newline=True) #image end
 
@@ -316,13 +328,6 @@ class SprintExportDsn:
                         (x1, y1) = 0, -size/2
                         (x2, y2) = 0, size/2
 
-                    if rotation: #绕中心点旋转一个角度
-                        (x1, y1) = pointAfterRotated(x1, y1, 0, 0, rotation, clockwise=0)
-                        (x2, y2) = pointAfterRotated(x2, y2, 0, 0, rotation, clockwise=0)
-                        if x1 > x2:
-                            x1, x2 = x2, x1
-                            y1, y2 = y2, y1
-
                     for layerStr in layerStrs:
                         se.addItem({'shape': {'path': [layerStr, mm2um(size), mm2um(x1), self.umY(y1), 
                             mm2um(x2), self.umY(y2)]}}, indent=padIndent)
@@ -331,7 +336,6 @@ class SprintExportDsn:
                 if (pad.padType == 'SMDPAD'):
                     width, height = pad.sizeX, pad.sizeY
                     layerStrs = ['F.Cu'] if (pad.layerIdx == LAYER_C1) else ['B.Cu']
-                    clockwise = 1
                 else:
                     if (form == PAD_FORM_SQUARE):
                         width, height = pad.size, pad.size
@@ -345,29 +349,13 @@ class SprintExportDsn:
                         layerStrs = ['F.Cu']
                     else:
                         layerStrs = ['B.Cu']
-                    clockwise = 0
                 
-                if not rotation:
-                    x1, y1 = -mm2um(width/2), -mm2um(height/2)
-                    x2, y2 = -x1, -y1
-                    for layerStr in layerStrs:
-                        se.addItem({'shape': {'rect': [layerStr, x1, y1, x2, y2]}}, indent=padIndent)
-                        padIndent = False
-                else:
-                    #如果旋转了，就不能用矩形了，freerouting的矩形都是水平的，要使用多边形构成
-                    #假定中心坐标为(0, 0)
-                    x1, y1 = -width / 2, -height / 2
-                    x2, y2 = x1, height / 2
-                    x3, y3 = width / 2, y2
-                    x4, y4 = x3, y1
-                    (x1, y1) = pointAfterRotated(x1, y1, 0, 0, rotation, clockwise=clockwise)
-                    (x2, y2) = pointAfterRotated(x2, y2, 0, 0, rotation, clockwise=clockwise)
-                    (x3, y3) = pointAfterRotated(x3, y3, 0, 0, rotation, clockwise=clockwise)
-                    (x4, y4) = pointAfterRotated(x4, y4, 0, 0, rotation, clockwise=clockwise)
-                    for layerStr in layerStrs:
-                        se.addItem({'shape': {'polygon': [layerStr, 0, mm2um(x1), self.umY(y1), mm2um(x2), self.umY(y2),
-                            mm2um(x3), self.umY(y3), mm2um(x4), self.umY(y4)]}}, indent=padIndent)
-                        padIndent = False
+                x1, y1 = -mm2um(width/2), -mm2um(height/2)
+                x2, y2 = -x1, -y1
+                for layerStr in layerStrs:
+                    se.addItem({'shape': {'rect': [layerStr, x1, y1, x2, y2]}}, indent=padIndent)
+                    padIndent = False
+
             se.addItem({'attach': 'off'})
             se.endGroup(newline=True) #padstack end
 

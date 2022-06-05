@@ -51,12 +51,14 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
 
         if not cmap: #最后一步，就用第一个cmap表
             cmap = font['cmap'].tables[0].cmap
-
+    
     if not cmap:
         return None
 
     codeStr = cmap.get(code) #先使用字符编码直接查找
+    #print(codeStr, code)
     if not codeStr or (codeStr not in glyphSet): #再尝试使用unicode符号查找
+        #print('search again')
         codeStr = 'uni{:04X}'.format(code)
         if codeStr not in glyphSet:
             return None

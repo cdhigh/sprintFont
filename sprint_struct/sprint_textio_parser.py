@@ -339,8 +339,16 @@ class SprintTextIoParser:
                 cir.soldermask = self.parseBooleanStr(value)
             elif (key == 'START'):
                 cir.start = str_to_int(value) / 1000
+                while (cir.start > 360):
+                    cir.start -= 360
+                while (cir.start < -0.1):
+                    cir.start += 360
             elif (key == 'STOP'):
                 cir.stop = str_to_int(value) / 1000
+                while (cir.stop > 360):
+                    cir.stop -= 360
+                while (cir.stop < -0.1):
+                    cir.stop += 360
             elif (key == 'FILL'):
                 cir.fill = self.parseBooleanStr(value)
 

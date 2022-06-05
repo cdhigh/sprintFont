@@ -71,10 +71,10 @@ class SprintCircle(SprintElement):
         if self.radius <= 0:
             return ''
 
-        outStr = ['CIRCLE,LAYER={},CENTER={:0.0f}/{:0.0f},WIDTH={:0.0f},RADIUS={:0.0f}'.format(
-            self.layerIdx, self.center[0] * 10000, self.center[1] * 10000, self.width * 10000, self.radius * 10000)]
+        outStr = ['CIRCLE,LAYER={},CENTER={}/{},WIDTH={},RADIUS={}'.format(self.layerIdx, 
+            self.mm2um01(self.center[0]), self.mm2um01(self.center[1]), self.mm2um01(self.width), self.mm2um01(self.radius))]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
+            outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.cutout is not None:
             outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
@@ -104,7 +104,7 @@ class SprintCircle(SprintElement):
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
         ins = SprintCircle(self.layerIdx)
-        ins.center = (round(self.center[0] - ox, 2), round(self.center[1] - oy, 2))
+        ins.center = (round(self.center[0] - ox, 4), round(self.center[1] - oy, 4))
         ins.width = self.width
         ins.radius = self.radius
         ins.clearance = self.clearance
@@ -118,5 +118,5 @@ class SprintCircle(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.center = (round(self.center[0] - offsetX, 2), round(self.center[1] - offsetY, 2))
+        self.center = (round(self.center[0] - offsetX, 4), round(self.center[1] - offsetY, 4))
         self.updateSelfBbox()

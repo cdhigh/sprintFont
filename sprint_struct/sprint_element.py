@@ -73,6 +73,11 @@ class SprintElement:
     def booleanStr(cls, value):
         return 'true' if value else 'false'
 
+    #毫米浮点数转换为0.1微米整数
+    @classmethod
+    def mm2um01(cls, value):
+        return int(value * 10000)
+
     #重载等号运算符，判断两个是否相等，子类需要重新实现
     def __eq__(self, other):
         return False

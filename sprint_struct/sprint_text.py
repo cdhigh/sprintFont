@@ -34,10 +34,10 @@ class SprintText(SprintElement):
     def __str__(self):
         self.text = str(self.text).replace(';', '_').replace(',', '_').replace('|', '_')
 
-        outStr = ['TEXT,LAYER={},POS={:0.0f}/{:0.0f},HEIGHT={:0.0f}'.format(
-            self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.height * 10000)]
+        outStr = ['TEXT,LAYER={},POS={}/{},HEIGHT={}'.format(
+            self.layerIdx, self.mm2um01(self.pos[0]), self.mm2um01(self.pos[1]), self.mm2um01(self.height))]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
+            outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.cutout is not None:
             outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
@@ -72,7 +72,7 @@ class SprintText(SprintElement):
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float):
         ins = SprintText(self.layerIdx)
-        ins.pos = (round(self.pos[0] - ox, 2), round(self.pos[1] - oy, 2))
+        ins.pos = (round(self.pos[0] - ox, 4), round(self.pos[1] - oy, 4))
         ins.text = self.text
         ins.height = self.height
         ins.clearance = self.clearance
@@ -88,5 +88,5 @@ class SprintText(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.pos = (round(self.pos[0] - offsetX, 2), round(self.pos[1] - offsetY, 2))
+        self.pos = (round(self.pos[0] - offsetX, 4), round(self.pos[1] - offsetY, 4))
         self.updateSelfBbox()

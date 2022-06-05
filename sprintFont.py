@@ -18,6 +18,7 @@ python -m nuitka --standalone --onefile --windows-disable-console --show-progres
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
 import os, sys, locale, json, threading, queue, datetime, pickle
+from functools import partial
 from tkinter import *
 from tkinter.font import Font, families
 from tkinter.ttk import *
@@ -563,7 +564,7 @@ class Application(Application_ui):
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
-            self.cmdExportDsn.configure(state='disabled')
+            #self.cmdExportDsn.configure(state='disabled') TODO
             self.cmdImportSes.configure(state='disabled')
             
         #显示输入文件名或显示单独执行模式字符串
@@ -826,15 +827,15 @@ class Application(Application_ui):
 
             #自动布线规则和其他配置
             trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
-            viaDiameter = str_to_float(cfg.get('viaDiameter', '0.4'))
+            viaDiameter = str_to_float(cfg.get('viaDiameter', '0.7'))
             viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
             clearance = str_to_float(cfg.get('clearance', '0.2'))
-            smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.05'))
+            smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.06'))
             self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
-            self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.4
+            self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.7
             self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
             self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.2
-            self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.05
+            self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.06
             if (self.pcbRule.viaDiameter <= self.pcbRule.viaDrill):
                 self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
             self.updateRuleView()
@@ -1334,13 +1335,13 @@ class Application(Application_ui):
         treRules.delete(*treRules.get_children())
         treRules.heading('Item', text=_("Item"))
         treRules.heading('Value', text=_("Value"))
+        #treRules.column('Item', width=150)
         treRules.insert('', 'end', values=[_("Track width"), str(self.pcbRule.trackWidth)])
         treRules.insert('', 'end', values=[_("Via diameter"), str(self.pcbRule.viaDiameter)])
         treRules.insert('', 'end', values=[_("Via drill"), str(self.pcbRule.viaDrill)])
         treRules.insert('', 'end', values=[_("Clearance"), str(self.pcbRule.clearance)])
         treRules.insert('', 'end', values=[_("Smd-Smd Clearance"), str(self.pcbRule.smdSmdClearance)])
         
-
     #双击自动布线参数，弹出对话框修改
     def treRules_Double_Button_1(self, event):
         sel = self.treRules.selection()
@@ -1367,8 +1368,9 @@ class Application(Application_ui):
                 self.pcbRule.clearance = ret
             elif (itemName == _("Smd-Smd Clearance")):
                 self.pcbRule.smdSmdClearance = ret
-            self.updateRuleView()
-            self.saveConfig()
+
+        self.updateRuleView()
+        self.saveConfig()
         
     #输出自动布线的DSN文件
     def cmdExportDsn_Cmd(self, event=None):
@@ -1393,7 +1395,7 @@ class Application(Application_ui):
 
         parser = SprintTextIoParser()
         try:
-            textIo = parser.parse(self.inFileName)
+            textIo = parser.parse(self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt') #TODO
         except Exception as e:
             showinfo(_("info"), _("Error parsing input file:\n{}").format(str(e)))
             return False

@@ -17,16 +17,28 @@ PAD_FORM_RECT_ROUND_V = 7
 PAD_FORM_RECT_OCTAGON_V = 8
 PAD_FORM_RECT_V = 9
 
+sprintPadFormMap = {
+    PAD_FORM_ROUND: 'Round',
+    PAD_FORM_OCTAGON: 'Octagon',
+    PAD_FORM_SQUARE: 'Square',
+    PAD_FORM_RECT_ROUND_H: 'RectRH',
+    PAD_FORM_RECT_OCTAGON_H: 'RectOH',
+    PAD_FORM_RECT_H: 'RectH',
+    PAD_FORM_RECT_ROUND_V: 'RectRV',
+    PAD_FORM_RECT_OCTAGON_V: 'RectOV',
+    PAD_FORM_RECT_V: 'RectV',
+}
+
 #sprint的Pad类
 class SprintPad(SprintElement):
     def __init__(self, padType: str='PAD', layerIdx: int=1):
         super().__init__(layerIdx)
         self.padType = padType # 'PAD'/'SMDPAD'
         self.pos = (0, 0)
-        self.size = 0
+        self.size = 0 #外径
         self.sizeX = 0
         self.sizeY = 0
-        self.drill = 0
+        self.drill = 0  #钻孔直径
         self.form = PAD_FORM_ROUND
         self.clearance = None
         self.soldermask = None
@@ -61,10 +73,10 @@ class SprintPad(SprintElement):
 
     #生成通孔焊盘的字符串
     def toStrPad(self, overwritePadId=None):
-        outStr = ['PAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE={:0.0f},DRILL={:0.0f},FORM={}'.format(
-            self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.size * 10000, self.drill * 10000, self.form)]
+        outStr = ['PAD,LAYER={},POS={}/{},SIZE={},DRILL={},FORM={}'.format(self.layerIdx, self.mm2um01(self.pos[0]), 
+            self.mm2um01(self.pos[1]), self.mm2um01(self.size), self.mm2um01(self.drill), self.form)]
         if self.clearance is not None:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
+            outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
         if (self.form != PAD_FORM_ROUND) and (self.rotation is not None):
@@ -74,11 +86,11 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth * 10000))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
         if self.thermalTracksIndividual is not None:
             outStr.append('THERMAL_TRACKS_INDIVIDUAL={}'.format(self.booleanStr(self.thermalTracksIndividual)))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
+            outStr.append('THERMAL_TRACKS={}'.format(self.mm2um01(self.thermalTracks)))
         if overwritePadId is not None:
             outStr.append('PAD_ID={}'.format(overwritePadId))
         else:
@@ -91,10 +103,10 @@ class SprintPad(SprintElement):
 
     #生成贴片焊盘的字符串
     def toStrSmdPad(self, overwritePadId=None):
-        outStr = ['SMDPAD,LAYER={},POS={:0.0f}/{:0.0f},SIZE_X={:0.0f},SIZE_Y={:0.0f}'.format(
-            self.layerIdx, self.pos[0] * 10000, self.pos[1] * 10000, self.sizeX * 10000, self.sizeY * 10000)]
+        outStr = ['SMDPAD,LAYER={},POS={}/{},SIZE_X={},SIZE_Y={}'.format(self.layerIdx, 
+            self.mm2um01(self.pos[0]), self.mm2um01(self.pos[1]), self.mm2um01(self.sizeX), self.mm2um01(self.sizeY))]
         if self.clearance:
-            outStr.append('CLEAR={:0.0f}'.format(self.clearance * 10000))
+            outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
         if self.rotation is not None:
@@ -102,9 +114,9 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={:0.0f}'.format(self.thermalTracksWidth * 10000))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={:0.0f}'.format(self.thermalTracks * 10000))
+            outStr.append('THERMAL_TRACKS={}'.format(self.mm2um01(self.thermalTracks)))
         if overwritePadId is not None:
             outStr.append('PAD_ID={}'.format(overwritePadId))
         else:
@@ -133,19 +145,20 @@ class SprintPad(SprintElement):
     
     #给焊盘起一个名字，用于DSN导出
     def generateDsnName(self):
-        rotation = self.rotation if self.rotation else 0
+        #rotation = 1 if self.rotation else 0
         if self.padType == 'PAD':
-            name = 'PAD_{}_{}_{:0.3f}_{:0.3f}_{:0.0f}_{}'.format(self.layerIdx, self.form, self.size, self.drill, rotation, ('1' if self.via else '0'))
+            name = 'PAD_{}_{}_{}x{}{}'.format(self.layerIdx, sprintPadFormMap.get(self.form, ''), 
+                self.mm2um01(self.size), self.mm2um01(self.drill), ('_via' if self.via else ''))
         else:
-            name = 'SMDPAD_{}_{:0.3f}x{:0.3f}_{:0.0f}'.format(self.layerIdx, self.sizeX, self.sizeY, rotation)
+            name = 'SMDPAD_{}_{}x{}'.format(self.layerIdx, self.mm2um01(self.sizeX), self.mm2um01(self.sizeY))
 
-        return name.replace('.', '_')
+        return name
 
     #复制一个自身，并且将坐标相对某个新原点进行移动，
     #ox/oy: 新的原点坐标
     def cloneToNewOrigin(self, ox: float, oy: float, overwritePadId=None):
         ins = SprintPad(self.padType, self.layerIdx)
-        ins.pos = (round(self.pos[0] - ox, 2), round(self.pos[1] - oy, 2))
+        ins.pos = (round(self.pos[0] - ox, 4), round(self.pos[1] - oy, 4))
         ins.size = self.size
         ins.sizeX = self.sizeX
         ins.sizeY = self.sizeY
@@ -166,6 +179,6 @@ class SprintPad(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.pos = (round(self.pos[0] - offsetX, 2), round(self.pos[1] - offsetY, 2))
+        self.pos = (round(self.pos[0] - offsetX, 4), round(self.pos[1] - offsetY, 4))
         self.updateSelfBbox()
         

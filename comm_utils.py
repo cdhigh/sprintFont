@@ -194,6 +194,15 @@ def radian(ux, uy, vx, vy):
     
     return rad
 
+#计算圆上点的坐标
+#cx/cy: 圆心坐标
+#radius: 半径
+#cutNum: 需要多少等分
+#angle: X向右为0度，逆时针为正
+def pointAtCircle(cx: float, cy: float, radius: float, angle: float):
+    x1 = round(cx + radius * math.cos(degreesToRadians(-angle)), 4)
+    y1 = round(cy + radius * math.sin(degreesToRadians(-angle)), 4)
+    return (x1, y1)
 
 #获得圆心坐标为center 半径为r的圆cutNum等分后的圆上坐标
 #cx/cy: 圆心坐标
@@ -212,7 +221,7 @@ def cutCircle(cx: float, cy: float, radius: float, cutNum: int, start: int=None,
 
     for idx in range(cutNum):
         radians = (math.pi / 180) * ((idx + 1) * angle + startAngle)
-        points.append((round(cx + math.sin(radians) * radius, 3), round(cy + math.cos(radians) * radius, 3)))
+        points.append((round(cx + math.sin(radians) * radius, 4), round(cy + math.cos(radians) * radius, 4)))
     
     return points
 
@@ -227,7 +236,7 @@ def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, 
         x2 = (x1 - cx) * math.cos(angle) - (y1 - cy) * math.sin(angle) + cx
         y2 = (y1 - cy) * math.cos(angle) + (x1 - cx) * math.sin(angle) + cy
 
-    return (round(x2, 3), round(y2, 3))
+    return (round(x2, 4), round(y2, 4))
 
 #print(pointAfterRotated(-5, 0, 0, 0, 180))
 
