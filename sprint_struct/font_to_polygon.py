@@ -29,13 +29,18 @@ SMOOTH_MAP = {
 #offsetX: X方向的偏移，单位为毫米，用于多个字形成一行
 #offsetY: Y方向的偏移，单位为毫米，用于多行
 #smooth: 曲线平滑系数，参见 SMOOTH_MAP
-#返回{'width':, 'height':, 'polygon':}
+#返回{'width':, 'height':, 'polygon':} 或 错误信息字符串
 #字体坐标原点在屏幕左下角，但Sprint-Layout坐标原点在左上角，所以字形需要垂直翻转
 def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, offsetX: float=0, 
     offsetY: float=0, smooth: int=2):
     
     #获取包含字形名称和字形对象的--字形集对象glyphSet
-    glyphSet = font.getGlyphSet()
+    try:
+        glyphSet = font.getGlyphSet()
+    except Exception as e:
+        print(str(e))
+        return _("Failed to get glyph set from the font file you selected")
+        
     pen = SVGPathPen(glyphSet)  #获取pen的基类
 
     #先通过cmap查询字形名字
@@ -44,16 +49,16 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
     if (not cmap) and font['cmap']:
         cmapIds = [(1, 0), (3, 0)]
         for ptId, peId in cmapIds:
-            cmapSubtable = font['cmap'].getcmap(platformID=ptId, platEncID=peId)
-            if cmapSubtable:
-                cmap = cmapSubtable.cmap
+            cmapSuitable = font['cmap'].getcmap(platformID=ptId, platEncID=peId)
+            if cmapSuitable:
+                cmap = cmapSuitable.cmap
                 break
 
         if not cmap: #最后一步，就用第一个cmap表
             cmap = font['cmap'].tables[0].cmap
     
     if not cmap:
-        return None
+        return _("No suitable character map found in the font file you selected")
 
     codeStr = cmap.get(code) #先使用字符编码直接查找
     #print(codeStr, code)
@@ -61,11 +66,11 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
         #print('search again')
         codeStr = 'uni{:04X}'.format(code)
         if codeStr not in glyphSet:
-            return None
+            return _("The glyph for the character was not found in the font file you selected.\n\n{}").format(chr(code))
 
     glyph = glyphSet.get(codeStr) #提取字形对象
     if not glyph:
-        return None
+        return _("Failed to get glyph for the character.\n\n{}").format(chr(code))
     
     glyph.draw(pen)  #绘制字形对象
     fontCmds = pen._commands  #提取绘制语句

@@ -1,5 +1,6 @@
 """
 code extracted from: http://rosettacode.org/wiki/S-Expressions
+modified by cdhigh 2022-06-07
 """
 
 import re
@@ -71,8 +72,9 @@ def SexprItem(val: Any, key: Optional[str] = None) -> str:
         val = str(round(val, 10)).rstrip("0").rstrip(".")
     elif isinstance(val, int):
         val = str(val)
-    elif isinstance(val, str) and re.search(r"[\s()\"]", val):
-        val = '"%s"' % repr(val)[1:-1].replace('"', r"\"")
+    elif isinstance(val, str):
+        if ((val != '"') and re.search(r"[\s()\"]", val)): #modified by cdhigh 2022-06-07, allow single quote
+            val = '"%s"' % repr(val)[1:-1].replace('"', r"\"")
 
     return fmt.format(val=val)
 

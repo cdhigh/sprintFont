@@ -139,9 +139,9 @@ class SprintTextIO(SprintElement):
                     elem.name = f'unnamed_{idx}'
                 idx += 1
     
-    #将所有的元件分类，同样的元件存为一个列表，坐标为左下角，名字格式为 Component_0
+    #将所有的元件分类，同样的元件存为一个列表，坐标为左下角，名字格式为 Footprint_0
     #includeFreePads: 是否包含游离的焊盘，如果包含，则将游离的焊盘生成一个临时元件包装起来，元件名已PadComp开头
-    #返回格式{'Component_0': {'image': comp, 'instance': ins}, }
+    #返回格式{'Footprint_0': {'image': comp, 'instance': ins}, }
     def categorizeComponents(self, includeFreePads: bool=True, includeGroups: bool=True):
         children = self.children()
         comps = [elem for elem in children if isinstance(elem, SprintComponent)]
@@ -170,11 +170,9 @@ class SprintTextIO(SprintElement):
         compDict = {}
         for idx, comp in enumerate(comps):
             comp.updateSelfBbox()
-            name = 'Component_{}'.format(compsOriginHashUnique.index(compsOriginHash[idx]))
+            name = 'Footprint_{}'.format(compsOriginHashUnique.index(compsOriginHash[idx]))
             if name in compDict:
                 compDict[name]['instance'].append(comp)
             else:
                 compDict[name] = {'image': compsOrigin[idx], 'instance': [comp]}
         return compDict
-
-

@@ -33,8 +33,10 @@ class SprintImportSes:
         return round(str_to_float(value) / self.resolution, 4)
 
     #开始导入，生成一个SprintTextIO对象
+    #withRatsnest: True-包含鼠线（网络连线），False-删除鼠线
     #trackOnly: True-仅导入布线，False-导入全部
-    def importSes(self, trackOnly=False):
+    #trackOnly的优先级比withRatsnest高，如果trackOnly=True，则忽略withRatsnest
+    def importSes(self, withRatsnest: bool, trackOnly: bool):
         try:
             with open(self.sesFile, 'r', encoding='utf-8') as f:
                 sexprData = "".join(f.readlines())
@@ -62,9 +64,13 @@ class SprintImportSes:
 
             path = wire[1]
             pathLen = len(path)
-            layer = path[1]
+            #print(path)
+            layer = sprintLayerMapSes.get(path[1], LAYER_C1)
             width = self.scale(path[2])
-            track = SprintTrack(sprintLayerMapSes.get(layer, LAYER_C1), width)
+            if (width <= 0):
+                continue
+                
+            track = SprintTrack(layer, width)
             for idx in range(3, pathLen, 2):
                 if (idx + 1 >= pathLen):
                     break
@@ -73,6 +79,8 @@ class SprintImportSes:
                 y = self.scale(path[idx + 1])
                 track.addPoint(x, -y) #负号是因为两个系统的坐标系Y轴方向相反
             textIo.add(track)
+            #print('add track:{},{}'.format(layer, width))
+            #time.sleep(0.1)
             
         #添加过孔
         #(via Via_800x400 21946 -13811)
@@ -93,25 +101,27 @@ class SprintImportSes:
 
         #如果有元件位置移动，则需要更新到TextIo
         #(place r1 15362 -19807 front 0)
-        placements = self._getArray(self.ses, 'place')
-        compList = self.dsn.compList
-        for place in placements:
-            if len(place) < 6:
-                continue
+        if not trackOnly:
+            placements = self._getArray(self.ses, 'place')
+            compList = self.dsn.compList
+            for place in placements:
+                if len(place) < 6:
+                    continue
 
-            name = place[1]
-            x = self.scale(place[2])
-            y = -self.scale(place[3])
-            for comp in compList:
-                if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
-                    and (abs(y - round(comp.pos[1], 3)) > 0.01)):
-                    #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
-                    comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
+                name = place[1]
+                x = self.scale(place[2])
+                y = -self.scale(place[3])
+                for comp in compList:
+                    if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
+                        and (abs(y - round(comp.pos[1], 3)) > 0.01)):
+                        #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
+                        comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
 
         #将textIo里面的网络连线删除
-        pads = [elem for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]
-        for pad in pads:
-            pad.connectToOtherPads.clear()
+        if not withRatsnest:
+            pads = [elem for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]
+            for pad in pads:
+                pad.connectToOtherPads.clear()
             
         return textIo
 
@@ -163,15 +173,16 @@ class SprintImportSes:
 
 
 if __name__ == '__main__':
-    dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn.pickle'
-    sesFile = r'C:\Users\su\Desktop\testSprint\dsnex.ses'
-    inputFile = r'C:\Users\su\Desktop\testSprint\1_in.txt'
+    if 0:
+        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn.pickle'
+        sesFile = r'C:\Users\su\Desktop\testSprint\dsnex.ses'
+        inputFile = r'C:\Users\su\Desktop\testSprint\1_in.txt'
 
-    with open(dsnFile, 'rb') as f:
-        dsn = pickle.load(f)
+        with open(dsnFile, 'rb') as f:
+            dsn = pickle.load(f)
 
-    ses = SprintImportSes(sesFile, dsn)
-    textIo = ses.importSes()
-    with open(inputFile, 'w', encoding='utf-8') as f:
-        f.write(str(textIo))
+        ses = SprintImportSes(sesFile, dsn)
+        textIo = ses.importSes()
+        with open(inputFile, 'w', encoding='utf-8') as f:
+            f.write(str(textIo))
 

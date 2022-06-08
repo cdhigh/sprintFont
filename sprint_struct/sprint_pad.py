@@ -86,11 +86,11 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.thermalTracksWidth))
         if self.thermalTracksIndividual is not None:
             outStr.append('THERMAL_TRACKS_INDIVIDUAL={}'.format(self.booleanStr(self.thermalTracksIndividual)))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={}'.format(self.mm2um01(self.thermalTracks)))
+            outStr.append('THERMAL_TRACKS={}'.format(self.thermalTracks))
         if overwritePadId is not None:
             outStr.append('PAD_ID={}'.format(overwritePadId))
         else:
@@ -114,9 +114,9 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.thermalTracksWidth))
         if self.thermalTracks:
-            outStr.append('THERMAL_TRACKS={}'.format(self.mm2um01(self.thermalTracks)))
+            outStr.append('THERMAL_TRACKS={}'.format(self.thermalTracks))
         if overwritePadId is not None:
             outStr.append('PAD_ID={}'.format(overwritePadId))
         else:
@@ -145,12 +145,12 @@ class SprintPad(SprintElement):
     
     #给焊盘起一个名字，用于DSN导出
     def generateDsnName(self):
-        #rotation = 1 if self.rotation else 0
+        rotation = '' #self.rotation if self.rotation else ''
         if self.padType == 'PAD':
-            name = 'PAD_{}_{}_{}x{}{}'.format(self.layerIdx, sprintPadFormMap.get(self.form, ''), 
-                self.mm2um01(self.size), self.mm2um01(self.drill), ('_via' if self.via else ''))
+            name = 'PAD_{}_{}_{}x{}{}{}'.format(self.layerIdx, sprintPadFormMap.get(self.form, ''), 
+                self.mm2um01(self.size), self.mm2um01(self.drill), ('_via' if self.via else ''), rotation)
         else:
-            name = 'SMDPAD_{}_{}x{}'.format(self.layerIdx, self.mm2um01(self.sizeX), self.mm2um01(self.sizeY))
+            name = 'SMDPAD_{}_{}x{}{}'.format(self.layerIdx, self.mm2um01(self.sizeX), self.mm2um01(self.sizeY), rotation)
 
         return name
 

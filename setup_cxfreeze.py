@@ -12,7 +12,7 @@ if sys.platform == "win32":
     base = "Win32GUI"
 else:
     base = None
-
+#base = None
 APP_PATH = os.path.dirname(__file__)
 #APP_LIB_PATH = os.path.normpath(os.path.join(APP_PATH, 'mylib'))
 #sys.path.insert(0, APP_LIB_PATH)

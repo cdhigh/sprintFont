@@ -48,7 +48,7 @@ class I18n:
     "Text is empty": ("", "文本为空"),
     "File does not exist\n{}": ("", "文件不存在\n{}"),
     "Failed to generate text": ("", "创建文本失败"),
-    "Failed to save file": ("", "保存文件失败"),
+    "Failed to save file.\n{}": ("", "保存文件失败\n{}"),
     "Save to a text file": ("", "保存为一个文本文件"),
     "Text files": ("", "文本文件"),
     "All files": ("", "所有文件"),
@@ -94,7 +94,9 @@ class I18n:
     "Later": ("", "稍后"),
     "Qrcode": ("", "二维码"),
     "Please deselect all items before launching the plugin": ("", "请取消全部选择然后再执行此插件"),
-    "autorouter_features_tips": ("Open the exported DSN file with Freerouting for autorouting", "使用 Freerouting 打开导出后的DSN文件进行自动布线"),
+    "autorouter_features_tips": (
+        "Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side", 
+        "使用 Freerouting 打开导出后的DSN文件进行自动布线\n当前仅支持在板子正面放置元件"),
     "DSN file": ("", "DSN文件"),
     "SES file": ("", "SES文件"),
     "Specctra DSN files": ("", "Specctra DSN文件"),
@@ -120,6 +122,16 @@ class I18n:
     "Freerouting program": ("", "Freerouting 程序文件"),
     "DSN file is empty": ("", "DSN文件为空"),
     "There are some components with the same name: {}": ("", "存在重名的元件：{}"),
+    "Failed to get glyph set from the font file you selected": ("", "无法从您选择的字体文件中提取字形集"),
+    "No suitable character map found in the font file you selected": ("", "在您选择的字体文件中找不到合适的字符表"),
+    "The glyph for the character was not found in the font file you selected.\n\n{}": ("", "在您选择的字体文件中找不到这个字符的字形\n\n{}"),
+    "Failed to get glyph for the character.\n\n{}": ("", "获取这个字符串的字形失败\n\n{}"),
+    "Currently only supports all components placed on the front side\n\n{}": ("", "当前仅支持在电路板正面放置元件\n\n{}"),
+    "Import all (without RATSNEST)": ("", "导入全部（不包含网络连接线）"),
+    "Import all (with RATSNEST)": ("", "导入全部（包含网络连接线）"),
+    "Import auto-routed tracks only": ("", "仅导入自动布线的铜箔走线"),
+    "No components on the board": ("", "电路板上没有元件"),
+    "Failed to parse input file": ("", "分析输入文件失败"),
     }
 
     #这个属性是可以在程序执行过程中修改的

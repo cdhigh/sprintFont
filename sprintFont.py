@@ -27,7 +27,7 @@ from tkinter.messagebox import *
 #Usage:f=tkFileDialog.askopenfilename(initialdir='E:/Python')
 import tkinter.filedialog as tkFileDialog
 import tkinter.simpledialog as tkSimpleDialog  #askstring()
-from fontTools.ttLib.ttFont import TTFont
+from fontTools.ttLib import ttFont, ttCollection
 from i18n import I18n
 from comm_utils import *
 from widget_right_click import rightClicker
@@ -39,6 +39,8 @@ __VERSION__ = "1.3"
 __DATE__ = "20220603"
 __AUTHOR__ = "cdhigh"
 
+#特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
+#这里先直接使用系统字体，暂不考虑用户字体
 WIN_DIR = os.environ['WINDIR']
 FONT_DIR = os.path.join(WIN_DIR if WIN_DIR else "c:/windows", "fonts")
 
@@ -99,9 +101,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (365 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,365,x,y))
+        x = (ws / 2) - (624 / 2)
+        y = (hs / 2) - (359 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (624,359,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -142,7 +144,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.858)
+        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.872)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -224,13 +226,13 @@ class Application_ui(Frame):
         self.lblWordSpacing = Label(self.tabStrip__Tab1, text='Word spacing (mm)', textvariable=self.lblWordSpacingVar, style='TlblWordSpacing.TLabel')
         self.lblWordSpacing.setText = lambda x: self.lblWordSpacingVar.set(x)
         self.lblWordSpacing.text = lambda : self.lblWordSpacingVar.get()
-        self.lblWordSpacing.place(relx=0.513, rely=0.511, relwidth=0.258, relheight=0.08)
+        self.lblWordSpacing.place(relx=0.526, rely=0.511, relwidth=0.245, relheight=0.08)
         self.LblLineSpacingVar = StringVar(value='Line spacing (mm)')
         self.style.configure('TLblLineSpacing.TLabel', anchor='e', font=('微软雅黑',10))
         self.LblLineSpacing = Label(self.tabStrip__Tab1, text='Line spacing (mm)', textvariable=self.LblLineSpacingVar, style='TLblLineSpacing.TLabel')
         self.LblLineSpacing.setText = lambda x: self.LblLineSpacingVar.set(x)
         self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
-        self.LblLineSpacing.place(relx=0.513, rely=0.639, relwidth=0.258, relheight=0.08)
+        self.LblLineSpacing.place(relx=0.526, rely=0.639, relwidth=0.245, relheight=0.08)
         self.lblSaveAsVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAs = Label(self.tabStrip__Tab1, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
@@ -249,7 +251,7 @@ class Application_ui(Frame):
         self.lblFontHeight = Label(self.tabStrip__Tab1, text='Height (mm)', textvariable=self.lblFontHeightVar, style='TlblFontHeight.TLabel')
         self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
         self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
-        self.lblFontHeight.place(relx=0.513, rely=0.383, relwidth=0.258, relheight=0.08)
+        self.lblFontHeight.place(relx=0.526, rely=0.383, relwidth=0.245, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab1, text='Font')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
@@ -414,13 +416,13 @@ class Application_ui(Frame):
         self.txtSesFile = Entry(self.tabStrip__Tab4, textvariable=self.txtSesFileVar, font=('微软雅黑',10))
         self.txtSesFile.setText = lambda x: self.txtSesFileVar.set(x)
         self.txtSesFile.text = lambda : self.txtSesFileVar.get()
-        self.txtSesFile.place(relx=0.175, rely=0.332, relwidth=0.73, relheight=0.089)
+        self.txtSesFile.place(relx=0.175, rely=0.358, relwidth=0.73, relheight=0.089)
         self.cmdSesFileVar = StringVar(value='...')
         self.style.configure('TcmdSesFile.TButton', font=('Arial',9))
         self.cmdSesFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdSesFileVar, command=self.cmdSesFile_Cmd, style='TcmdSesFile.TButton')
         self.cmdSesFile.setText = lambda x: self.cmdSesFileVar.set(x)
         self.cmdSesFile.text = lambda : self.cmdSesFileVar.get()
-        self.cmdSesFile.place(relx=0.917, rely=0.332, relwidth=0.056, relheight=0.08)
+        self.cmdSesFile.place(relx=0.917, rely=0.358, relwidth=0.056, relheight=0.08)
         self.cmdCancelAutoRouterVar = StringVar(value='Cancel')
         self.style.configure('TcmdCancelAutoRouter.TButton', font=('微软雅黑',10))
         self.cmdCancelAutoRouter = Button(self.tabStrip__Tab4, text='Cancel', textvariable=self.cmdCancelAutoRouterVar, command=self.cmdCancelAutoRouter_Cmd, style='TcmdCancelAutoRouter.TButton')
@@ -437,13 +439,13 @@ class Application_ui(Frame):
         self.txtDsnFile = Entry(self.tabStrip__Tab4, textvariable=self.txtDsnFileVar, font=('微软雅黑',10))
         self.txtDsnFile.setText = lambda x: self.txtDsnFileVar.set(x)
         self.txtDsnFile.text = lambda : self.txtDsnFileVar.get()
-        self.txtDsnFile.place(relx=0.175, rely=0.204, relwidth=0.73, relheight=0.089)
+        self.txtDsnFile.place(relx=0.175, rely=0.256, relwidth=0.73, relheight=0.089)
         self.cmdDsnFileVar = StringVar(value='...')
         self.style.configure('TcmdDsnFile.TButton', font=('Arial',9))
         self.cmdDsnFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdDsnFileVar, command=self.cmdDsnFile_Cmd, style='TcmdDsnFile.TButton')
         self.cmdDsnFile.setText = lambda x: self.cmdDsnFileVar.set(x)
         self.cmdDsnFile.text = lambda : self.cmdDsnFileVar.get()
-        self.cmdDsnFile.place(relx=0.917, rely=0.204, relwidth=0.056, relheight=0.08)
+        self.cmdDsnFile.place(relx=0.917, rely=0.256, relwidth=0.056, relheight=0.08)
         self.lblRulesVar = StringVar(value='Rules')
         self.style.configure('TlblRules.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblRules = Label(self.tabStrip__Tab4, text='Rules', textvariable=self.lblRulesVar, style='TlblRules.TLabel')
@@ -455,7 +457,7 @@ class Application_ui(Frame):
         self.lblSesFile = Label(self.tabStrip__Tab4, text='Ses file', textvariable=self.lblSesFileVar, style='TlblSesFile.TLabel')
         self.lblSesFile.setText = lambda x: self.lblSesFileVar.set(x)
         self.lblSesFile.text = lambda : self.lblSesFileVar.get()
-        self.lblSesFile.place(relx=0.027, rely=0.332, relwidth=0.11, relheight=0.08)
+        self.lblSesFile.place(relx=0.027, rely=0.358, relwidth=0.11, relheight=0.08)
         self.lblSaveAsAutoRouterVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsAutoRouter.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsAutoRouter = Label(self.tabStrip__Tab4, text='Save as', textvariable=self.lblSaveAsAutoRouterVar, style='TlblSaveAsAutoRouter.TLabel')
@@ -468,13 +470,13 @@ class Application_ui(Frame):
         self.lblAutoRouterTips = Label(self.tabStrip__Tab4, text='AutoRouter_features_tips', textvariable=self.lblAutoRouterTipsVar, style='TlblAutoRouterTips.TLabel')
         self.lblAutoRouterTips.setText = lambda x: self.lblAutoRouterTipsVar.set(x)
         self.lblAutoRouterTips.text = lambda : self.lblAutoRouterTipsVar.get()
-        self.lblAutoRouterTips.place(relx=0.175, rely=0.051, relwidth=0.771, relheight=0.131)
+        self.lblAutoRouterTips.place(relx=0.175, rely=0.051, relwidth=0.771, relheight=0.182)
         self.lblDsnFileVar = StringVar(value='Dsn file')
         self.style.configure('TlblDsnFile.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblDsnFile = Label(self.tabStrip__Tab4, text='Dsn file', textvariable=self.lblDsnFileVar, style='TlblDsnFile.TLabel')
         self.lblDsnFile.setText = lambda x: self.lblDsnFileVar.set(x)
         self.lblDsnFile.text = lambda : self.lblDsnFileVar.get()
-        self.lblDsnFile.place(relx=0.027, rely=0.204, relwidth=0.11, relheight=0.08)
+        self.lblDsnFile.place(relx=0.027, rely=0.256, relwidth=0.11, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab4, text='AutoRouter')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
@@ -488,6 +490,13 @@ class Application(Application_ui):
         width = str_to_int(self.master.geometry().split('x')[0])
         if (width > 16): #状态栏仅使用一个分栏，占满全部空间
             self.staBar.panelwidth(0, width)
+
+        self.versionJson = {} #用来更新版本使用
+        self.checkUpdateFrequency = 30
+        self.lastCheckUpdate = None
+        self.skipVersion = ''
+        self.easyEdaSite = ''
+
         self.txtDsnFile.setText(r'C:/Users/su/Desktop/testSprint/dsnex.dsn') #TODO
 
         #这三行代码是修正python3.7的treeview颜色设置不生效的BUG，其他版本可能不需要
@@ -500,16 +509,12 @@ class Application(Application_ui):
         self.treRules.configure(selectmode='browse') #只允许单行选择
         #self.treRules.tag_configure('gray_row', background='#cccccc')
 
-        #绑定额外的事件处理函数
-        self.bindWidgetEvents()
-        
         #初始化多语种支持
         self.sysLanguge = locale.getdefaultlocale()[0]
         I18n.init()
         I18n.setLanguage(self.sysLanguge)
         self.language = ''
 
-        #self.dsnExported = False #在本次程序执行过程中是否已经导出过DSN文件
         self.pcbRule = PcbRule()
 
         #读取配置文件到内存
@@ -527,6 +532,9 @@ class Application(Application_ui):
             if lang and I18n.langIsSupported(lang):
                 self.language = lang
                 I18n.setLanguage(lang)
+        
+        #绑定额外的事件处理函数
+        self.bindWidgetEvents()
         
         self.populateWidgets()
         self.restoreConfig()
@@ -551,7 +559,9 @@ class Application(Application_ui):
                 self.pcbHeight = str_to_int(h[0][3:]) / 10000
                 
             self.pcbAll = True if a else False
-            
+        
+        #self.inFileName = self.inFileName.replace('su', 'Adminstrator') #TODO
+
         #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
             inExts = os.path.splitext(self.inFileName)
@@ -571,7 +581,6 @@ class Application(Application_ui):
         self.setStaBarByMode()
 
         #版本更新检查，启动5s后检查一次更新
-        self.versionJson = {}
         self.master.after(5000, self.periodicCheckUpdate)
 
         self.txtMain.focus_set()
@@ -623,7 +632,11 @@ class Application(Application_ui):
         self.staBar.lbls[0].bind('<Double-Button-1>', self.staBar_Double_Button_1)
 
         #导入SES时如果安装Shift则仅导入布线
-        self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
+        #self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
+        self.mnuImportSes = Menu(self.master, tearoff=0)
+        self.mnuImportSes.add_command(label=_("Import all (without RATSNEST)"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import all (with RATSNEST)"), command=partial(self.cmdmnuImportSes, withRatsnest=True, trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import auto-routed tracks only"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=True))
 
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
@@ -667,9 +680,12 @@ class Application(Application_ui):
     #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
     #此函数在程序启动后5s才会得到执行
     def periodicCheckUpdate(self):
+        if (self.checkUpdateFrequency <= 0):
+            return
+
         #一个月检查一个更新
         now = datetime.datetime.now()
-        if ((not self.lastCheckUpdate) or ((now - self.lastCheckUpdate).days >= 30)):
+        if ((not self.lastCheckUpdate) or ((now - self.lastCheckUpdate).days >= self.checkUpdateFrequency)):
             self.lastCheckUpdate = now
             try:
                 self.thVersionCheck = threading.Thread(target=self.versionCheckThread, daemon=True)
@@ -709,7 +725,7 @@ class Application(Application_ui):
         #字间距
         self.cmbWordSpacingList = [-0.8, -0.5, -0.2, 0, 0.2, 0.5]
         self.cmbWordSpacing.configure(values=self.cmbWordSpacingList)
-        self.cmbWordSpacing.current(2) #默认-0.2，电路板空间比较宝贵，文字可以相互靠近一些
+        self.cmbWordSpacing.current(0) #默认-0.8，电路板空间比较宝贵，文字可以相互靠近一些
         
         #行间距
         self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
@@ -734,7 +750,7 @@ class Application(Application_ui):
         self.cmbSvgMode.current(0)
 
         #SVG图像高度
-        self.cmbSvgHeightList = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
+        self.cmbSvgHeightList = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 20.0, 30.0, 40.0, 50.0]
         self.cmbSvgHeight.configure(values=self.cmbSvgHeightList)
         self.cmbSvgHeight.current(9) #SVG图像高度默认10mm
 
@@ -756,13 +772,17 @@ class Application(Application_ui):
             if lastFont and (lastFont in self.cmbFontList):
                 self.cmbFont.current(self.cmbFontList.index(lastFont))
             else:
-                self.cmbFont.setText(self.cmbFontList[0] if self.cmbFontList else '')
+                fontNameList = self.cmbFontList if self.cmbFontList else ['',]
+                if (self.sysLanguge.startswith('zh')): #中文字体一般在最后，所以默认选择最后一个，保证开箱即用
+                    self.cmbFont.setText(fontNameList[-1])
+                elif 'Calibri' in fontNameList: #英文或拉丁文字体也是为了保证开箱即用
+                    self.cmbFont.setText('Calibri')
+                else:
+                    self.cmbFont.setText(fontNameList[0])
         
     #从配置文件中恢复以前的配置数据
     def restoreConfig(self):
         cfg = self.cfg
-        self.lastCheckUpdate = None
-        self.skipVersion = ''
         if isinstance(cfg, dict):
             #字体界面
             lastFont = cfg.get('font', '')
@@ -818,6 +838,9 @@ class Application(Application_ui):
                 self.easyEdaSite = ''
 
             #版本更新检查
+            self.checkUpdateFrequency = str_to_int(cfg.get('checkUpdateFrequency', '30'))
+            if (self.checkUpdateFrequency < 0):
+                self.checkUpdateFrequency = 0
             lastCheck = cfg.get('lastCheckUpdate', '')
             try:
                 self.lastCheckUpdate = datetime.datetime.strptime(lastCheck, '%Y-%m-%d')
@@ -853,6 +876,7 @@ class Application(Application_ui):
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
             'easyEdaSite': self.easyEdaSite, 'lastTab': str(self.getCurrentTabStripTab()),
+            'checkUpdateFrequency': str(self.checkUpdateFrequency),
             'lastCheckUpdate': self.lastCheckUpdate.strftime('%Y-%m-%d') if self.lastCheckUpdate else '',
             'skipVersion': str(self.skipVersion), 
             'trackWidth': str(self.pcbRule.trackWidth), 'viaDiameter': str(self.pcbRule.viaDiameter),
@@ -919,15 +943,17 @@ class Application(Application_ui):
         self.saveConfig()
         txt = self.txtMain.get('1.0', END).strip()
         if not txt:
-            showinfo(_('info'), _('Text is empty'))
+            showwarning(_('info'), _('Text is empty'))
             return
 
-        newStr = self.generatePolygons(txt)
-        if newStr:
-            self.saveTextFile(newStr)
+        textIo = self.generatePolygons(txt)
+        if not textIo:
+            showwarning(_('info'), _('Failed to generate text'))
+        elif isinstance(textIo, str):
+            showwarning(_('info'), textIo)
         else:
-            showinfo(_('info'), _('Failed to generate text'))
-    
+            self.saveTextFile(str(textIo))
+        
     #转换封装结果保存为单独一个文本文件
     def lblSaveAsFootprint_Button_1(self, event):
         self.saveConfig()
@@ -940,12 +966,12 @@ class Application(Application_ui):
         
         errStr, retStr = self.generateFootprint(fileName)
         if (errStr):
-            showinfo(_('info'), errStr)
+            showwarning(_('info'), errStr)
         elif not retStr:
             if LcComponent.isLcedaComponent(fileName):
-                showinfo(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
+                showwarning(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
             else:
-                showinfo(_('info'), _('Failed to parse file content'))
+                showwarning(_('info'), _('Failed to parse file content'))
         else:
             self.saveTextFile(retStr)
 
@@ -955,20 +981,23 @@ class Application(Application_ui):
 
         txt = self.txtMain.get('1.0', END).strip()
         if not txt:
-            showinfo(_('info'), _('Text is empty'))
+            showwarning(_('info'), _('Text is empty'))
             return
 
-        newStr = self.generatePolygons(txt)
-        if newStr:  #写输出文件
+        textIo = self.generatePolygons(txt)
+        if not textIo:
+            showwarning(_('info'), _('Failed to generate text'))
+            return
+        elif isinstance(textIo, str):
+            showwarning(_('info'), textIo)
+            return
+        else: #写输出文件
             try:
-                with open(self.outFileName, 'w') as f:
-                    f.write(newStr)
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
+                    f.write(str(textIo))
             except:
                 pass
-            ret = 4
-        else:
-            ret = 0
-
+            
         self.destroy()
         #Sprint-Layout的插件返回码定义
         #0: = 中止/无动作
@@ -976,7 +1005,7 @@ class Application(Application_ui):
         #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
         #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
         #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
-        sys.exit(ret)
+        sys.exit(4)
 
     #在封装文件文本框中回车，根据情况自动执行响应的命令
     def txtFootprintFile_Return(self, event=None):
@@ -997,15 +1026,15 @@ class Application(Application_ui):
         
         errStr, retStr = self.generateFootprint(fileName)
         if (errStr):
-            showinfo(_('info'), errStr)
+            showwarning(_('info'), errStr)
         elif not retStr:
             if LcComponent.isLcedaComponent(fileName):
-                showinfo(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
+                showwarning(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
             else:
-                showinfo(_('info'), _('Failed to parse file content'))
+                showwarning(_('info'), _('Failed to parse file content'))
         else:
             try:
-                with open(self.outFileName, 'w') as f:
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
                     f.write(retStr)
             except:
                 pass
@@ -1029,11 +1058,11 @@ class Application(Application_ui):
         elif fileName.lower().endswith('.svg'):
             retStr = self.generateSvg(fileName, 0)
         else:
-            showinfo(_('info'), _('The file format is not supported'))
+            showwarning(_('info'), _('The file format is not supported'))
             return
 
         if not retStr:
-            showinfo(_('info'), _('Convert svg image failed'))
+            showwarning(_('info'), _('Convert svg image failed'))
         else:
             self.saveTextFile(retStr)
     
@@ -1070,14 +1099,14 @@ class Application(Application_ui):
         elif fileName.lower().endswith('.svg'):
             retStr = self.generateSvg(fileName, 0)
         else:
-            showinfo(_('info'), _('The file format is not supported'))
+            showwarning(_('info'), _('The file format is not supported'))
             return
 
         if not retStr:
-            showinfo(_('info'), _('Convert svg image failed'))
+            showwarning(_('info'), _('Convert svg image failed'))
         else:
             try:
-                with open(self.outFileName, 'w') as f:
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
                     f.write(retStr)
             except:
                 pass
@@ -1090,14 +1119,14 @@ class Application(Application_ui):
     #extraVeriFunc: 额外的校验函数，接受一个字符串参数
     def verifyFileName(self, fileName: str, extraVeriFunc=None):
         if not fileName:
-            showinfo(_('info'), _('Input is empty'))
+            showwarning(_('info'), _('Input is empty'))
             return False
 
         if (extraVeriFunc and extraVeriFunc(fileName)):
             return True
 
         if (not os.path.isfile(fileName)) or (not os.path.exists(fileName)):
-            showinfo(_('info'), _("File does not exist\n{}").format(fileName))
+            showwarning(_('info'), _("File does not exist\n{}").format(fileName))
             return False
         
         return True
@@ -1110,10 +1139,10 @@ class Application(Application_ui):
         retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
         if retFile:
             try:
-                with open(retFile, 'w') as f:
+                with open(retFile, 'w', encoding='utf-8') as f:
                     f.write(txt)
-            except:
-                showinfo(_('info'), _('Failed to save file'))
+            except Exception as e:
+                showwarning(_('info'), _('Failed to save file.\n{}').format(str(e)))
 
     #方便进行测试的一个函数，可以仅输入kicad封装文件名，自动添加路径
     def autoAddKicadPath(self, fileName: str):
@@ -1123,7 +1152,7 @@ class Application(Application_ui):
                     fileName = os.path.join(root, fileName + '.kicad_mod')
         return fileName
 
-    #将字符串转换为Sprint-Layout多边形，返回一个字符串，可以直接写到文件里面
+    #将字符串转换为Sprint-Layout多边形，返回一个 SprintTextIO 实例 或空
     def generatePolygons(self, txt: str):
         from sprint_struct.font_to_polygon import singleWordPolygon
 
@@ -1140,14 +1169,24 @@ class Application(Application_ui):
         if fontHeight <= 0.0:
             fontHeight = 1.0
         
-        fontFileName = self.fontNameMap.get(fontName, '')
+        fontFileName, fontIdx = self.fontNameMap.get(fontName, ('', 0))
         if not fontFileName or not os.path.exists(fontFileName):
             return ''
-            
-        try:
-            font = TTFont(fontFileName)
-        except:
-            return ''
+        
+        if (fontFileName.endswith(('.ttc', '.otc'))):
+            try:
+                ttCol = ttCollection.TTCollection(fontFileName)
+                if (fontIdx < len(ttCol.fonts)):
+                    font = ttCol.fonts[fontIdx]
+                else:
+                    return ''
+            except:
+                return ''
+        else:
+            try:
+                font = ttFont.TTFont(fontFileName)
+            except:
+                return ''
         
         #开始逐字转换
         txt = self.translateUnicodeSymbol(txt)
@@ -1161,10 +1200,13 @@ class Application(Application_ui):
                 ret = singleWordPolygon(font, code=ord(word), layerIdx=layerIdx, fontHeight=fontHeight,
                     offsetX=offsetX, offsetY=offsetY, smooth=smooth)
                 #print(ret)
-                if not ret: #没有对应的字形，跳过一个空格位置
-                    inc = prevWidth + (wordSpacing * 10000)
-                    offsetX += inc if (inc > 0) else prevWidth
-                    continue
+                #if not ret: #没有对应的字形，跳过一个空格位置
+                #    inc = prevWidth + (wordSpacing * 10000)
+                #    offsetX += inc if (inc > 0) else prevWidth
+                #    continue
+                if not ret or isinstance(ret, str):
+                    font.close()
+                    return ret
                     
                 prevWidth = ret['width']
                 textIo.addAll(ret['polygons'])
@@ -1179,8 +1221,7 @@ class Application(Application_ui):
         font.close()
 
         #返回字符串
-        return str(textIo)
-        
+        return textIo
         
     #将字符串里面的\u1234转换为对应的字符
     def translateUnicodeSymbol(self, txt: str):
@@ -1209,42 +1250,46 @@ class Application(Application_ui):
             newTxt.extend(txt[idx:])
         return ''.join(newTxt)
     
-    #将字体文件和字体名字对应起来，关键字为字体名字，值为文件名
+    #将字体文件和字体名字对应起来，关键字为字体名字，值为(文件名, 字体索引)
     #除了系统的字体目录，本软件同一目录下的ttf也可以做为选择
     #如果fontQueue传入值，也通过queue传出给子线程使用
     def generateFontFileNameMap(self, fontQueue: queue.Queue=None):
         fontNameMap = {}
+        supportedFontExts = tuple(('.ttf', '.otf', '.ttc', '.otc'))
         try:
-            fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(('.ttf', '.otf'))]
+            fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(supportedFontExts)]
         except:
             fontFileList = {}
             
         try:
-            fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(('.ttf', '.otf'))])
+            fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(supportedFontExts)])
         except:
             pass
             
         for fontFileName in fontFileList:
-            try:
-                font = TTFont(fontFileName, lazy=True)
-            except:
-                continue
+            insList = []
+            if (fontFileName.endswith(('.ttc', '.otc'))): #一个字体文件里面包含多个字体
+                try:
+                    ttCol = ttCollection.TTCollection(fontFileName)
+                    insList = ttCol.fonts
+                except:
+                    continue
+            else:
+                try:
+                    insList = [ttFont.TTFont(fontFileName, lazy=True),]
+                except:
+                    continue
             
-            if 'name' in font.keys():
-                #nameID:4-比较完整的给人看到名字，包括名称和字体类型，Times New Roman Bold
-                #platformID=1: mac平台， 3-windows平台
-                #platEncID:1-Unicode BMP
-                nameTable = font['name']
-                name = nameTable.getName(nameID=4, platformID=3, platEncID=1, langID=0x804)
-                if name:
-                    try:
-                        name = name.toUnicode()
-                    except UnicodeDecodeError:
-                        name = ""
-                        pass
+            for fontIdx, font in enumerate(insList):
+                if 'name' in font.keys():
+                    #nameID:4-比较完整的给人看到名字，包括名称和字体类型，Times New Roman Bold
+                    #platformID=1: mac平台， 3-windows平台
+                    #platEncID:1-Unicode BMP
+                    nameTable = font.get('name', '')
+                    if not nameTable:
+                        continue
 
-                if not name:
-                    name = nameTable.getName(nameID=4, platformID=3, platEncID=1)
+                    name = nameTable.getName(nameID=4, platformID=3, platEncID=1, langID=0x804)
                     if name:
                         try:
                             name = name.toUnicode()
@@ -1252,11 +1297,20 @@ class Application(Application_ui):
                             name = ""
                             pass
 
-                if not name:
-                    name = nameTable.getBestFullName() or nameTable.getBestSubFamilyName() or nameTable.getBestFamilyName()
+                    if not name:
+                        name = nameTable.getName(nameID=4, platformID=3, platEncID=1)
+                        if name:
+                            try:
+                                name = name.toUnicode()
+                            except UnicodeDecodeError:
+                                name = ""
+                                pass
 
-                if name:
-                    fontNameMap[name] = fontFileName
+                    if not name:
+                        name = nameTable.getBestFullName() or nameTable.getBestSubFamilyName() or nameTable.getBestFamilyName()
+
+                    if name:
+                        fontNameMap[name] = (fontFileName, fontIdx)
         if fontQueue:
             fontQueue.put(fontNameMap)
         return fontNameMap
@@ -1376,10 +1430,10 @@ class Application(Application_ui):
     def cmdExportDsn_Cmd(self, event=None):
         dsnFile = self.txtDsnFile.text().strip()
         if not dsnFile:
-            showinfo(_('info'), _('DSN file is empty'))
+            showwarning(_('info'), _('DSN file is empty'))
             self.txtDsnFile.focus_set()
-            return
-        self.exportDsn(dsnFile)
+        else:            
+            self.exportDsn(dsnFile)
 
     #导出布线到DSN文件，成功返回True
     def exportDsn(self, dsnFile: str):
@@ -1388,22 +1442,39 @@ class Application(Application_ui):
         self.saveConfig()
         
         if not dsnFile.lower().endswith('.dsn'):
-            showinfo(_("info"), _('The file format is not supported'))
+            showwarning(_("info"), _('The file format is not supported'))
             return False
 
         dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
 
+        #TODO
+        inFile = self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt'
+        inFileSize = 0
+        try:
+            inFileSize = os.path.getsize(inFile)
+        except Exception as e:
+            showwarning(_("info"), str(e))
+            return False
+
+        if (inFileSize <= 0):
+            showwarning(_("info"), _("No components on the board"))
+            return False
+
         parser = SprintTextIoParser()
         try:
-            textIo = parser.parse(self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt') #TODO
+            textIo = parser.parse(inFile)
         except Exception as e:
-            showinfo(_("info"), _("Error parsing input file:\n{}").format(str(e)))
+            showwarning(_("info"), _("Error parsing input file:\n{}").format(str(e)))
             return False
-        
+
+        if not textIo:
+            showwarning(_("info"), _("Failed to parse input file"))
+            return False
+
         exporter = SprintExportDsn(textIo, self.pcbRule, dsnFile)
         ret = exporter.export()
         if isinstance(ret, str): #错误信息
-            showinfo(_("info"), ret if ret else _("Unknown error"))
+            showwarning(_("info"), ret if ret else _("Unknown error"))
             return False
         else:
             try:
@@ -1414,55 +1485,67 @@ class Application(Application_ui):
                     pickle.dump(exporter, f)
                 showinfo(_("info"), _("Export Specctra DSN file successfully"))
             except Exception as e:
-                showinfo(_("info"), str(e))
+                showwarning(_("info"), str(e))
                 return False
 
         return True
 
     #导入自动布线的SES文件
     def cmdImportSes_Cmd(self, event=None, trackOnly=False):
+        try:         
+            x = self.master.winfo_pointerx() # - self.master.winfo_vrootx()
+            y = self.master.winfo_pointery() # - self.master.winfo_vrooty()
+            self.mnuImportSes.tk_popup(x, y + 10, 0)
+        finally:
+            self.mnuImportSes.grab_release()
+
+    #菜单项“导入...”的点击响应函数
+    def cmdmnuImportSes(self, withRatsnest: bool=False, trackOnly: bool=False):
+        if (self.importSes(withRatsnest, trackOnly)):
+            self.destroy()
+            #Sprint-Layout的插件返回码定义
+            #0: = 中止/无动作
+            #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
+            #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
+            #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
+            #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
+            sys.exit(4 if trackOnly else 1)
+
+    #导入自动布线的SES到输出文件
+    #withRatsnest: 是否包含网络连线（鼠线）
+    #trackOnly: 是否仅导入布线
+    #成功返回True
+    def importSes(self, withRatsnest: bool, trackOnly: bool):
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
         
         if ((not self.verifyFileName(sesFile)) or (not self.verifyFileName(dsnPickleFile))):
-            return
+            return False
         
         if not sesFile.lower().endswith('.ses'):
-            showinfo(_("info"), _("The file format is not supported"))
-            return
+            showwarning(_("info"), _("The file format is not supported"))
+            return False
 
         if not trackOnly:
             ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
             if not ret:
-                return
+                return False
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trackOnly=trackOnly)
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, withRatsnest=withRatsnest, trackOnly=trackOnly)
         if not ret:
-            return
+            return False
         elif isinstance(ret, str):
-            showinfo(_("info"), ret)
-            return
+            showwarning(_("info"), ret)
+            return False
         else:
             try:
                 with open(self.outFileName, 'w', encoding='utf-8') as f:
                     f.write(str(ret))
             except Exception as e:
-                showinfo(_("info"), str(e))
-                return
-
-        self.destroy()
-        #Sprint-Layout的插件返回码定义
-        #0: = 中止/无动作
-        #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
-        #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
-        #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
-        #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
-        sys.exit(4 if trackOnly else 1)
-
-    #按住Shift点击导入则仅导入布线线条
-    def cmdImportSes_Shift_Button_1(self, event=None):
-        self.cmdImportSes_Cmd(trackOnly=True)
+                showwarning(_("info"), str(e))
+                return False
+        return True
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
@@ -1474,20 +1557,20 @@ class Application(Application_ui):
             return
         
         if not sesFile.lower().endswith('.ses'):
-            showinfo(_("info"), _("The file format is not supported"))
+            showwarning(_("info"), _("The file format is not supported"))
             return
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trackOnly=False)
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, withRatsnest=False, trackOnly=False)
         if not ret:
             return
         elif isinstance(ret, str):
-            showinfo(_("info"), ret)
+            showwarning(_("info"), ret)
             return
         else:
             self.saveTextFile(str(ret))
 
     #从SES中生成TextIo实例对象
-    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str, trackOnly=False):
+    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str, withRatsnest: bool, trackOnly: bool):
         from sprint_struct.sprint_import_ses import SprintImportSes
         try:
             with open(dsnPickleFile, 'rb') as f:
@@ -1497,7 +1580,7 @@ class Application(Application_ui):
             
         ses = SprintImportSes(sesFile, dsn)
         try:
-            textIo = ses.importSes(trackOnly=trackOnly)
+            textIo = ses.importSes(withRatsnest=withRatsnest, trackOnly=trackOnly)
             return textIo
         except Exception as e:
             return str(e)

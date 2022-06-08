@@ -4,6 +4,7 @@
 表示一个元件
 Author: cdhigh <https://github.com/cdhigh>
 """
+from operator import itemgetter
 from .sprint_element import *
 from .sprint_pad import SprintPad
 
@@ -42,7 +43,7 @@ class SprintComponent(SprintElement):
         #插件元件需要区分对待，双面焊盘就使用名字的丝印板层对应的铜层
         if padVia:
             return LAYER_C1 if (self.nameLayer == LAYER_S1) else LAYER_C2
-        else: #单面插件焊盘使用对面的板层做为元件面
+        else: #如果是单面插件焊盘，则使用焊盘所在层对面的板层做为元件面
             return LAYER_C2 if (padLayer == LAYER_S1) else LAYER_C1
         
     def isValid(self):
@@ -183,12 +184,11 @@ class SprintComponent(SprintElement):
     def getPads(self):
         return [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
 
-    #刷新元件的定位点
+    #刷新元件的定位点，以最左边的焊盘中心为元件定位点
     def updatePos(self):
-        pads = self.getPads()
-        if pads:
-            pos = pads[0].pos
-            self.pos = (pos[0], pos[1])
+        padsSize = sorted([pad.pos for pad in self.getPads()], key=itemgetter(0))
+        if padsSize:
+            self.pos = padsSize[0]
         else:
             self.pos = (self.elements[0].xMin, self.elements[0].yMin)
 

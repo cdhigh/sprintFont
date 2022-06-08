@@ -26,7 +26,7 @@ class PcbRule:
         self.trackWidth = 0.3  #最小布线宽度
         self.viaDiameter = 0.7 #过孔外径
         self.viaDrill = 0.3    #过孔内径
-        self.clearance = 0.25  #最小孔到孔间隙
+        self.clearance = 0.2  #最小孔到孔间隙
         self.smdSmdClearance = 0.06 #贴片贴片间隙
         
     #根据过孔大小返回过孔名字
@@ -37,21 +37,22 @@ class PcbRule:
 class SprintExportDsn:
     def __init__(self, textIo, pcbRule: PcbRule=None, name: str=''):
         self.name = name
-        self.textIo = textIo
-        textIo.ensurePadHasId()
-        textIo.ensureComponentHasName()
-        self.padDict = textIo.categorizePads() #键为焊盘形状名字，值为焊盘实例列表
-        self.compDict = textIo.categorizeComponents() #键为元件名字，值为字典 {'image': SprintComponent, 'instance':[]}
-        self.compList = [] #这个列表保存了所有的元件和根据游离焊盘生成的临时元件
-        for comps in self.compDict.values():
-            self.compList.extend(comps['instance'])
-        self.wires = [elem for elem in textIo.children() if (isinstance(elem, SprintTrack) and (elem.layerIdx in (LAYER_C1, LAYER_C2)))]
-        self.uElems = self.getAllLayerUAndKeepoutZone()
-        self.padIdSeqDict = self.buildPadIdSeqDict() #键为焊盘ID，值为('compName':,'seqNum':)
-        self.yMax = mm2um(textIo.yMax)
         self.pcbRule = pcbRule if pcbRule else PcbRule()
         self.se = sexpr.SexprBuilder("PCB")
-
+        self.textIo = textIo
+        if textIo:
+            textIo.ensurePadHasId()
+            textIo.ensureComponentHasName()
+            self.padDict = textIo.categorizePads() #键为焊盘形状名字，值为焊盘实例列表
+            self.compDict = textIo.categorizeComponents() #键为元件名字，值为字典 {'image': SprintComponent, 'instance':[]}
+            self.compList = [] #这个列表保存了所有的元件和根据游离焊盘生成的临时元件
+            for comps in self.compDict.values():
+                self.compList.extend(comps['instance'])
+            self.wires = [elem for elem in textIo.children() if (isinstance(elem, SprintTrack) and (elem.layerIdx in (LAYER_C1, LAYER_C2)))]
+            self.uElems = self.getAllLayerUAndKeepoutZone()
+            self.padIdSeqDict = self.buildPadIdSeqDict() #键为焊盘ID，值为('compName':,'seqNum':)
+            self.yMax = mm2um(textIo.yMax)
+        
     #转换Y坐标，因为Sprint-Layout的坐标为笛卡尔坐标，freerouting的坐标为屏幕绘图坐标
     def umY(self, y: float):
         return -mm2um(y) #self.yMax
@@ -61,18 +62,23 @@ class SprintExportDsn:
     def export(self):
         se = self.se
         textIo = self.textIo
+        if not textIo:
+            return _("")
 
         #确认线路板外框有效
         if len([e for e in self.uElems if (e.layerIdx == LAYER_U)]) < 1:
             return _("The boundary (layer U) of the board is not defined")
 
-        #判断是否有重复的文件名
+        #判断是否有重复的元件名
+        #并且目前仅允许元件放在正面
         names = set()
         for comp in self.compList:
             if comp.name in names:
                 return _("There are some components with the same name: {}").format(comp.name)
             else:
                 names.add(comp.name)
+            if (comp.getLayer() == LAYER_C2):
+                return _("Currently only supports all components placed on the front side\n\n{}").format(comp.name)
         
         #头部的说明性内容
         se.addItem(self.name or 'NoName', newline=False)
@@ -112,7 +118,7 @@ class SprintExportDsn:
         se.addItem({'layer': ['F.Cu', [{'type': 'signal'}, {'property': {'index': 0}}]]}, indent=True)
         se.addItem({'layer': ['B.Cu', [{'type': 'signal'}, {'property': {'index': 1}}]]})
         self.buildBoundary(se)
-        se.addItem({'snap_angle': 'fortyfive_degree'})
+        #se.addItem({'snap_angle': 'fortyfive_degree'})
         se.addItem({'via': self.pcbRule.viaName()})
         se.addItem({'control': {'via_at_smd': 'off'}})
         se.startGroup('rule')
@@ -220,10 +226,17 @@ class SprintExportDsn:
             se.addItem(name, newline=False)
             compIndent = True
             for comp in compList:
-                compLayer = 'front' if (comp.getLayer() == LAYER_C1) else 'back'
+                if (comp.getLayer() == LAYER_C1):
+                    compLayer = 'front'
+                    rotation = 0
+                    #x = comp.xMin
+                else:
+                    compLayer = 'back'
+                    rotation = 0 #180
+                    #x = comp.xMax
                 #pn = {'PN': comp.value if comp.value else ''}
                 se.addItem({'place': [comp.name, mm2um(comp.pos[0]), 
-                    self.umY(comp.pos[1]), compLayer, 0, {'PN': ''}]}, indent=compIndent)
+                    self.umY(comp.pos[1]), compLayer, rotation, {'PN': ''}]}, indent=compIndent)
                 compIndent = False
             se.endGroup(newline=True) #component end
         se.endGroup(newline=True) #placement end
@@ -281,10 +294,18 @@ class SprintExportDsn:
                     else:
                         pinParams = [elem.generateDsnName(), elem.padId, mm2um(elem.pos[0]), self.umY(elem.pos[1])]
                         if elem.rotation: #很奇怪，在freerouting中插件焊盘和贴片焊盘的旋转方向是相反的
-                            pinParams.insert(1, {'rotate': (360 - elem.rotation) if (elem.padType == 'PAD') else elem.rotation})
+                            #pinParams.insert(1, {'rotate': (360 - elem.rotation) if (elem.padType == 'PAD') else elem.rotation})
+                            pinParams.insert(1, {'rotate': elem.rotation})
                         se.addItem({'pin': pinParams}, indent=outlineFirstIndent)
                         outlineFirstIndent = False
 
+                        #如果是单面焊盘，因为对面没有焊盘占位，所以在钻孔位置添加一个禁止布线区
+                        if ((elem.padType == 'PAD') and (elem.size > elem.drill) and (elem.drill > 0) and (not elem.via)):
+                            keepoutLayer = 'B.Cu' if (elem.layerIdx == LAYER_C1) else 'F.Cu'
+                            cirParams = [keepoutLayer, mm2um(elem.drill), mm2um(elem.pos[0]), self.umY(elem.pos[1])]
+                            se.addItem({'keepout': ['', {'circle': cirParams}]}, indent=outlineFirstIndent)
+                            outlineFirstIndent = False
+                            
             se.endGroup(newline=True) #image end
 
     #生成焊盘库
@@ -397,9 +418,8 @@ class SprintExportDsn:
         netNames = ['sprint_default', '', ]
         idx = 0
         for net in netList:
-            if len(net) <= 1: #如果只有一个管脚，就不输出了
-                continue
-
+            #if len(net) <= 1: #如果只有一个管脚，就不输出了
+            #    continue
             idx += 1
             name = 'net-{}'.format(idx)
             se.startGroup('net', indent=firstIndent)
@@ -449,13 +469,14 @@ class SprintExportDsn:
         return padIdSeqDict
 
 if __name__ == '__main__':
-    from sprint_struct.sprint_textio_parser import SprintTextIoParser
-    p = SprintTextIoParser()
-    textIo = p.parse(r'C:\Users\su\Desktop\testSprint\1.txt')
-    dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn'
-    exporter = SprintExportDsn(textIo)
-    ret = exporter.export()
-    with open(dsnFile, 'w', encoding='utf-8') as f:
-        f.write(ret.output)
-    with open(dsnFile + '.pickle', 'wb') as f:
-        pickle.dump(exporter, f)
+    if 0:
+        from sprint_struct.sprint_textio_parser import SprintTextIoParser
+        p = SprintTextIoParser()
+        textIo = p.parse(r'C:\Users\su\Desktop\testSprint\1.txt')
+        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn'
+        exporter = SprintExportDsn(textIo)
+        ret = exporter.export()
+        with open(dsnFile, 'w', encoding='utf-8') as f:
+            f.write(ret.output)
+        with open(dsnFile + '.pickle', 'wb') as f:
+            pickle.dump(exporter, f)
