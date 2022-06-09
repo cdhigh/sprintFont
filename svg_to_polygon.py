@@ -27,14 +27,16 @@ def svgToPolygon(svgFile: str, layerIdx: int=2, height: float=10, smooth: int=2,
             svg = SVGPath.fromstring(svgFile)
             pen = SVGPathPen(None)
             svg.draw(pen)
-        except:
+        except Exception as e:
+            print(str(e))
             return None
     else:
         try:
             svg = SVGPath(svgFile)
             pen = SVGPathPen(None)
             svg.draw(pen)
-        except:
+        except Exception as e:
+            print(str(e))
             return None
 
     svgCmds = pen._commands  #提取绘制语句

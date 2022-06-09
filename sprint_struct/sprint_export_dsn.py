@@ -295,7 +295,7 @@ class SprintExportDsn:
                         pinParams = [elem.generateDsnName(), elem.padId, mm2um(elem.pos[0]), self.umY(elem.pos[1])]
                         if elem.rotation: #很奇怪，在freerouting中插件焊盘和贴片焊盘的旋转方向是相反的
                             #pinParams.insert(1, {'rotate': (360 - elem.rotation) if (elem.padType == 'PAD') else elem.rotation})
-                            pinParams.insert(1, {'rotate': elem.rotation})
+                            pinParams.insert(1, {'rotate': 360 - elem.rotation})
                         se.addItem({'pin': pinParams}, indent=outlineFirstIndent)
                         outlineFirstIndent = False
 
@@ -442,10 +442,11 @@ class SprintExportDsn:
     #生成预先布好的走线，这些走线是不能被覆盖的
     def buildWiring(self, se):
         wires = self.wires
+        se.startGroup('wiring')
         if not wires:
+            se.endGroup(newline=False) #wiring end
             return
 
-        se.startGroup('wiring')
         firstIndent = True
         for wire in wires:
             layerName = 'F.Cu' if (wire.layerIdx == LAYER_C1) else 'B.Cu'

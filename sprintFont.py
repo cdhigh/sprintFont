@@ -36,7 +36,7 @@ from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
 __VERSION__ = "1.3"
-__DATE__ = "20220603"
+__DATE__ = "20220609"
 __AUTHOR__ = "cdhigh"
 
 #特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
@@ -634,8 +634,8 @@ class Application(Application_ui):
         #导入SES时如果安装Shift则仅导入布线
         #self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
         self.mnuImportSes = Menu(self.master, tearoff=0)
-        self.mnuImportSes.add_command(label=_("Import all (without RATSNEST)"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=False))
-        self.mnuImportSes.add_command(label=_("Import all (with RATSNEST)"), command=partial(self.cmdmnuImportSes, withRatsnest=True, trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import all (without Airwires)"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import all (with Airwires)"), command=partial(self.cmdmnuImportSes, withRatsnest=True, trackOnly=False))
         self.mnuImportSes.add_command(label=_("Import auto-routed tracks only"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=True))
 
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
@@ -909,6 +909,8 @@ class Application(Application_ui):
     def cmdDsnFile_Cmd(self, event=None):
         retFile = tkFileDialog.asksaveasfilename(filetypes=[(_("Specctra DSN files"), '*.dsn'), (_("All files"), '*.*')])
         if retFile:
+            if not retFile.lower().endswith('.dsn'):
+                retFile = retFile + '.dsn'
             self.txtDsnFile.setText(retFile)
             self.txtSesFile.setText(os.path.splitext(retFile)[0] + '.ses')
 
