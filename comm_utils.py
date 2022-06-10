@@ -56,12 +56,12 @@ def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radiu
     yTmp = math.sqrt(radius * radius - (lineLen / 2) * (lineLen / 2)) * (x2 - x1) / lineLen
 
     #分别为两个圆心
-    cx1 = x3 + xTmp
-    cy1 = y3 + yTmp
-    cx2 = x3 - xTmp
-    cy2 = y3 - yTmp
+    cx1 = round(x3 + xTmp, 4)
+    cy1 = round(y3 + yTmp, 4)
+    cx2 = round(x3 - xTmp, 4)
+    cy2 = round(y3 - yTmp, 4)
 
-    angleLine = math.acos((x2 - x1) / lineLen) * 180 / math.pi
+    angleLine = round(math.acos((x2 - x1) / lineLen) * 180 / math.pi)
     if (y2 < y1):
         angleLine = -angleLine
 

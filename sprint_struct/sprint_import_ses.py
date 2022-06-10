@@ -5,6 +5,8 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys, pickle
+from collections import defaultdict
+import pysnooper
 
 #测试
 if __name__ == '__main__':
@@ -33,10 +35,10 @@ class SprintImportSes:
         return round(str_to_float(value) / self.resolution, 4)
 
     #开始导入，生成一个SprintTextIO对象
-    #withRatsnest: True-包含鼠线（网络连线），False-删除鼠线
+    #trimRatsnestMode: 'keepAll'-包含所有鼠线（网络连线），'trimAll'-删除所有鼠线，'trimRouted'-仅删除有铜箔布线连通的焊盘间鼠线
     #trackOnly: True-仅导入布线，False-导入全部
     #trackOnly的优先级比withRatsnest高，如果trackOnly=True，则忽略withRatsnest
-    def importSes(self, withRatsnest: bool, trackOnly: bool):
+    def importSes(self, trimRatsnestMode: str, trackOnly: bool):
         try:
             with open(self.sesFile, 'r', encoding='utf-8') as f:
                 sexprData = "".join(f.readlines())
@@ -54,9 +56,27 @@ class SprintImportSes:
         #先分析ses内使用的单位
         self.analyzeResolution(self.ses)
 
-        wires = self._getArray(self.ses, 'wire')
-        
+        #如果有元件位置移动，则需要先更新到TextIo
+        #(place r1 15362 -19807 front 0)
+        if not trackOnly:
+            placements = self._getArray(self.ses, 'place')
+            compList = self.dsn.compList
+            for place in placements:
+                if len(place) < 6:
+                    continue
+
+                name = place[1]
+                x = self.scale(place[2])
+                y = -self.scale(place[3])
+                for comp in compList:
+                    if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
+                        and (abs(y - round(comp.pos[1], 3)) > 0.01)):
+                        #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
+                        comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
+
         #添加走线
+        wires = self._getArray(self.ses, 'wire')
+
         #[['wire', ['path', 'B.Cu', '2500', 1504097, '-1037700', 1517848, '-1061517']],...]
         for wire in wires:
             if (len(wire) < 2) or (len(wire[1]) < 7):
@@ -99,29 +119,18 @@ class SprintImportSes:
             viaPad.pos = (self.scale(via[2]), -self.scale(via[3]))
             textIo.add(viaPad)
 
-        #如果有元件位置移动，则需要更新到TextIo
-        #(place r1 15362 -19807 front 0)
-        if not trackOnly:
-            placements = self._getArray(self.ses, 'place')
-            compList = self.dsn.compList
-            for place in placements:
-                if len(place) < 6:
-                    continue
+        if trimRatsnestMode == 'trimAll':
+            #将textIo里面的网络连线删除
+            nonePads = [elem.connectToOtherPads.clear() for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]
+        elif trimRatsnestMode == 'trimRouted':
+            self.trimRatsnest(textIo)
 
-                name = place[1]
-                x = self.scale(place[2])
-                y = -self.scale(place[3])
-                for comp in compList:
-                    if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
-                        and (abs(y - round(comp.pos[1], 3)) > 0.01)):
-                        #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
-                        comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
-
-        #将textIo里面的网络连线删除
-        if not withRatsnest:
-            pads = [elem for elem in textIo.baseDrawElements() if isinstance(elem, SprintPad)]
-            for pad in pads:
-                pad.connectToOtherPads.clear()
+        #将自动命名的元件的名字恢复为空
+        components = [elem for elem in textIo.children() if isinstance(elem, SprintComponent)]
+        for comp in components:
+            name = comp.name
+            if ((name.startswith('unnamed_') and name[8:].isdigit())):
+                comp.name = ''
             
         return textIo
 
@@ -171,10 +180,92 @@ class SprintImportSes:
                 result.append(data)
         return result
 
+    #智能判断铜箔连接情况，将有铜箔连接的焊盘之间的鼠线删除
+    #大概原理：首先通过过孔将所有布线转换为(坐标,板层)列表。形成一个字典，键为网表号
+    #遍历所有焊盘，先获取焊盘位置，然后逐个布线各端点，如果端点在焊盘范围内并且板层相同，则为连通，
+    #记录布线索引对应的字典键值和焊盘ID的对应情况(ID,
+    #所有焊盘完成后，同样键的所有焊盘ID为相互连通，再遍历textio，某个ID删除和它相通的其他ID
+    #@pysnooper.snoop('d:/snoop.log')
+    def trimRatsnest(self, textIo):
+        #所有过孔和铜箔走线
+        #round(2)而不是round(4)是为了减小浮点误差导致之后的比较错误
+        vias = [(round(elem.pos[0], 2), round(elem.pos[1], 2)) for elem in textIo.baseDrawElements() if (isinstance(elem, SprintPad) and elem.via)]
+        tracks = [elem for elem in textIo.baseDrawElements() if (isinstance(elem, SprintTrack) and (elem.layerIdx in (LAYER_C1, LAYER_C2)))]
+        trackPoints = []
+
+        #先生成点列表
+        for track in tracks:
+            ptSet = set()
+            points =[(round(x, 2), round(y, 2))  for (x, y) in track.points]
+            for (x, y) in points:
+                found = True
+                for (xv, yv) in vias: #确认一个过孔连通，再找其他有同样这个过孔的走线
+                    if ((abs(x - xv) < 0.1) and (abs(y - yv) < 0.1)):
+                        ptSet.add((x, y, LAYER_C1))
+                        ptSet.add((x, y, LAYER_C2))
+                        break
+                else:
+                    ptSet.add((x, y, track.layerIdx))
+
+            trackPoints.append(ptSet)
+
+        #合并有相同元素的集合
+        trackPoints = self.mergeListWithSameElement(trackPoints)
+        
+        padIdDict = {elem.padId: elem for elem in textIo.baseDrawElements() if (isinstance(elem, SprintPad) and elem.padId is not None)}
+        for padId, pad in padIdDict.items():
+            connects = pad.connectToOtherPads
+            if not connects:
+                continue
+
+            #找到和此焊盘相连的布线
+            for condutiveIdx, area in enumerate(trackPoints):
+                if (self.isPadConnectToArea(pad, area)):
+                    break
+            else: #此焊盘没有连通任何区域
+                continue
+
+            condutiveArea = trackPoints[condutiveIdx]
+
+            #判断和此焊盘有鼠线连接的其他焊盘是否已经有布线连接了
+            for otherId in connects[:]:
+                otherPad = padIdDict.get(otherId)
+                if not otherPad:
+                    continue
+
+                if (self.isPadConnectToArea(otherPad, condutiveArea)):
+                    connects.remove(otherId)
+
+    #判断一个焊盘是否连接到一个连通区域
+    #area: {(x, y, layer),...}
+    def isPadConnectToArea(self, pad: SprintPad, area: set):
+        for (x, y, layer) in area:
+            if ((layer == pad.layerIdx) and pad.enclose(x, y)):
+                return True
+        return False
+
+    #将列表中有相同元素的集合合并，算法时间复杂度O(n^2)
+    #比如对于列表： [{'a', 'b', 'c', 'f'}, {'e', 'g'}, {1, 2, 3}, {'h', 'g', 'f'}, {5, 6, 7}, {3, 4}]
+    #输出结果：[{'b', 'a', 'h', 'c', 'g', 'f', 'e'}, {5, 6, 7}, {1, 2, 3, 4}]
+    def mergeListWithSameElement(self, srcList: list):
+        lenth = len(srcList)
+        setForEmpty = {0} #用于将一个集合清空的特殊集合，如果你的数据集里面有这个数，可以将这个集合修改为其他集合
+        for i in range(1, lenth):
+            for j in range(i):
+                if ((srcList[i] == setForEmpty) or (srcList[j] == setForEmpty)):
+                    continue
+
+                x = srcList[i].union(srcList[j])
+                y = len(srcList[i]) + len(srcList[j])
+                if len(x) < y: #合并后的集合长度小于合并前的两个集合长度总和，说明有共同元素
+                    srcList[i] = x
+                    srcList[j] = setForEmpty
+
+        return [i for i in srcList if (i != setForEmpty)] #筛掉空集合
 
 if __name__ == '__main__':
     if 0:
-        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn.pickle'
+        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.pickle'
         sesFile = r'C:\Users\su\Desktop\testSprint\dsnex.ses'
         inputFile = r'C:\Users\su\Desktop\testSprint\1_in.txt'
 
@@ -182,7 +273,7 @@ if __name__ == '__main__':
             dsn = pickle.load(f)
 
         ses = SprintImportSes(sesFile, dsn)
-        textIo = ses.importSes()
-        with open(inputFile, 'w', encoding='utf-8') as f:
-            f.write(str(textIo))
+        textIo = ses.importSes(1, 0)
+        #with open(inputFile, 'w', encoding='utf-8') as f:
+        #    f.write(str(textIo))
 

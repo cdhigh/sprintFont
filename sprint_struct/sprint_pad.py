@@ -4,6 +4,7 @@
 焊盘定义
 Author: cdhigh <https://github.com/cdhigh>
 """
+from comm_utils import euclideanDistance
 from .sprint_element import *
 
 #Pad的形状
@@ -181,4 +182,9 @@ class SprintPad(SprintElement):
     def moveByOffset(self, offsetX: float, offsetY: float):
         self.pos = (round(self.pos[0] - offsetX, 4), round(self.pos[1] - offsetY, 4))
         self.updateSelfBbox()
-        
+    
+    #判断一个点是否在本焊盘的范围内，用最简化的算法，到中心的距离小于最小外围尺寸
+    def enclose(self, x: float, y: float):
+        dist = euclideanDistance(x, y, self.pos[0], self.pos[1])
+        size = (self.size / 2) if (self.padType == 'PAD') else (min(self.sizeX, self.sizeY) / 2)
+        return True if (dist < size) else False

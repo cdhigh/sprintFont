@@ -497,7 +497,7 @@ class Application(Application_ui):
         self.skipVersion = ''
         self.easyEdaSite = ''
 
-        self.txtDsnFile.setText(r'C:/Users/su/Desktop/testSprint/dsnex.dsn') #TODO
+        #self.txtDsnFile.setText(r'C:/Users/su/Desktop/testSprint/dsnex.dsn') #TODO
 
         #这三行代码是修正python3.7的treeview颜色设置不生效的BUG，其他版本可能不需要
         #fixed_map = lambda op: [elm for elm in style.map("Treeview", query_opt=op) if elm[:2] != ("!disabled", "!selected")]
@@ -570,12 +570,14 @@ class Application(Application_ui):
                 self.cmdExportDsn.configure(state='disabled')
                 self.cmdImportSes.configure(state='disabled')
                 self.lblAutoRouterTips.setText(_("Please deselect all items before launching the plugin"))
+                self.lblAutoRouterTips.configure(foreground='red')
         else: #单独执行
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
-            #self.cmdExportDsn.configure(state='disabled') TODO
             self.cmdImportSes.configure(state='disabled')
+            #TODO
+            self.cmdExportDsn.configure(state='disabled')
             
         #显示输入文件名或显示单独执行模式字符串
         self.setStaBarByMode()
@@ -631,12 +633,13 @@ class Application(Application_ui):
         #绑定状态栏的双击事件
         self.staBar.lbls[0].bind('<Double-Button-1>', self.staBar_Double_Button_1)
 
-        #导入SES时如果安装Shift则仅导入布线
-        #self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
+        #导入SES时如果安装Shift点击按钮则弹出菜单，提供更多的导入选择
+        self.cmdImportSes.bind('<Shift-Button-1>', self.cmdImportSes_Shift_Button_1)
         self.mnuImportSes = Menu(self.master, tearoff=0)
-        self.mnuImportSes.add_command(label=_("Import all (without Airwires)"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=False))
-        self.mnuImportSes.add_command(label=_("Import all (with Airwires)"), command=partial(self.cmdmnuImportSes, withRatsnest=True, trackOnly=False))
-        self.mnuImportSes.add_command(label=_("Import auto-routed tracks only"), command=partial(self.cmdmnuImportSes, withRatsnest=False, trackOnly=True))
+        self.mnuImportSes.add_command(label=_("Import all (remove routed ratsnests)"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='trimRouted', trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import all (remove all ratsnests)"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='trimAll', trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import all (keep all ratsnests)"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='keepAll', trackOnly=False))
+        self.mnuImportSes.add_command(label=_("Import auto-routed tracks only"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='trimRouted', trackOnly=True))
 
     #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
     def translateWidgets(self):
@@ -672,8 +675,8 @@ class Application(Application_ui):
         self.lblDsnFile.setText(_("DSN file"))
         self.lblSesFile.setText(_("SES file"))
         self.lblRules.setText(_("Rules"))
-        self.cmdExportDsn.setText(_("Export"))
-        self.cmdImportSes.setText(_("Import"))
+        self.cmdExportDsn.setText(_("Export DSN"))
+        self.cmdImportSes.setText(_("Import SES"))
         self.cmdCancelAutoRouter.setText(_("Cancel"))
         self.lblSaveAsAutoRouter.setText(_("Save as"))
 
@@ -852,12 +855,12 @@ class Application(Application_ui):
             trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
             viaDiameter = str_to_float(cfg.get('viaDiameter', '0.7'))
             viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
-            clearance = str_to_float(cfg.get('clearance', '0.2'))
+            clearance = str_to_float(cfg.get('clearance', '0.3'))
             smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.06'))
             self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
             self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.7
             self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
-            self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.2
+            self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.3
             self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.06
             if (self.pcbRule.viaDiameter <= self.pcbRule.viaDrill):
                 self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
@@ -1450,7 +1453,8 @@ class Application(Application_ui):
         dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
 
         #TODO
-        inFile = self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt'
+        #inFile = self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt'
+        inFile = self.inFileName
         inFileSize = 0
         try:
             inFileSize = os.path.getsize(inFile)
@@ -1493,7 +1497,11 @@ class Application(Application_ui):
         return True
 
     #导入自动布线的SES文件
-    def cmdImportSes_Cmd(self, event=None, trackOnly=False):
+    def cmdImportSes_Cmd(self, event=None):
+        self.cmdmnuImportSes(trimRatsnestMode='trimRouted', trackOnly=False)
+
+    #安装Shift点击导入按钮
+    def cmdImportSes_Shift_Button_1(self, event=None):
         try:         
             x = self.master.winfo_pointerx() # - self.master.winfo_vrootx()
             y = self.master.winfo_pointery() # - self.master.winfo_vrooty()
@@ -1502,8 +1510,8 @@ class Application(Application_ui):
             self.mnuImportSes.grab_release()
 
     #菜单项“导入...”的点击响应函数
-    def cmdmnuImportSes(self, withRatsnest: bool=False, trackOnly: bool=False):
-        if (self.importSes(withRatsnest, trackOnly)):
+    def cmdmnuImportSes(self, trimRatsnestMode: str='trimRouted', trackOnly: bool=False):
+        if (self.importSes(trimRatsnestMode, trackOnly)):
             self.destroy()
             #Sprint-Layout的插件返回码定义
             #0: = 中止/无动作
@@ -1514,10 +1522,10 @@ class Application(Application_ui):
             sys.exit(4 if trackOnly else 1)
 
     #导入自动布线的SES到输出文件
-    #withRatsnest: 是否包含网络连线（鼠线）
+    #trimRatsnestMode: 'keepAll'-包含所有鼠线（网络连线），'trimAll'-删除所有鼠线，'trimRouted'-仅删除有铜箔布线连通的焊盘间鼠线
     #trackOnly: 是否仅导入布线
     #成功返回True
-    def importSes(self, withRatsnest: bool, trackOnly: bool):
+    def importSes(self, trimRatsnestMode: str, trackOnly: bool):
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -1530,11 +1538,18 @@ class Application(Application_ui):
             return False
 
         if not trackOnly:
-            ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
-            if not ret:
-                return False
+            inFileSize = 1
+            try:
+                inFileSize = os.path.getsize(inFile)
+            except Exception as e:
+                pass
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, withRatsnest=withRatsnest, trackOnly=trackOnly)
+            if (inFileSize > 0):
+                ret = askyesno(_("info"), _("This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?"))
+                if not ret:
+                    return False
+
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trimRatsnestMode=trimRatsnestMode, trackOnly=trackOnly)
         if not ret:
             return False
         elif isinstance(ret, str):
@@ -1562,7 +1577,7 @@ class Application(Application_ui):
             showwarning(_("info"), _("The file format is not supported"))
             return
 
-        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, withRatsnest=False, trackOnly=False)
+        ret = self.generateTextIoFromSes(sesFile, dsnPickleFile, trimRatsnestMode='trimRouted', trackOnly=False)
         if not ret:
             return
         elif isinstance(ret, str):
@@ -1572,7 +1587,7 @@ class Application(Application_ui):
             self.saveTextFile(str(ret))
 
     #从SES中生成TextIo实例对象
-    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str, withRatsnest: bool, trackOnly: bool):
+    def generateTextIoFromSes(self, sesFile: str, dsnPickleFile: str, trimRatsnestMode: str, trackOnly: bool):
         from sprint_struct.sprint_import_ses import SprintImportSes
         try:
             with open(dsnPickleFile, 'rb') as f:
@@ -1582,7 +1597,7 @@ class Application(Application_ui):
             
         ses = SprintImportSes(sesFile, dsn)
         try:
-            textIo = ses.importSes(withRatsnest=withRatsnest, trackOnly=trackOnly)
+            textIo = ses.importSes(trimRatsnestMode=trimRatsnestMode, trackOnly=trackOnly)
             return textIo
         except Exception as e:
             return str(e)
