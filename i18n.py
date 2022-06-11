@@ -61,7 +61,7 @@ class I18n:
     "TabFont":      ("            Font            ", "            字体            "),    
     "TabFootprint": ("          Footprint         ", "            封装            "),
     "TabSVG":       ("         SVG/Qrcode         ", "         SVG/二维码         "),
-    "TabAutoRouter":("          AutoRouter        ", "         自动布线           "),
+    "TabAutoRouter":("          Autorouter        ", "         自动布线           "),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
     "easyEDA footprint": ("", "力创封装文件"),
@@ -119,7 +119,6 @@ class I18n:
     "Export Specctra DSN file successfully": ("", "导出自动布线DSN文件成功"),
     "This operation will completely replace the existing components and wiring on the board.\nDo you want to continue?": 
             ("", "这个操作将会全部替换电路板上的已有元件和布线。\n需要继续吗？"),
-    "Freerouting program": ("", "Freerouting 程序文件"),
     "DSN file is empty": ("", "DSN文件为空"),
     "There are some components with the same name: {}": ("", "存在重名的元件：{}"),
     "Failed to get glyph set from the font file you selected": ("", "无法从您选择的字体文件中提取字形集"),
@@ -133,6 +132,8 @@ class I18n:
     "Import auto-routed tracks only": ("", "仅导入自动布线的铜箔走线"),
     "No components on the board": ("", "电路板上没有元件"),
     "Failed to parse input file": ("", "分析输入文件失败"),
+    "  Releases: ": ("", "  版本库： "),
+    "  Report bugs: ": ("", "  报告Bug： "),
     }
 
     #这个属性是可以在程序执行过程中修改的
@@ -173,7 +174,7 @@ class I18n:
 
         return -1
 
-    #获取翻译字符串，如果增加了翻译语种种类
+    #获取翻译字符串
     @classmethod
     def tr(cls, txt: str):
         ret = cls._translations.get(txt, '')

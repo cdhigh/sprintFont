@@ -7,6 +7,7 @@ Author: cdhigh <https://github.com/cdhigh>
 
 import sys, os, re
 from cx_Freeze import setup, Executable
+import qrcode #为了保证不会忘记安装qrcode依赖包，如果忘记，这里报错
 
 if sys.platform == "win32":
     base = "Win32GUI"

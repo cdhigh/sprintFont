@@ -5,8 +5,6 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys, pickle
-from collections import defaultdict
-import pysnooper
 
 #测试
 if __name__ == '__main__':
@@ -129,7 +127,7 @@ class SprintImportSes:
         components = [elem for elem in textIo.children() if isinstance(elem, SprintComponent)]
         for comp in components:
             name = comp.name
-            if ((name.startswith('unnamed_') and name[8:].isdigit())):
+            if ((len(name) > 8) and name.startswith('unnamed_') and name[8:].isdigit()):
                 comp.name = ''
             
         return textIo
@@ -185,7 +183,6 @@ class SprintImportSes:
     #遍历所有焊盘，先获取焊盘位置，然后逐个布线各端点，如果端点在焊盘范围内并且板层相同，则为连通，
     #记录布线索引对应的字典键值和焊盘ID的对应情况(ID,
     #所有焊盘完成后，同样键的所有焊盘ID为相互连通，再遍历textio，某个ID删除和它相通的其他ID
-    #@pysnooper.snoop('d:/snoop.log')
     def trimRatsnest(self, textIo):
         #所有过孔和铜箔走线
         #round(2)而不是round(4)是为了减小浮点误差导致之后的比较错误

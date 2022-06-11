@@ -51,6 +51,13 @@ else:
 
 CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
 
+STABAR_INFO_INPUT_FILE = 0
+STABAR_INFO_RELEASES = 1
+STABAR_INFO_ISSUES = 2
+STABAR_MAX_INFO_IDX = STABAR_INFO_ISSUES
+
+URI_RELEASES = 'https://github.com/cdhigh/sprintFontRelease/releases'
+URI_ISSUES = 'https://github.com/cdhigh/sprintFontRelease/issues'
 
 class Statusbar(Frame):
     """A Simple Statusbar
@@ -487,9 +494,9 @@ class Application(Application_ui):
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
         self.master.title('sprintFont v{} [github.com/cdhigh]'.format(__VERSION__))
-        width = str_to_int(self.master.geometry().split('x')[0])
-        if (width > 16): #状态栏仅使用一个分栏，占满全部空间
-            self.staBar.panelwidth(0, width)
+        #width = str_to_int(self.master.geometry().split('x')[0])
+        #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
+        self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数
 
         self.versionJson = {} #用来更新版本使用
         self.checkUpdateFrequency = 30
@@ -580,16 +587,13 @@ class Application(Application_ui):
             self.cmdExportDsn.configure(state='disabled')
             
         #显示输入文件名或显示单独执行模式字符串
-        self.setStaBarByMode()
+        self.currentStatusBarInfoIdx = STABAR_INFO_INPUT_FILE - 1 #让第一次显示时恢复0
+        self.updateStatusBar()
 
         #版本更新检查，启动5s后检查一次更新
         self.master.after(5000, self.periodicCheckUpdate)
 
         self.txtMain.focus_set()
-
-    #显示输入文件名或显示单独执行模式字符串
-    def setStaBarByMode(self):
-        self.staBar.text(_("  In: {}").format(self.inFileName) if self.inFileName else _("  Standalone mode"))
 
     #多页控件的当前页面发现改变
     def tabStrip_NotebookTabChanged(self, event):
@@ -1369,6 +1373,7 @@ class Application(Application_ui):
 
     #根据情况确定状态栏的双击响应方式
     def staBar_Double_Button_1(self, event=None):
+        import webbrowser
         if self.versionJson:
             from version_check import openNewVersionDialog
             ret = openNewVersionDialog(self.master, __VERSION__, self.versionJson)
@@ -1376,8 +1381,13 @@ class Application(Application_ui):
                 self.skipVersion = self.versionJson.get('lastest', '')
 
             self.saveConfig()
-            self.versionJson = {} #只允许点击一次
-            self.setStaBarByMode() #恢复正常的状态栏显示
+            self.versionJson = {} #只允许点击一次，双击后清空版本字典
+            self.currentStatusBarInfoIdx = STABAR_INFO_INPUT_FILE - 1 #恢复正常的显示
+            self.displayInputFileOrStandalone()
+        elif (self.currentStatusBarInfoIdx == STABAR_INFO_RELEASES):
+            webbrowser.open_new_tab(URI_RELEASES)
+        elif (self.currentStatusBarInfoIdx == STABAR_INFO_ISSUES):
+            webbrowser.open_new_tab(URI_ISSUES)
 
     #联网检查更新线程
     def versionCheckThread(self, arg=None):
@@ -1601,6 +1611,28 @@ class Application(Application_ui):
             return textIo
         except Exception as e:
             return str(e)
+
+    #根据当前执行模式，显示输入文件或独立执行模式字符串
+    def displayInputFileOrStandalone(self):
+        self.staBar.text(_("  In: {}").format(self.inFileName) if self.inFileName else _("  Standalone mode"))
+
+    #每10s更新一次下部状态栏的显示
+    def updateStatusBar(self):
+        if self.versionJson:
+            self.master.after(10000, self.updateStatusBar)
+            return
+
+        self.currentStatusBarInfoIdx += 1
+        if (self.currentStatusBarInfoIdx > STABAR_MAX_INFO_IDX):
+            self.currentStatusBarInfoIdx = STABAR_INFO_INPUT_FILE
+        if (self.currentStatusBarInfoIdx == STABAR_INFO_INPUT_FILE):
+            self.displayInputFileOrStandalone()
+        elif (self.currentStatusBarInfoIdx == STABAR_INFO_RELEASES):
+            self.staBar.text(_("  Releases: ") + "https://github.com/cdhigh/sprintFontRelease/releases")
+        else:
+            self.staBar.text(_("  Report bugs: ") + "https://github.com/cdhigh/sprintFontRelease/issues")
+
+        self.master.after(10000, self.updateStatusBar)
 
 if __name__ == "__main__":
     top = Tk()

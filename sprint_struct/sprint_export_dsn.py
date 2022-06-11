@@ -78,8 +78,14 @@ class SprintExportDsn:
             else:
                 names.add(comp.name)
             if (comp.getLayer() == LAYER_C2):
-                return _("Currently only supports all components placed on the front side\n\n{}").format(comp.name)
-        
+                name = comp.name
+                if (name.startswith('PadComp')): #游离焊盘临时组成的元件
+                    pads = comp.getPads()
+                    if pads:
+                        name = '{} at x{:0.2f} y{:0.2f}'.format(pads[0].padType, pads[0].pos[0], pads[0].pos[1])
+                        
+                return _("Currently only supports all components placed on the front side\n\n{}").format(name)
+            
         #头部的说明性内容
         se.addItem(self.name or 'NoName', newline=False)
         se.startGroup('parser', indent=True)
@@ -128,7 +134,7 @@ class SprintExportDsn:
         se.addItem({'clearance': [mm2um(self.pcbRule.clearance), {'type': 'default_smd'}]})
         se.addItem({'clearance': [mm2um(self.pcbRule.smdSmdClearance), {'type': 'smd_smd'}]})
         se.endGroup()
-        #autoroute_settings经过会出现各种奇怪的错误，所以不需要还更好
+        #存在autoroute_settings组时经常会出现各种奇怪的错误，所以不需要还更好
         """
         se.startGroup('autoroute_settings')
         se.addItem({'fanout': 'off'}, indent=True)
