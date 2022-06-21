@@ -4,6 +4,7 @@
 多边形数据结构和算法
 Author: cdhigh <https://github.com/cdhigh>
 """
+from comm_utils import ComputePolygonArea
 from .sprint_element import *
 
 #里面的长度单位都是mm
@@ -66,15 +67,34 @@ class SprintPolygon(SprintElement):
         if not isinstance(other, SprintPolygon):
             return False
 
-        if ((self.layerIdx != other.layerIdx) or (self.width != other.width) or (self.points != other.points)):
+        if ((self.layerIdx != other.layerIdx) or (self.width != other.width) or (len(self.points) != len(other.points))):
             return False
         else:
+            #判断里面的点是否一致
+            ptNum = len(self.points)
+            for idx in range(ptNum):
+                x1, y1 = self.points[idx]
+                x2, y2 = other.points[idx]
+                if ((round(x1, 2) != round(x2, 2)) or (round(y1, 2) != round(y2, 2))):
+                    return False
             return True
 
+    #返回此多边形的面积
+    def area(self):
+        return ComputePolygonArea(self.points)
+
     #增加一个点
-    def addPoint(self, x: float, y: float):
+    #如果y=None，则x为一个点定义(x,y)
+    def addPoint(self, x: float, y: float=None):
+        if (y is None):
+            x, y = x
         self.updateBbox(x, y) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
         self.points.append((x, y))
+
+    #添加列表中所有点
+    def addAllPoints(self, ptList: list):
+        for pt in ptList:
+            self.addPoint(pt)
 
     #生成器，用于迭代里面所有的线段
     def iterLineSeg(self):
@@ -93,7 +113,11 @@ class SprintPolygon(SprintElement):
             yield ret
 
     #判断一个点是否在此多边形内，此算法专门为字体优化，不判断很多特殊情况
-    def encircle(self, x: float, y: float):
+    #如果y=None，则x为一个点定义(x,y)
+    def encircle(self, x, y: float=None):
+        if (y is None):
+            x, y = x
+
         #先判断极限情况，如果在外包矩形外，就是在多边形外
         if ((x <= self.xMin) or (x >= self.xMax) or (y <= self.yMin) or (y >= self.yMax)):
             return False

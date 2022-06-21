@@ -35,8 +35,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.3"
-__DATE__ = "20220609"
+__VERSION__ = "1.4"
+__DATE__ = "20220621"
 __AUTHOR__ = "cdhigh"
 
 #特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
@@ -55,6 +55,18 @@ STABAR_INFO_INPUT_FILE = 0
 STABAR_INFO_RELEASES = 1
 STABAR_INFO_ISSUES = 2
 STABAR_MAX_INFO_IDX = STABAR_INFO_ISSUES
+
+#Sprint-Layout的插件返回码定义
+#0: = 中止/无动作
+#1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
+#2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
+#3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
+#4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
+RETURN_CODE_NONE = 0
+RETURN_CODE_REPLACE_ALL = 1
+RETURN_CODE_INSERT_ALL = 2
+RETURN_CODE_REPLACE_STICKY = 3
+RETURN_CODE_INSERT_STICKY = 4
 
 URI_RELEASES = 'https://github.com/cdhigh/sprintFontRelease/releases'
 URI_ISSUES = 'https://github.com/cdhigh/sprintFontRelease/issues'
@@ -109,8 +121,8 @@ class Application_ui(Frame):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (624 / 2)
-        y = (hs / 2) - (359 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (624,359,x,y))
+        y = (hs / 2) - (362 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (624,362,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -151,7 +163,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.872)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.95, relheight=0.865)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -486,6 +498,80 @@ class Application_ui(Frame):
         self.lblDsnFile.place(relx=0.027, rely=0.256, relwidth=0.11, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab4, text='AutoRouter')
 
+        self.tabStrip__Tab5 = Frame(self.tabStrip)
+        self.picTeardrops = Canvas(self.tabStrip__Tab5, takefocus=1, highlightthickness=0)
+        self.picTeardrops.place(relx=0.499, rely=0.204, relwidth=0.447, relheight=0.514)
+        self.chkIncludeSmdPadsTextVar = StringVar(value='Include SMD pads')
+        self.chkIncludeSmdPadsVar = IntVar(value=0)
+        self.style.configure('TchkIncludeSmdPads.TCheckbutton', font=('微软雅黑',10))
+        self.chkIncludeSmdPads = Checkbutton(self.tabStrip__Tab5, text='Include SMD pads', textvariable=self.chkIncludeSmdPadsTextVar, variable=self.chkIncludeSmdPadsVar, style='TchkIncludeSmdPads.TCheckbutton')
+        self.chkIncludeSmdPads.setText = lambda x: self.chkIncludeSmdPadsTextVar.set(x)
+        self.chkIncludeSmdPads.text = lambda : self.chkIncludeSmdPadsTextVar.get()
+        self.chkIncludeSmdPads.setValue = lambda x: self.chkIncludeSmdPadsVar.set(x)
+        self.chkIncludeSmdPads.value = lambda : self.chkIncludeSmdPadsVar.get()
+        self.chkIncludeSmdPads.place(relx=0.121, rely=0.639, relwidth=0.312, relheight=0.08)
+        self.cmdRemoveTeardropsVar = StringVar(value='Remove')
+        self.style.configure('TcmdRemoveTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdRemoveTeardrops = Button(self.tabStrip__Tab5, text='Remove', textvariable=self.cmdRemoveTeardropsVar, command=self.cmdRemoveTeardrops_Cmd, style='TcmdRemoveTeardrops.TButton')
+        self.cmdRemoveTeardrops.setText = lambda x: self.cmdRemoveTeardropsVar.set(x)
+        self.cmdRemoveTeardrops.text = lambda : self.cmdRemoveTeardropsVar.get()
+        self.cmdRemoveTeardrops.place(relx=0.31, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmbhPercentList = ['',]
+        self.cmbhPercentVar = StringVar(value='')
+        self.cmbhPercent = Combobox(self.tabStrip__Tab5, textvariable=self.cmbhPercentVar, values=self.cmbhPercentList, font=('微软雅黑',10))
+        self.cmbhPercent.setText = lambda x: self.cmbhPercentVar.set(x)
+        self.cmbhPercent.text = lambda : self.cmbhPercentVar.get()
+        self.cmbhPercent.place(relx=0.31, rely=0.23, relwidth=0.137)
+        self.cmdCancelTeardropsVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancelTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdCancelTeardrops = Button(self.tabStrip__Tab5, text='Cancel', textvariable=self.cmdCancelTeardropsVar, command=self.cmdCancelTeardrops_Cmd, style='TcmdCancelTeardrops.TButton')
+        self.cmdCancelTeardrops.setText = lambda x: self.cmdCancelTeardropsVar.set(x)
+        self.cmdCancelTeardrops.text = lambda : self.cmdCancelTeardropsVar.get()
+        self.cmdCancelTeardrops.place(relx=0.58, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmdAddTeardropsVar = StringVar(value='Add')
+        self.style.configure('TcmdAddTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdAddTeardrops = Button(self.tabStrip__Tab5, text='Add', textvariable=self.cmdAddTeardropsVar, command=self.cmdAddTeardrops_Cmd, style='TcmdAddTeardrops.TButton')
+        self.cmdAddTeardrops.setText = lambda x: self.cmdAddTeardropsVar.set(x)
+        self.cmdAddTeardrops.text = lambda : self.cmdAddTeardropsVar.get()
+        self.cmdAddTeardrops.place(relx=0.04, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmbTeardropSegsList = ['',]
+        self.cmbTeardropSegsVar = StringVar(value='')
+        self.cmbTeardropSegs = Combobox(self.tabStrip__Tab5, textvariable=self.cmbTeardropSegsVar, values=self.cmbTeardropSegsList, font=('微软雅黑',10))
+        self.cmbTeardropSegs.setText = lambda x: self.cmbTeardropSegsVar.set(x)
+        self.cmbTeardropSegs.text = lambda : self.cmbTeardropSegsVar.get()
+        self.cmbTeardropSegs.place(relx=0.31, rely=0.486, relwidth=0.137)
+        self.cmbvPercentList = ['',]
+        self.cmbvPercentVar = StringVar(value='')
+        self.cmbvPercent = Combobox(self.tabStrip__Tab5, textvariable=self.cmbvPercentVar, values=self.cmbvPercentList, font=('微软雅黑',10))
+        self.cmbvPercent.setText = lambda x: self.cmbvPercentVar.set(x)
+        self.cmbvPercent.text = lambda : self.cmbvPercentVar.get()
+        self.cmbvPercent.place(relx=0.31, rely=0.358, relwidth=0.137)
+        self.lblTeardropsTipsVar = StringVar(value='teardrops_features_tips')
+        self.style.configure('TlblTeardropsTips.TLabel', anchor='center', font=('微软雅黑',10))
+        self.lblTeardropsTips = Label(self.tabStrip__Tab5, text='teardrops_features_tips', textvariable=self.lblTeardropsTipsVar, style='TlblTeardropsTips.TLabel')
+        self.lblTeardropsTips.setText = lambda x: self.lblTeardropsTipsVar.set(x)
+        self.lblTeardropsTips.text = lambda : self.lblTeardropsTipsVar.get()
+        self.lblTeardropsTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
+        self.lblhPercentVar = StringVar(value='Horizontal percent')
+        self.style.configure('TlblhPercent.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblhPercent = Label(self.tabStrip__Tab5, text='Horizontal percent', textvariable=self.lblhPercentVar, style='TlblhPercent.TLabel')
+        self.lblhPercent.setText = lambda x: self.lblhPercentVar.set(x)
+        self.lblhPercent.text = lambda : self.lblhPercentVar.get()
+        self.lblhPercent.place(relx=0.027, rely=0.23, relwidth=0.258, relheight=0.08)
+        self.lblTeardropSegsVar = StringVar(value='Number of segments')
+        self.style.configure('TlblTeardropSegs.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblTeardropSegs = Label(self.tabStrip__Tab5, text='Number of segments', textvariable=self.lblTeardropSegsVar, style='TlblTeardropSegs.TLabel')
+        self.lblTeardropSegs.setText = lambda x: self.lblTeardropSegsVar.set(x)
+        self.lblTeardropSegs.text = lambda : self.lblTeardropSegsVar.get()
+        self.lblTeardropSegs.place(relx=0.027, rely=0.486, relwidth=0.258, relheight=0.08)
+        self.lblvPercentVar = StringVar(value='Vertical percent')
+        self.style.configure('TlblvPercent.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblvPercent = Label(self.tabStrip__Tab5, text='Vertical percent', textvariable=self.lblvPercentVar, style='TlblvPercent.TLabel')
+        self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
+        self.lblvPercent.text = lambda : self.lblvPercentVar.get()
+        self.lblvPercent.place(relx=0.027, rely=0.358, relwidth=0.258, relheight=0.08)
+        self.tabStrip.add(self.tabStrip__Tab5, text='Teardrops')
+
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
 
@@ -493,7 +579,7 @@ class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
-        self.master.title('sprintFont v{} [github.com/cdhigh]'.format(__VERSION__))
+        self.master.title('sprintFont v{}'.format(__VERSION__))
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
         self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数
@@ -515,6 +601,10 @@ class Application(Application_ui):
         self.treRules.configure(show='') #'headings'
         self.treRules.configure(selectmode='browse') #只允许单行选择
         #self.treRules.tag_configure('gray_row', background='#cccccc')
+
+        #先暂时屏蔽SMD焊盘的选项
+        self.chkIncludeSmdPads.configure(state='disabled')
+        self.teardropImage = None
 
         #初始化多语种支持
         self.sysLanguge = locale.getdefaultlocale()[0]
@@ -578,6 +668,7 @@ class Application(Application_ui):
                 self.cmdImportSes.configure(state='disabled')
                 self.lblAutoRouterTips.setText(_("Please deselect all items before launching the plugin"))
                 self.lblAutoRouterTips.configure(foreground='red')
+                #self.cmdRemoveTeardrops.configure(state='disabled')
         else: #单独执行
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
@@ -585,6 +676,8 @@ class Application(Application_ui):
             self.cmdImportSes.configure(state='disabled')
             #TODO
             self.cmdExportDsn.configure(state='disabled')
+            self.cmdAddTeardrops.configure(state='disabled')
+            self.cmdRemoveTeardrops.configure(state='disabled')
             
         #显示输入文件名或显示单独执行模式字符串
         self.currentStatusBarInfoIdx = STABAR_INFO_INPUT_FILE - 1 #让第一次显示时恢复0
@@ -607,8 +700,15 @@ class Application(Application_ui):
                 self.txtSvgFile.focus_set()
             elif (tabNo == 3):
                 self.txtDsnFile.focus_set()
-        except:
-            pass
+            elif (tabNo == 4):
+                if not self.teardropImage:
+                    from teardrop_image import teardropImageData
+                    self.teardropImage = PhotoImage(data=teardropImageData)
+                    self.picTeardrops.create_image(0, 0, image=self.teardropImage, anchor=NW)
+                self.cmbhPercent.focus_set()
+        except Exception as e:
+            print(str(e))
+            #pass
 
     #获取多页控件的当前页面
     def getCurrentTabStripTab(self):
@@ -668,6 +768,7 @@ class Application(Application_ui):
         self.tabStrip.tab(1, text=_("TabFootprint"))
         self.tabStrip.tab(2, text=_("TabSVG"))
         self.tabStrip.tab(3, text=_("TabAutoRouter"))
+        self.tabStrip.tab(4, text=_("TabTeardrops"))
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
         self.lblSvgTips.setText(_("svg_features_tips"))
@@ -683,6 +784,14 @@ class Application(Application_ui):
         self.cmdImportSes.setText(_("Import SES"))
         self.cmdCancelAutoRouter.setText(_("Cancel"))
         self.lblSaveAsAutoRouter.setText(_("Save as"))
+        self.lblTeardropsTips.setText(_("teardrops_features_tips"))
+        self.lblhPercent.setText(_("Horizontal percent"))
+        self.lblvPercent.setText(_("Vertical percent"))
+        self.lblTeardropSegs.setText(_("Number of segments"))
+        self.chkIncludeSmdPads.setText(_("Include SMD pads"))
+        self.cmdAddTeardrops.setText(_("Add"))
+        self.cmdRemoveTeardrops.setText(_("Remove"))
+        self.cmdCancelTeardrops.setText(_("Cancel"))
 
     #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
     #此函数在程序启动后5s才会得到执行
@@ -761,6 +870,16 @@ class Application(Application_ui):
         self.cmbSvgHeight.configure(values=self.cmbSvgHeightList)
         self.cmbSvgHeight.current(9) #SVG图像高度默认10mm
 
+        #泪滴的比例
+        self.cmbhPercentList = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+        self.cmbhPercent.configure(values=self.cmbhPercentList)
+        self.cmbhPercent.current(4) #水平比例默认50%
+        self.cmbvPercentList = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+        self.cmbvPercent.configure(values=self.cmbvPercentList)
+        self.cmbvPercent.current(8) #垂直比例默认90%
+        self.cmbTeardropSegsList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        self.cmbTeardropSegs.configure(values=self.cmbTeardropSegsList)
+        self.cmbTeardropSegs.current(9) #默认10个线段
 
     #更新字体列表组合框，可能直接调用，也可能会使用after延时调用
     def populateFontCombox(self, fontMap: dict=None):
@@ -870,6 +989,16 @@ class Application(Application_ui):
                 self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
             self.updateRuleView()
 
+            #泪滴焊盘
+            hPercent = str_to_int(cfg.get('teardropHPercent', '50'))
+            vPercent = str_to_int(cfg.get('teardropVPercent', '90'))
+            segs = str_to_int(cfg.get('teardropSegs', '10'))
+            includeSmdPads = str_to_int(cfg.get('tdIncludeSmdPads', '0'))
+            self.cmbhPercent.setText(str(hPercent))
+            self.cmbvPercent.setText(str(vPercent))
+            self.cmbTeardropSegs.setText(str(segs))
+            self.chkIncludeSmdPads.setValue(includeSmdPads)
+
     #保存当前配置数据
     def saveConfig(self):
         if self.versionJson: #如果检查到版本更新，则明天再检查一次
@@ -888,7 +1017,10 @@ class Application(Application_ui):
             'skipVersion': str(self.skipVersion), 
             'trackWidth': str(self.pcbRule.trackWidth), 'viaDiameter': str(self.pcbRule.viaDiameter),
             'viaDrill': str(self.pcbRule.viaDrill), 'clearance': str(self.pcbRule.clearance),
-            'smdSmdClearance': str(self.pcbRule.smdSmdClearance)}
+            'smdSmdClearance': str(self.pcbRule.smdSmdClearance),
+            'teardropHPercent': self.cmbhPercent.text(), 'teardropVPercent': self.cmbvPercent.text(),
+            'teardropSegs': self.cmbTeardropSegs.text(), 'tdIncludeSmdPads': str(self.chkIncludeSmdPads.value()),
+        }
         
         if (cfg != self.cfg):  #有变化再写配置文件
             self.cfg = cfg
@@ -944,6 +1076,11 @@ class Application(Application_ui):
 
     #取消退出
     def cmdCancelAutoRouter_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(0)
+
+    #取消退出
+    def cmdCancelTeardrops_Cmd(self, event=None):
         self.destroy()
         sys.exit(0)
 
@@ -1008,13 +1145,7 @@ class Application(Application_ui):
                 pass
             
         self.destroy()
-        #Sprint-Layout的插件返回码定义
-        #0: = 中止/无动作
-        #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
-        #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
-        #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
-        #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
-        sys.exit(4)
+        sys.exit(RETURN_CODE_INSERT_STICKY)
 
     #在封装文件文本框中回车，根据情况自动执行响应的命令
     def txtFootprintFile_Return(self, event=None):
@@ -1462,29 +1593,8 @@ class Application(Application_ui):
 
         dsnPickleFile = os.path.splitext(dsnFile)[0] + '.pickle'
 
-        #TODO
-        #inFile = self.inFileName if self.inFileName else r'C:\Users\su\Desktop\testSprint\1.txt'
-        inFile = self.inFileName
-        inFileSize = 0
-        try:
-            inFileSize = os.path.getsize(inFile)
-        except Exception as e:
-            showwarning(_("info"), str(e))
-            return False
-
-        if (inFileSize <= 0):
-            showwarning(_("info"), _("No components on the board"))
-            return False
-
-        parser = SprintTextIoParser()
-        try:
-            textIo = parser.parse(inFile)
-        except Exception as e:
-            showwarning(_("info"), _("Error parsing input file:\n{}").format(str(e)))
-            return False
-
+        textIo = self.createTextIoFromInFile()
         if not textIo:
-            showwarning(_("info"), _("Failed to parse input file"))
             return False
 
         exporter = SprintExportDsn(textIo, self.pcbRule, dsnFile)
@@ -1523,13 +1633,7 @@ class Application(Application_ui):
     def cmdmnuImportSes(self, trimRatsnestMode: str='trimRouted', trackOnly: bool=False):
         if (self.importSes(trimRatsnestMode, trackOnly)):
             self.destroy()
-            #Sprint-Layout的插件返回码定义
-            #0: = 中止/无动作
-            #1: = 完全替换元素，Sprint-Layout删除选中的项目并将其替换为插件输出文件中的新项目。
-            #2: = 绝对添加元素，Sprint-Layout从插件输出文件中插入新元素。不会删除任何项目。
-            #3: = 相对替换元素，Sprint-Layout从插件输出文件中删除标记的元素和新元素“粘”到鼠标上，并且可以由用户放置。
-            #4: = 相对添加元素，插件输出文件中的新元素“粘”在鼠标上，并且可以由用户放置。不会删除任何项目。
-            sys.exit(4 if trackOnly else 1)
+            sys.exit(RETURN_CODE_INSERT_STICKY if trackOnly else RETURN_CODE_REPLACE_ALL)
 
     #导入自动布线的SES到输出文件
     #trimRatsnestMode: 'keepAll'-包含所有鼠线（网络连线），'trimAll'-删除所有鼠线，'trimRouted'-仅删除有铜箔布线连通的焊盘间鼠线
@@ -1576,6 +1680,8 @@ class Application(Application_ui):
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
+        self.addTeardrops()
+        return #TODO
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -1614,7 +1720,12 @@ class Application(Application_ui):
 
     #根据当前执行模式，显示输入文件或独立执行模式字符串
     def displayInputFileOrStandalone(self):
-        self.staBar.text(_("  In: {}").format(self.inFileName) if self.inFileName else _("  Standalone mode"))
+        if self.inFileName:
+            selMsg = _("whole board") if self.pcbAll else _("partial")
+            msg = _("  In [{}] : {}").format(selMsg, self.inFileName)
+        else:
+            msg = _("  Standalone mode")
+        self.staBar.text(msg)
 
     #每10s更新一次下部状态栏的显示
     def updateStatusBar(self):
@@ -1633,6 +1744,117 @@ class Application(Application_ui):
             self.staBar.text(_("  Report bugs: ") + "https://github.com/cdhigh/sprintFontRelease/issues")
 
         self.master.after(10000, self.updateStatusBar)
+
+    #添加泪滴焊盘按钮事件
+    def cmdAddTeardrops_Cmd(self, event=None):
+        from sprint_struct.teardrop import createTeardrops
+        
+        self.saveConfig()
+
+        textIo = self.createTextIoFromInFile()
+        if not textIo:
+            return False
+
+        hPercent = str_to_int(self.cmbhPercent.text())
+        vPercent = str_to_int(self.cmbvPercent.text())
+        segs = str_to_int(self.cmbTeardropSegs.text())
+        if ((hPercent <= 0) or (vPercent <= 0)):
+            showwarning(_("info"), _("Wrong parameter value"))
+            return
+
+        polys = createTeardrops(textIo, hPercent=hPercent, vPercent=vPercent, segs=10)
+        if polys:
+            newTextIo = SprintTextIO()
+            newTextIo.addAll(polys)
+            showinfo(_("info"), _("Successfully added [{}] teardrop pads").format(len(polys)))
+
+            #写输出文件
+            try:
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
+                    f.write(str(newTextIo))
+            except:
+                pass
+        else:
+            showinfo(_("info"), _("No teardrop pads are generated"))
+            return
+            
+        self.destroy()
+        sys.exit(RETURN_CODE_INSERT_ALL)
+
+    #删除泪滴焊盘按钮事件
+    def cmdRemoveTeardrops_Cmd(self, event=None):
+        from sprint_struct.teardrop import getTeardrops
+        self.saveConfig()
+
+        ret = askyesno(_("info"), _("Dangerous operation:\nThis operation may delete some small polygons by mistake or not delete the desired polygons\nDo you want to continue?"))
+        if not ret:
+            return
+
+        textIo = self.createTextIoFromInFile()
+        if not textIo:
+            return False
+
+        teardrops = []
+        #搜集焊盘
+        pads = textIo.getPads('PAD')
+        if self.chkIncludeSmdPads.value():
+            pads.extend(textIo.getPads('SMDPAD'))
+        
+        #搜集走线
+        tracks = textIo.getConductiveTracks()
+
+        if not pads or not tracks:
+            return
+
+        #搜集已有的泪滴焊盘，每个泪滴焊盘就是一个多边形
+        oldTeardrops = getTeardrops(textIo, pads, tracks)
+        if oldTeardrops:
+            for t in oldTeardrops:
+                textIo.remove(t)
+
+            showinfo(_("info"), _("Successfully removed [{}] teardrop pads").format(len(oldTeardrops)))
+
+            #写输出文件
+            try:
+                with open(self.outFileName, 'w', encoding='utf-8') as f:
+                    f.write(str(textIo))
+            except:
+                pass
+
+            self.destroy()
+            sys.exit(RETURN_CODE_REPLACE_ALL)
+        else:
+            showinfo(_("info"), _("No teardrop pads found"))
+
+    #从输入文件创建一个TextIo
+    def createTextIoFromInFile(self):
+        from sprint_struct.sprint_textio_parser import SprintTextIoParser
+
+        #TODO
+        inFile = self.inFileName if self.inFileName else r'd:\1.txt'
+        #inFile = self.inFileName
+        inFileSize = 0
+        try:
+            inFileSize = os.path.getsize(inFile)
+        except Exception as e:
+            showwarning(_("info"), str(e))
+            return None
+
+        if (inFileSize <= 0):
+            showwarning(_("info"), _("No components on the board"))
+            return None
+
+        parser = SprintTextIoParser()
+        try:
+            textIo = parser.parse(inFile)
+        except Exception as e:
+            showwarning(_("info"), _("Error parsing input file:\n{}").format(str(e)))
+            return None
+
+        if not textIo:
+            showwarning(_("info"), _("Failed to parse input file"))
+        
+        return textIo
 
 if __name__ == "__main__":
     top = Tk()

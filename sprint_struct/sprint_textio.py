@@ -38,7 +38,23 @@ class SprintTextIO(SprintElement):
     def addAll(self, elemList: list):
         for elem in elemList:
             self.add(elem)
-    
+
+    #删除某一个对象，成功返回True
+    def remove(self, obj):
+        for elem in self.elements:
+            if elem is obj:
+                self.elements.remove(obj)
+                self.updateSelfBbox()
+                return True
+
+        for elem in self.elements:
+            if isinstance(elem, (SprintComponent, SprintGroup)):
+                if elem.remove(obj):
+                    self.updateSelfBbox()
+                    return True
+
+        return False
+
     #更新元件所占的外框
     def updateSelfBbox(self):
         for elem in self.elements:
@@ -56,6 +72,26 @@ class SprintTextIO(SprintElement):
         if elem.yMax > self.yMax:
             self.yMax = elem.yMax
 
+    #获取所有焊盘
+    #padType: 'PAD'/'SMDPAD'/none
+    def getPads(self, padType: str=None):
+        if not padType:
+            return [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
+        else:
+            return [elem for elem in self.baseDrawElements() if (isinstance(elem, SprintPad) and (elem.padType == padType))]
+
+    #获取所有导电的走线
+    def getConductiveTracks(self, layerIdx: int=None):
+        layers = (LAYER_C1, LAYER_C2) if layerIdx is None else (layerIdx,)
+        return [elem for elem in self.baseDrawElements() 
+            if (isinstance(elem, SprintTrack) and (elem.layerIdx in layers))]
+
+    #获取所有导电的多边形
+    def getConductivePolygons(self, layerIdx: int=None):
+        layers = (LAYER_C1, LAYER_C2) if layerIdx is None else (layerIdx,)
+        return [elem for elem in self.baseDrawElements() 
+            if (isinstance(elem, SprintPolygon) and (elem.layerIdx in layers))]
+            
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):
         elems = []
@@ -103,7 +139,7 @@ class SprintTextIO(SprintElement):
 
     #将所有焊盘分类，同样形状的存入一个列表，字典的键为焊盘形状的名字
     def categorizePads(self):
-        pads = [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
+        pads = self.getPads()
         padDict = {}
         for pad in pads:
             name = pad.generateDsnName()

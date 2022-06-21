@@ -29,8 +29,16 @@ class SprintTrack(SprintElement):
             self.updateBbox(x, y)
 
     #增加一个点
-    def addPoint(self, x: float, y: float):
+    #如果y=None，则x为一个点定义(x,y)
+    def addPoint(self, x: float, y: float=None):
+        if (y is None):
+            x, y = x
         self.points.append((x, y))
+
+    #添加列表中所有点
+    def addAllPoints(self, ptList: list):
+        for pt in ptList:
+            self.addPoint(pt)
 
     def __str__(self):
         if (not self.isValid()):

@@ -4,7 +4,7 @@
 焊盘定义
 Author: cdhigh <https://github.com/cdhigh>
 """
-from comm_utils import euclideanDistance
+from comm_utils import pointDistance
 from .sprint_element import *
 
 #Pad的形状
@@ -184,7 +184,24 @@ class SprintPad(SprintElement):
         self.updateSelfBbox()
     
     #判断一个点是否在本焊盘的范围内，用最简化的算法，到中心的距离小于最小外围尺寸
-    def enclose(self, x: float, y: float):
-        dist = euclideanDistance(x, y, self.pos[0], self.pos[1])
+    #如果y=None，则x为一个点定义(x,y)
+    def enclose(self, x, y: float=None):
+        if (y is None):
+            x, y = x
+
+        dist = pointDistance(x, y, self.pos[0], self.pos[1])
         size = (self.size / 2) if (self.padType == 'PAD') else (min(self.sizeX, self.sizeY) / 2)
         return True if (dist < size) else False
+
+    #计算焊盘的面积
+    def area(self):
+        padType = self.padType
+        padForm = self.form
+        if (padType == 'SMDPAD'):
+            return self.sizeX * self.sizeY #矩形面积
+        elif (padForm in (PAD_FORM_ROUND, PAD_FORM_OCTAGON)):
+            return 3.14159 * (self.size / 2) * (self.size / 2) #圆面积
+        elif (padForm == PAD_FORM_SQUARE):
+            return self.size * self.size #正方形面积
+        else: #其他的都当作矩形
+            return self.size * self.size * 2

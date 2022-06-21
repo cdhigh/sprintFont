@@ -6,7 +6,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import math
 from .sprint_element import *
-from comm_utils import euclideanDistance, svgArcToCenterParam, radiansToDegrees
+from comm_utils import pointDistance, svgArcToCenterParam, radiansToDegrees
 
 #里面的长度单位都是mm
 class SprintCircle(SprintElement):
@@ -34,14 +34,14 @@ class SprintCircle(SprintElement):
     #Kicad没有直接指定半径，而是指定处于圆弧上的一个点来定义半径
     #注意调用此函数前请先保证设置了圆心坐标
     def setRadiusByArcPoint(self, x: float, y: float):
-        self.radius = euclideanDistance(self.center[0], self.center[1], x, y)
+        self.radius = pointDistance(self.center[0], self.center[1], x, y)
         
     #通过圆心，起点，和角度来设定一段圆弧
     #这个是Kicad的规则，圆弧角度为从起点开始顺时针旋转为正，而Sprint-Layout逆时针旋转为正
     #如果是绝对角度，都是3点钟方向为0度
     def setArcByCenterStartAngle(self, cX: float, cY: float, sX: float, sY: float, angle: float):
         self.center = (cX, cY)
-        self.radius = euclideanDistance(cX, cY, sX, sY)
+        self.radius = pointDistance(cX, cY, sX, sY)
         start = round(math.degrees(math.atan2(cY - sY, sX - cX))) #弧度转角度
         stop = start - angle #逆时针计数
         self.start = min(start, stop)

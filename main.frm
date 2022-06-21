@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5385
+   ClientHeight    =   5430
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   9360
@@ -19,14 +19,125 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5385
+   ScaleHeight     =   5430
    ScaleWidth      =   9360
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab5 
+      Caption         =   "Teardrops"
+      Height          =   4695
+      Left            =   3840
+      TabIndex        =   61
+      Top             =   5760
+      Width           =   8895
+      Begin VB.PictureBox picTeardrops 
+         BorderStyle     =   0  'None
+         Height          =   2415
+         Left            =   4440
+         ScaleHeight     =   2415
+         ScaleWidth      =   3975
+         TabIndex        =   73
+         Top             =   960
+         Width           =   3975
+      End
+      Begin VB.CheckBox chkIncludeSmdPads 
+         Caption         =   "Include SMD pads"
+         Height          =   375
+         Left            =   1080
+         TabIndex        =   72
+         Tag             =   "p@textvariable"
+         Top             =   3000
+         Width           =   2775
+      End
+      Begin VB.CommandButton cmdRemoveTeardrops 
+         Caption         =   "Remove"
+         Height          =   450
+         Left            =   2760
+         TabIndex        =   70
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.ComboBox cmbhPercent 
+         Height          =   420
+         Left            =   2760
+         TabIndex        =   66
+         Text            =   "cmbhPercent"
+         Top             =   1080
+         Width           =   1215
+      End
+      Begin VB.CommandButton cmdCancelTeardrops 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   5160
+         TabIndex        =   65
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.CommandButton cmdAddTeardrops 
+         Caption         =   "Add"
+         Height          =   450
+         Left            =   360
+         TabIndex        =   64
+         Top             =   3840
+         Width           =   1815
+      End
+      Begin VB.ComboBox cmbTeardropSegs 
+         Height          =   420
+         Left            =   2760
+         TabIndex        =   63
+         Text            =   "cmbSegs"
+         Top             =   2280
+         Width           =   1215
+      End
+      Begin VB.ComboBox cmbvPercent 
+         Height          =   420
+         Left            =   2760
+         TabIndex        =   62
+         Text            =   "cmbvPercent"
+         Top             =   1680
+         Width           =   1215
+      End
+      Begin VB.Label lblTeardropsTips 
+         Alignment       =   2  'Center
+         Caption         =   "teardrops_features_tips"
+         Height          =   495
+         Left            =   240
+         TabIndex        =   71
+         Top             =   360
+         Width           =   8415
+      End
+      Begin VB.Label lblhPercent 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Horizontal percent"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   69
+         Top             =   1080
+         Width           =   2295
+      End
+      Begin VB.Label lblTeardropSegs 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Number of segments"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   68
+         Top             =   2280
+         Width           =   2295
+      End
+      Begin VB.Label lblvPercent 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Vertical percent"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   67
+         Top             =   1680
+         Width           =   2295
+      End
+   End
    Begin VB.Frame tabStrip__Tab4 
       Caption         =   "AutoRouter"
       Height          =   4695
-      Left            =   3000
+      Left            =   2760
       TabIndex        =   58
       Top             =   5760
       Width           =   8895
@@ -438,7 +549,7 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5040
+      Top             =   5085
       Width           =   9360
       _ExtentX        =   16510
       _ExtentY        =   609

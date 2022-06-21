@@ -146,6 +146,23 @@ class SprintComponent(SprintElement):
         for elem in elemList:
             self.add(elem)
 
+    #删除某一个对象，成功返回True
+    def remove(self, obj):
+        from .sprint_group import SprintGroup
+        for elem in self.elements:
+            if elem is obj:
+                self.elements.remove(obj)
+                self.updateSelfBbox()
+                return True
+                
+        for elem in self.elements:
+            if isinstance(elem, (SprintComponent, SprintGroup)):
+                if elem.remove(obj):
+                    self.updateSelfBbox()
+                    return True
+                    
+        return False
+
     #根据绘图元素，更新元件自己的外框
     def updateBbox(self, elem):
         if elem.xMin < self.xMin:

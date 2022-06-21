@@ -37,7 +37,12 @@ def degreesToRadians(angle):
     return math.pi / 180 * angle
 
 #计算二维空间两点之间的距离
-def euclideanDistance(x1: float, y1: float, x2: float, y2: float):
+#如果仅传入两个参数，则使用tuple(x,y)表示一个点
+def pointDistance(x1, y1, x2: float=None, y2: float=None):
+    if (x2 is None) and (y2 is None):
+        pt2 = y1
+        x1, y1 = x1
+        x2, y2 = pt2
     return math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
 
 #已知两点和半径，求圆心  [已废弃，使用svgArcToCenterParam()代替]
@@ -48,7 +53,7 @@ def euclideanDistance(x1: float, y1: float, x2: float, y2: float):
 #dirCC: 方向，1-顺时针，0-逆时针
 #返回：(cx, cy)
 def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radius: float, bigArc: bool, dirCC: bool):
-    lineLen = euclideanDistance(x1, y1, x2, y2)
+    lineLen = pointDistance(x1, y1, x2, y2)
     x3 = (x1 + x2) / 2
     y3 = (y1 + y2) / 2
 
@@ -253,8 +258,20 @@ def ComputePolygonArea(points: list):
         if pointNum < 3: #至少需要三个点
             return 0.0
 
-    s = points[0][1] * (points[-1][0] - points[1][0])
-    for idx in range(pointNum):
-        s += points[idx][1] * (points[idx - 1][0] - points[(idx + 1) % pointNum][0])
-    return abs(s / 2.0)
+    #保证所有点都是正数
+    minValue = points[0][0]
+    for x, y in points:
+        if (x < minValue):
+            minValue = x
+        if (y < minValue):
+            minValue = y
 
+    if (minValue < 0):
+        points = [(x - minValue, y - minValue) for (x, y) in points]
+
+    area = points[0][1] * (points[-1][0] - points[1][0])
+    for idx in range(pointNum):
+        area += points[idx][1] * (points[idx - 1][0] - points[(idx + 1) % pointNum][0])
+    return abs(area / 2.0)
+
+#print(ComputePolygonArea([(-10, -10), (10, -10), (10, 10), (-10, 10),]))

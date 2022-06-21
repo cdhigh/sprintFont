@@ -38,6 +38,23 @@ class SprintGroup(SprintElement):
         for elem in elemList:
             self.add(elem)
 
+    #删除某一个对象，成功返回True
+    def remove(self, obj):
+        from .sprint_component import SprintComponent
+        for elem in self.elements:
+            if elem is obj:
+                self.elements.remove(obj)
+                self.updateSelfBbox()
+                return True
+
+        for elem in self.elements:
+            if isinstance(elem, (SprintComponent, SprintGroup)):
+                if elem.remove(obj):
+                    self.updateSelfBbox()
+                    return True
+                    
+        return False
+
     #更新组合所占的外框
     def updateSelfBbox(self):
         for elem in self.elements:
