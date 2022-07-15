@@ -5,6 +5,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
+from vector2d import Vector2d
 
 #字符串转整数，出错则返回defaultValue
 def str_to_int(txt: str, defaultValue: int=0):
@@ -45,6 +46,75 @@ def pointDistance(x1, y1, x2: float=None, y2: float=None):
         x2, y2 = pt2
     return math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
 
+#计算一条线段上离起点pt1一定距离d的点坐标
+def calPointFromLineWithDistance(pt1: tuple, pt2: tuple, d: float):
+    startPt = Vector2d(pt1[0], pt1[1])
+    endPt = Vector2d(pt2[0], pt2[1])
+    newVect = endPt - startPt
+    t = d / newVect.Mod()
+    ret = startPt + newVect.Scalar(t)
+    return round(ret.x, 4), round(ret.y, 4)
+
+#获取两根直线的交点
+#https://blog.csdn.net/yangtrees/article/details/7965983
+#pt1-pt2和pt3-pt4为两个直线上任意两点
+def getCrossPoint(pt1: tuple, pt2: tuple, pt3: tuple, pt4: tuple):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    x3, y3 = pt3
+    x4, y4 = pt4
+    
+    k1 = ((y2 - y1) / (x2 - x1)) if (x2 != x1) else None #斜率None表示垂直线
+    b1 = y1 - x1 * k1 if (x2 != x1) else 0
+    k2 = ((y4 - y3) / (x4 - x3)) if (x4 != x3) else None
+    b2 = y3 - x3 * k2 if (x4 != x3) else 0
+
+    #如果两根直线的斜率相等，说明没有交点
+    if (k1 == k2):
+        return None
+
+    if (k1 is None):
+        x = x1
+        y = k2 * x + b2  #如果k1为垂直线
+    elif (k2 == None):
+        x = x3
+        y = (k1 * x + b1)
+    else:
+        x = (b2 - b1) / (k1 - k2)
+        y = (k1 * x + b1)
+
+    return (round(x, 4), round(y, 4))
+
+#判断三个点的一个序列是顺时针还是逆时针
+#https://blog.csdn.net/Jamence/article/details/77608659
+#返回：0-顺时针，1-逆时针，其他值-共线
+def isPointListClockwise(pt1: tuple, pt2: tuple, pt3: tuple):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    x3, y3 = pt3
+    ans = (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1) #表示向量AB与AC的叉积的结果 
+    if (ans > 0):
+        return 1 #逆时针
+    elif (ans < 0):
+        return 0 #顺时针
+    else:
+        return 2 #共线
+
+#圆上三点求圆心和半径
+def calCenterByThreePoints(pt1: tuple, pt2: tuple, pt3: tuple):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    x3, y3 = pt3
+    a = 2 * (x2 - x1)
+    b = 2 * (y2 - y1)
+    c = x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1
+    d = 2 * (x3 - x2)
+    e = 2 * (y3 - y2)
+    f = x3 * x3 + y3 * y3 - x2 * x2 - y2 * y2
+    x = (b * f - e * c) / (b * d - e * a)
+    y = (d * c - a * f) / (b * d - e * a)
+    return (round(x, 4), round(y, 4))
+
 #已知两点和半径，求圆心  [已废弃，使用svgArcToCenterParam()代替]
 #x1/y1: 起点坐标
 #x2/y2: 终点坐标
@@ -82,6 +152,11 @@ def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radiu
             return (cx1, cy1) if (bigArc) else (cx2, cy2)
 
 
+#计算一个线段和X轴的角度
+def lineAngleToXaxis(pt1: tuple, pt2: tuple):
+    return math.degrees(math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]))
+
+
 #通过SVG语法的圆弧参数计算圆心/开始角度/结束角度
 #https://blog.csdn.net/cuixiping/article/details/7958298
 #输入：svg : [A | a] (rx ry x-axis-rotation large-arc-flag sweep-flag x y)+
@@ -98,47 +173,47 @@ def svgArcToCenterParam(x1, y1, rx, ry, phi, fA, fS, x2, y2):
     if ((rx == 0.0) or (ry == 0.0)): #非法参数
         raise Exception('rx and ry can not be 0')
 
-    s_phi = math.sin(phi)
-    c_phi = math.cos(phi)
-    hd_x = (x1 - x2) / 2.0 #half diff of x
-    hd_y = (y1 - y2) / 2.0 #half diff of y
-    hs_x = (x1 + x2) / 2.0 #half sum of x
-    hs_y = (y1 + y2) / 2.0 #half sum of y
+    s_phi = round(math.sin(phi), 4)
+    c_phi = round(math.cos(phi), 4)
+    hd_x = round((x1 - x2) / 2.0, 4) #half diff of x
+    hd_y = round((y1 - y2) / 2.0, 4) #half diff of y
+    hs_x = round((x1 + x2) / 2.0, 4) #half sum of x
+    hs_y = round((y1 + y2) / 2.0, 4) #half sum of y
 
     #F6.5.1
-    x1_ = c_phi * hd_x + s_phi * hd_y
-    y1_ = c_phi * hd_y - s_phi * hd_x
+    x1_ = round(c_phi * hd_x + s_phi * hd_y, 4)
+    y1_ = round(c_phi * hd_y - s_phi * hd_x, 4)
 
     #F.6.6 Correction of out-of-range radii
     #  Step 3: Ensure radii are large enough
-    _lambda = (x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry)
+    _lambda = round((x1_ * x1_) / (rx * rx) + (y1_ * y1_) / (ry * ry), 4)
     if (_lambda > 1):
-        rx = rx * math.sqrt(_lambda)
-        ry = ry * math.sqrt(_lambda)
+        rx = round(rx * math.sqrt(_lambda), 4)
+        ry = round(ry * math.sqrt(_lambda), 4)
 
-    rxry = rx * ry
-    rxy1_ = rx * y1_
-    ryx1_ = ry * x1_
-    sum_of_sq = rxy1_ * rxy1_ + ryx1_ * ryx1_  #sum of square
+    rxry = round(rx * ry, 4)
+    rxy1_ = round(rx * y1_, 4)
+    ryx1_ = round(ry * x1_, 4)
+    sum_of_sq = round(rxy1_ * rxy1_ + ryx1_ * ryx1_, 4)  #sum of square
     if (sum_of_sq == 0):
         raise Exception('start point can not be same as end point')
     
-    coe = math.sqrt(abs((rxry * rxry - sum_of_sq) / sum_of_sq))
+    coe = round(math.sqrt(abs((rxry * rxry - sum_of_sq) / sum_of_sq)), 4)
     if (fA == fS):
         coe = -coe
 
     #F6.5.2
-    cx_ = coe * rxy1_ / ry
-    cy_ = -coe * ryx1_ / rx
+    cx_ = round(coe * rxy1_ / ry, 4)
+    cy_ = round(-coe * ryx1_ / rx, 4)
 
     #F6.5.3
-    cx = c_phi * cx_ - s_phi * cy_ + hs_x
-    cy = s_phi * cx_ + c_phi * cy_ + hs_y
+    cx = round(c_phi * cx_ - s_phi * cy_ + hs_x, 4)
+    cy = round(s_phi * cx_ + c_phi * cy_ + hs_y, 4)
 
-    xcr1 = (x1_ - cx_) / rx
-    xcr2 = (x1_ + cx_) / rx
-    ycr1 = (y1_ - cy_) / ry
-    ycr2 = (y1_ + cy_) / ry
+    xcr1 = round((x1_ - cx_) / rx, 4)
+    xcr2 = round((x1_ + cx_) / rx, 4)
+    ycr1 = round((y1_ - cy_) / ry, 4)
+    ycr2 = round((y1_ + cy_) / ry, 4)
 
     #F6.5.5
     startAngle = radian(1.0, 0.0, xcr1, ycr1)
@@ -202,7 +277,6 @@ def radian(ux, uy, vx, vy):
 #计算圆上点的坐标
 #cx/cy: 圆心坐标
 #radius: 半径
-#cutNum: 需要多少等分
 #angle: X向右为0度，逆时针为正
 def pointAtCircle(cx: float, cy: float, radius: float, angle: float):
     x1 = round(cx + radius * math.cos(degreesToRadians(-angle)), 4)

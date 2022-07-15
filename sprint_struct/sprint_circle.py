@@ -66,6 +66,10 @@ class SprintCircle(SprintElement):
         self.center = (ret['cx'], ret['cy'])
         self.start = ret['startAngle']
         self.stop = ret['endAngle']
+        if self.start == 360:
+            self.start = 0
+        if self.stop == 360:
+            self.stop = 0
         
     def __str__(self):
         if self.radius <= 0:

@@ -39,6 +39,8 @@ __VERSION__ = "1.4"
 __DATE__ = "20220621"
 __AUTHOR__ = "cdhigh"
 
+DEBUG_IN_FILE = r'd:\1.txt'
+
 #特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
 #这里先直接使用系统字体，暂不考虑用户字体
 WIN_DIR = os.environ['WINDIR']
@@ -674,7 +676,6 @@ class Application(Application_ui):
             self.cmdOkFootprint.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
             self.cmdImportSes.configure(state='disabled')
-            #TODO
             self.cmdExportDsn.configure(state='disabled')
             self.cmdAddTeardrops.configure(state='disabled')
             self.cmdRemoveTeardrops.configure(state='disabled')
@@ -1680,8 +1681,19 @@ class Application(Application_ui):
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
-        self.addTeardrops()
-        return #TODO
+        from rounded_track import createArcTracksInTextIo
+        textIo = self.createTextIoFromInFile()
+        if not textIo:
+            return
+
+        createArcTracksInTextIo(textIo, '3Points', 5)
+        with open(r'd:/1_out.txt', 'w', encoding='utf-8') as f:
+            f.write(str(textIo))
+        showinfo('success', 'successfully')
+        return
+
+        #self.addTeardrops()
+        #return #TODO
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -1831,8 +1843,11 @@ class Application(Application_ui):
         from sprint_struct.sprint_textio_parser import SprintTextIoParser
 
         #TODO
-        inFile = self.inFileName if self.inFileName else r'd:\1.txt'
-        #inFile = self.inFileName
+        if DEBUG_IN_FILE and not self.inFileName:
+            inFile = DEBUG_IN_FILE
+        else:
+            inFile = self.inFileName
+        
         inFileSize = 0
         try:
             inFileSize = os.path.getsize(inFile)
