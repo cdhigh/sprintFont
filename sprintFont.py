@@ -35,11 +35,12 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.4"
+__VERSION__ = "1.5"
 __DATE__ = "20220621"
 __AUTHOR__ = "cdhigh"
 
-DEBUG_IN_FILE = r'd:\1.txt'
+#DEBUG_IN_FILE = r'd:\1.txt'
+DEBUG_IN_FILE = ""
 
 #特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
 #这里先直接使用系统字体，暂不考虑用户字体
@@ -122,9 +123,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (624 / 2)
-        y = (hs / 2) - (362 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (624,362,x,y))
+        x = (ws / 2) - (625 / 2)
+        y = (hs / 2) - (360 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,360,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -165,7 +166,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.95, relheight=0.865)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.869)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -572,7 +573,87 @@ class Application_ui(Frame):
         self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
         self.lblvPercent.text = lambda : self.lblvPercentVar.get()
         self.lblvPercent.place(relx=0.027, rely=0.358, relwidth=0.258, relheight=0.08)
-        self.tabStrip.add(self.tabStrip__Tab5, text='Teardrops')
+        self.tabStrip.add(self.tabStrip__Tab5, text='Teardrop')
+
+        self.tabStrip__Tab6 = Frame(self.tabStrip)
+        self.optRoundedTrackBezierTextVar = StringVar(value='Bezier')
+        self.tabStrip__Tab6RadioVar = StringVar()
+        self.style.configure('ToptRoundedTrackBezier.TRadiobutton', font=('微软雅黑',10))
+        self.optRoundedTrackBezier = Radiobutton(self.tabStrip__Tab6, text='Bezier', value='optRoundedTrackBezier', textvariable=self.optRoundedTrackBezierTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrackBezier.TRadiobutton')
+        self.optRoundedTrackBezier.setText = lambda x: self.optRoundedTrackBezierTextVar.set(x)
+        self.optRoundedTrackBezier.text = lambda : self.optRoundedTrackBezierTextVar.get()
+        self.optRoundedTrackBezier.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackBezier' if x else '')
+        self.optRoundedTrackBezier.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackBezier' else 0
+        self.optRoundedTrackBezier.place(relx=0.054, rely=0.46, relwidth=0.285, relheight=0.08)
+        self.optRoundedTrack3PointsTextVar = StringVar(value='Three points')
+        self.style.configure('ToptRoundedTrack3Points.TRadiobutton', font=('微软雅黑',10))
+        self.optRoundedTrack3Points = Radiobutton(self.tabStrip__Tab6, text='Three points', value='optRoundedTrack3Points', textvariable=self.optRoundedTrack3PointsTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrack3Points.TRadiobutton')
+        self.optRoundedTrack3Points.setText = lambda x: self.optRoundedTrack3PointsTextVar.set(x)
+        self.optRoundedTrack3Points.text = lambda : self.optRoundedTrack3PointsTextVar.get()
+        self.optRoundedTrack3Points.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrack3Points' if x else '')
+        self.optRoundedTrack3Points.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrack3Points' else 0
+        self.optRoundedTrack3Points.place(relx=0.054, rely=0.332, relwidth=0.245, relheight=0.105)
+        self.optRoundedTrackTangentTextVar = StringVar(value='Tangent')
+        self.style.configure('ToptRoundedTrackTangent.TRadiobutton', font=('微软雅黑',10))
+        self.optRoundedTrackTangent = Radiobutton(self.tabStrip__Tab6, text='Tangent', value='optRoundedTrackTangent', textvariable=self.optRoundedTrackTangentTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrackTangent.TRadiobutton')
+        self.optRoundedTrackTangent.setText = lambda x: self.optRoundedTrackTangentTextVar.set(x)
+        self.optRoundedTrackTangent.text = lambda : self.optRoundedTrackTangentTextVar.get()
+        self.optRoundedTrackTangent.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackTangent' if x else '')
+        self.optRoundedTrackTangent.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackTangent' else 0
+        self.optRoundedTrackTangent.setValue(1)
+        self.optRoundedTrackTangent.place(relx=0.054, rely=0.23, relwidth=0.164, relheight=0.08)
+        self.cmbRoundedTrackSegsList = ['',]
+        self.cmbRoundedTrackSegsVar = StringVar(value='')
+        self.cmbRoundedTrackSegs = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSegsVar, values=self.cmbRoundedTrackSegsList, font=('微软雅黑',10))
+        self.cmbRoundedTrackSegs.setText = lambda x: self.cmbRoundedTrackSegsVar.set(x)
+        self.cmbRoundedTrackSegs.text = lambda : self.cmbRoundedTrackSegsVar.get()
+        self.cmbRoundedTrackSegs.place(relx=0.351, rely=0.613, relwidth=0.11)
+        self.cmdRoundedTrackConvertVar = StringVar(value='Convert')
+        self.style.configure('TcmdRoundedTrackConvert.TButton', font=('微软雅黑',10))
+        self.cmdRoundedTrackConvert = Button(self.tabStrip__Tab6, text='Convert', textvariable=self.cmdRoundedTrackConvertVar, command=self.cmdRoundedTrackConvert_Cmd, style='TcmdRoundedTrackConvert.TButton')
+        self.cmdRoundedTrackConvert.setText = lambda x: self.cmdRoundedTrackConvertVar.set(x)
+        self.cmdRoundedTrackConvert.text = lambda : self.cmdRoundedTrackConvertVar.get()
+        self.cmdRoundedTrackConvert.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdRoundedTrackCancelVar = StringVar(value='Cancel')
+        self.style.configure('TcmdRoundedTrackCancel.TButton', font=('微软雅黑',10))
+        self.cmdRoundedTrackCancel = Button(self.tabStrip__Tab6, text='Cancel', textvariable=self.cmdRoundedTrackCancelVar, command=self.cmdRoundedTrackCancel_Cmd, style='TcmdRoundedTrackCancel.TButton')
+        self.cmdRoundedTrackCancel.setText = lambda x: self.cmdRoundedTrackCancelVar.set(x)
+        self.cmdRoundedTrackCancel.text = lambda : self.cmdRoundedTrackCancelVar.get()
+        self.cmdRoundedTrackCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmbRoundedTrackDistanceList = ['',]
+        self.cmbRoundedTrackDistanceVar = StringVar(value='')
+        self.cmbRoundedTrackDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackDistanceVar, values=self.cmbRoundedTrackDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackDistance.setText = lambda x: self.cmbRoundedTrackDistanceVar.set(x)
+        self.cmbRoundedTrackDistance.text = lambda : self.cmbRoundedTrackDistanceVar.get()
+        self.cmbRoundedTrackDistance.place(relx=0.351, rely=0.23, relwidth=0.11)
+        self.picRoundedTrack = Canvas(self.tabStrip__Tab6, takefocus=1, highlightthickness=0)
+        self.picRoundedTrack.place(relx=0.526, rely=0.204, relwidth=0.447, relheight=0.514)
+        self.Label1Var = StringVar(value='d(mm)')
+        self.style.configure('TLabel1.TLabel', anchor='e', font=('微软雅黑',10))
+        self.Label1 = Label(self.tabStrip__Tab6, text='d(mm)', textvariable=self.Label1Var, style='TLabel1.TLabel')
+        self.Label1.setText = lambda x: self.Label1Var.set(x)
+        self.Label1.text = lambda : self.Label1Var.get()
+        self.Label1.place(relx=0.243, rely=0.23, relwidth=0.096, relheight=0.08)
+        self.lblRoundedTrackSegsVar = StringVar(value='Number of segments')
+        self.style.configure('TlblRoundedTrackSegs.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='Number of segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
+        self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
+        self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
+        self.lblRoundedTrackSegs.place(relx=0.081, rely=0.613, relwidth=0.258, relheight=0.08)
+        self.lblRoundedTrackTipsVar = StringVar(value='rounded_track_features_tips')
+        self.style.configure('TlblRoundedTrackTips.TLabel', anchor='center', font=('微软雅黑',10))
+        self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='rounded_track_features_tips', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
+        self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
+        self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
+        self.lblRoundedTrackTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
+        self.lblSaveAsRoundedTrackVar = StringVar(value='Save as')
+        self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.lblSaveAsRoundedTrack = Label(self.tabStrip__Tab6, text='Save as', textvariable=self.lblSaveAsRoundedTrackVar, style='TlblSaveAsRoundedTrack.TLabel')
+        self.lblSaveAsRoundedTrack.setText = lambda x: self.lblSaveAsRoundedTrackVar.set(x)
+        self.lblSaveAsRoundedTrack.text = lambda : self.lblSaveAsRoundedTrackVar.get()
+        self.lblSaveAsRoundedTrack.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsRoundedTrack.bind('<Button-1>', self.lblSaveAsRoundedTrack_Button_1)
+        self.tabStrip.add(self.tabStrip__Tab6, text='ArcTrack')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
@@ -607,6 +688,7 @@ class Application(Application_ui):
         #先暂时屏蔽SMD焊盘的选项
         self.chkIncludeSmdPads.configure(state='disabled')
         self.teardropImage = None
+        self.roundedTrackImage = None
 
         #初始化多语种支持
         self.sysLanguge = locale.getdefaultlocale()[0]
@@ -677,8 +759,11 @@ class Application(Application_ui):
             self.cmdOkSvg.configure(state='disabled')
             self.cmdImportSes.configure(state='disabled')
             self.cmdExportDsn.configure(state='disabled')
+            self.lblSaveAsAutoRouter.configure(state='disabled')
             self.cmdAddTeardrops.configure(state='disabled')
             self.cmdRemoveTeardrops.configure(state='disabled')
+            self.cmdRoundedTrackConvert.configure(state='disabled')
+            self.lblSaveAsRoundedTrack.configure(state='disabled')
             
         #显示输入文件名或显示单独执行模式字符串
         self.currentStatusBarInfoIdx = STABAR_INFO_INPUT_FILE - 1 #让第一次显示时恢复0
@@ -707,6 +792,13 @@ class Application(Application_ui):
                     self.teardropImage = PhotoImage(data=teardropImageData)
                     self.picTeardrops.create_image(0, 0, image=self.teardropImage, anchor=NW)
                 self.cmbhPercent.focus_set()
+            elif (tabNo == 5):
+                if not self.roundedTrackImage:
+                    from rounded_track_image import roundedTrackImageData, roundedTrackImageDataCn
+                    imgData = roundedTrackImageDataCn if I18n.getLanguage().startswith('zh') else roundedTrackImageData
+                    self.roundedTrackImage = PhotoImage(data=imgData)
+                    self.picRoundedTrack.create_image(0, 0, image=self.roundedTrackImage, anchor=NW)
+                self.cmbRoundedTrackDistance.focus_set()
         except Exception as e:
             print(str(e))
             #pass
@@ -770,6 +862,7 @@ class Application(Application_ui):
         self.tabStrip.tab(2, text=_("TabSVG"))
         self.tabStrip.tab(3, text=_("TabAutoRouter"))
         self.tabStrip.tab(4, text=_("TabTeardrops"))
+        self.tabStrip.tab(5, text=_("TabRoundedTrack"))
         self.lblFootprintTips.setText(_("Footprint_features_tips"))
         self.chkImportFootprintText.configure(text=_("Import text"))
         self.lblSvgTips.setText(_("svg_features_tips"))
@@ -793,6 +886,14 @@ class Application(Application_ui):
         self.cmdAddTeardrops.setText(_("Add"))
         self.cmdRemoveTeardrops.setText(_("Remove"))
         self.cmdCancelTeardrops.setText(_("Cancel"))
+        self.lblRoundedTrackTips.setText(_("rounded_track_features_tips"))
+        self.optRoundedTrackTangent.setText(_("Tangent arc"))
+        self.optRoundedTrack3Points.setText(_("Three points arc"))
+        self.optRoundedTrackBezier.setText(_("Bezier curve"))
+        self.lblRoundedTrackSegs.setText(_("Number of segments"))
+        self.cmdRoundedTrackConvert.setText(_("Convert"))
+        self.cmdRoundedTrackCancel.setText(_("Cancel"))
+        self.lblSaveAsRoundedTrack.setText(_("Save as"))
 
     #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
     #此函数在程序启动后5s才会得到执行
@@ -881,6 +982,14 @@ class Application(Application_ui):
         self.cmbTeardropSegsList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.cmbTeardropSegs.configure(values=self.cmbTeardropSegsList)
         self.cmbTeardropSegs.current(9) #默认10个线段
+
+        #弧形走线
+        self.cmbRoundedTrackDistanceList = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15]
+        self.cmbRoundedTrackDistance.configure(values=self.cmbRoundedTrackDistanceList)
+        self.cmbRoundedTrackDistance.current(1) #默认3mm
+        self.cmbRoundedTrackSegsList = [3, 4, 5, 6, 7, 8, 9, 10]
+        self.cmbRoundedTrackSegs.configure(values=self.cmbRoundedTrackSegsList)
+        self.cmbRoundedTrackSegs.current(7) #默认10个线段
 
     #更新字体列表组合框，可能直接调用，也可能会使用after延时调用
     def populateFontCombox(self, fontMap: dict=None):
@@ -997,8 +1106,25 @@ class Application(Application_ui):
             includeSmdPads = str_to_int(cfg.get('tdIncludeSmdPads', '0'))
             self.cmbhPercent.setText(str(hPercent))
             self.cmbvPercent.setText(str(vPercent))
-            self.cmbTeardropSegs.setText(str(segs))
             self.chkIncludeSmdPads.setValue(includeSmdPads)
+            if segs:
+                self.cmbTeardropSegs.setText(str(segs))
+
+            #弧形走线
+            method = cfg.get('roundedTrackMethod', '')
+            if (method == '3Points'):
+                self.optRoundedTrack3Points.setValue(1)
+            elif (method == 'bezier'):
+                self.optRoundedTrackBezier.setValue(1)
+            else:
+                self.optRoundedTrackTangent.setValue(1)
+
+            distance = str_to_int(cfg.get('roundedTrackDistance', ''))
+            if distance > 0:
+                self.cmbRoundedTrackDistance.setText(str(distance))
+            segs = str_to_int(cfg.get('roundedTrackSegs', '10'))
+            if segs:
+                self.cmbRoundedTrackSegs.setText(segs)
 
     #保存当前配置数据
     def saveConfig(self):
@@ -1021,6 +1147,8 @@ class Application(Application_ui):
             'smdSmdClearance': str(self.pcbRule.smdSmdClearance),
             'teardropHPercent': self.cmbhPercent.text(), 'teardropVPercent': self.cmbvPercent.text(),
             'teardropSegs': self.cmbTeardropSegs.text(), 'tdIncludeSmdPads': str(self.chkIncludeSmdPads.value()),
+            'roundedTrackMethod': self.roundedTrackMethod(), 'roundedTrackDistance': self.cmbRoundedTrackDistance.text(),
+            'roundedTrackSegs': self.cmbRoundedTrackSegs.text(),
         }
         
         if (cfg != self.cfg):  #有变化再写配置文件
@@ -1063,27 +1191,32 @@ class Application(Application_ui):
     #取消退出
     def cmdCancel_Cmd(self, event=None):
         self.destroy()
-        sys.exit(0)
+        sys.exit(RETURN_CODE_NONE)
 
     #取消退出
     def cmdCancelFootprint_Cmd(self, event=None):
         self.destroy()
-        sys.exit(0)
+        sys.exit(RETURN_CODE_NONE)
 
     #取消退出
     def cmdCancelSvg_Cmd(self, event=None):
         self.destroy()
-        sys.exit(0)
+        sys.exit(RETURN_CODE_NONE)
 
     #取消退出
     def cmdCancelAutoRouter_Cmd(self, event=None):
         self.destroy()
-        sys.exit(0)
+        sys.exit(RETURN_CODE_NONE)
 
     #取消退出
     def cmdCancelTeardrops_Cmd(self, event=None):
         self.destroy()
-        sys.exit(0)
+        sys.exit(RETURN_CODE_NONE)
+
+    #取消退出
+    def cmdRoundedTrackCancel_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(RETURN_CODE_NONE)
 
     #保存为单独一个文本文件
     def lblSaveAs_Button_1(self, event):
@@ -1139,11 +1272,7 @@ class Application(Application_ui):
             showwarning(_('info'), textIo)
             return
         else: #写输出文件
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(str(textIo))
-            except:
-                pass
+            self.saveOutputFile(str(textIo))
             
         self.destroy()
         sys.exit(RETURN_CODE_INSERT_STICKY)
@@ -1174,14 +1303,10 @@ class Application(Application_ui):
             else:
                 showwarning(_('info'), _('Failed to parse file content'))
         else:
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(retStr)
-            except:
-                pass
-
+            self.saveOutputFile(retStr)
+            
             self.destroy()
-            sys.exit(4)
+            sys.exit(RETURN_CODE_INSERT_STICKY)
     
     #转换SVG结果保存为单独一个文本文件
     def lblSaveAsSvg_Button_1(self, event):
@@ -1246,14 +1371,10 @@ class Application(Application_ui):
         if not retStr:
             showwarning(_('info'), _('Convert svg image failed'))
         else:
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(retStr)
-            except:
-                pass
-
+            self.saveOutputFile(retStr)
+            
             self.destroy()
-            sys.exit(4)
+            sys.exit(RETURN_CODE_INSERT_STICKY)
 
     #校验文件是否存在或是否合法，不合法则做出提示
     #fileName: 文件名
@@ -1271,6 +1392,14 @@ class Application(Application_ui):
             return False
         
         return True
+
+    #将字符串写到输出文件
+    def saveOutputFile(self, txt):
+        try:
+            with open(self.outFileName, 'w', encoding='utf-8') as f:
+                f.write(str(txt))
+        except:
+            pass
 
     #将字符串保存到文本文件
     def saveTextFile(self, txt: str):
@@ -1671,27 +1800,12 @@ class Application(Application_ui):
             showwarning(_("info"), ret)
             return False
         else:
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(str(ret))
-            except Exception as e:
-                showwarning(_("info"), str(e))
-                return False
+            self.saveOutputFile(str(ret))
+
         return True
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
-        from rounded_track import createArcTracksInTextIo
-        textIo = self.createTextIoFromInFile()
-        if not textIo:
-            return
-
-        createArcTracksInTextIo(textIo, '3Points', 5)
-        with open(r'd:/1_out.txt', 'w', encoding='utf-8') as f:
-            f.write(str(textIo))
-        showinfo('success', 'successfully')
-        return
-
         #self.addTeardrops()
         #return #TODO
         self.saveConfig()
@@ -1781,11 +1895,7 @@ class Application(Application_ui):
             showinfo(_("info"), _("Successfully added [{}] teardrop pads").format(len(polys)))
 
             #写输出文件
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(str(newTextIo))
-            except:
-                pass
+            self.saveOutputFile(str(newTextIo))
         else:
             showinfo(_("info"), _("No teardrop pads are generated"))
             return
@@ -1827,12 +1937,8 @@ class Application(Application_ui):
             showinfo(_("info"), _("Successfully removed [{}] teardrop pads").format(len(oldTeardrops)))
 
             #写输出文件
-            try:
-                with open(self.outFileName, 'w', encoding='utf-8') as f:
-                    f.write(str(textIo))
-            except:
-                pass
-
+            self.saveOutputFile(str(textIo))
+            
             self.destroy()
             sys.exit(RETURN_CODE_REPLACE_ALL)
         else:
@@ -1870,6 +1976,44 @@ class Application(Application_ui):
             showwarning(_("info"), _("Failed to parse input file"))
         
         return textIo
+
+    #获取当前生成弧形走线方法的函数
+    def roundedTrackMethod(self):
+        method = 'tangent'
+        if (self.optRoundedTrack3Points.value()):
+            method = '3Points'
+        elif (self.optRoundedTrackBezier.value()):
+            method = 'bezier'
+        return method
+
+    #转换走线为弧形走线
+    def cmdRoundedTrackConvert_Cmd(self, event=None):
+        textIo = self.convertRounedTrack()
+        if textIo:
+            self.saveOutputFile(str(textIo))
+            self.destroy()
+            sys.exit(RETURN_CODE_REPLACE_ALL)
+
+    #将弧形走线的转换结果保存为文本文件
+    def lblSaveAsRoundedTrack_Button_1(self, event=None):
+        textIo = self.convertRounedTrack()
+        if textIo:
+            self.saveTextFile(str(textIo))
+
+    #转换弧形走线，返回textIo对象
+    def convertRounedTrack(self):
+        from sprint_struct.rounded_track import createArcTracksInTextIo
+        self.saveConfig()
+        textIo = self.createTextIoFromInFile()
+        if not textIo:
+            return None
+
+        ret = createArcTracksInTextIo(textIo, self.roundedTrackMethod(), str_to_int(self.cmbRoundedTrackDistance.text()))
+        if not ret:
+            showinfo(_("info"), _("No suitable track found"))
+            return None
+        else:
+            return textIo
 
 if __name__ == "__main__":
     top = Tk()

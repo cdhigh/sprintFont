@@ -16,25 +16,37 @@ from sprint_struct.sprint_textio import *
 #在两个线段的交点位置创建圆弧
 #textIo: SprintTextIo对象
 #method: 创建圆弧方法：
-#        'distance': 离交点一段距离创建和线段相切的圆弧
+#        'tangent': 离交点一段距离创建和线段相切的圆弧
 #        'bizier': 贝塞尔曲线绘制
 #        '3Points': 通过三点构造圆弧
 #distance: 离交点位置的距离
 #segNum: 平滑圆弧的线段数
+#如果有走线被转换为弧形走线，则返回True
 def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10):
+    hasTracksReplaced = False
     tracks = textIo.getConductiveTracks()
     pads = textIo.getPads()
     polys = textIo.getConductivePolygons()
 
     #内嵌函数，判断一个点是否在导电区域（焊盘或多边形）内
-    def isPointInsideConductiveArea(pt):
+    def isPointInsideConductiveArea(pt, layerIdx):
         for pad in pads:
-            if pad.enclose(pt):
+            if ((pad.layerIdx == layerIdx) and pad.enclose(pt)):
                 return True
         for poly in polys:
-            if poly.encircle(pt):
+            if ((poly.layerIdx == layerIdx) and poly.encircle(pt)):
                 return True
         return False
+
+    #默认情况下线段长度小于2mm的不转换为弧形走线
+    if method != 'tangent':
+        distance = 2.0
+
+    if distance <= 1:
+        distance = 2
+
+    if segNum < 2:
+        segNum = 2
 
     for trackIdx, track in enumerate(tracks):
         oldPoints = track.points[:]
@@ -58,11 +70,11 @@ def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10
                 continue
             #如果第一个线段太短，则忽略之，并且往后再取一个点
             #中间点在导电区域内也跳过一个点
-            elif ((pointDistance(pt1, pt2) <= distance) or isPointInsideConductiveArea(pt2)):
+            elif ((pointDistance(pt1, pt2) <= distance) or isPointInsideConductiveArea(pt2, track.layerIdx)):
                 idx += 1
                 continue
             
-            if (method == 'distance'):
+            if (method == 'tangent'):
                 ptList = arcByTangentLine(pt1, pt2, pt3, distance, segNum)
                 #textIo.add(ptList)
                 #return
@@ -85,6 +97,9 @@ def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10
             track.points.clear()
             track.addAllPoints(newPoints)
             track.updateSelfBbox()
+            hasTracksReplaced = True
+
+    return hasTracksReplaced
 
 #通过两条相交线的切线构造圆弧
 #pt1, pt2, pt3: pt1-pt2线段和pt2-pt3线段相交于pt2点
@@ -140,7 +155,8 @@ def arcByTangentLine(pt1: tuple, pt2: tuple, pt3: tuple, distance: float, segNum
     center = getCrossPoint(intersectPt1, line1VertPt2, intersectPt2, line2VertPt2)
     if center is not None:
         radius = pointDistance(center, intersectPt1)
-        if radius > 80: #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
+
+        if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
             return None
 
         clockwise = isPointListClockwise(intersectPt1, pt2, intersectPt2)
@@ -201,7 +217,7 @@ def arcBy3Points(pt1: tuple, pt2: tuple, pt3: tuple, segNum: int):
 
     center = calCenterByThreePoints(pt1, pt2, pt3)
     radius = pointDistance(pt1, center)
-    if radius > 80: #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
+    if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
         return None
 
     clockwise = isPointListClockwise(pt1, pt2, pt3)

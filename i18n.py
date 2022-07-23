@@ -60,11 +60,12 @@ class I18n:
     "Failed to parse file content": ("", "分析文件内容错误"),
     "Failed to parse content\nMaybe Id error or Internet disconnected?": ("", "分析内容错误：\n可能是ID错误或网络不通？"),
     "Input": ("", "输入"),
-    "TabFont":      ("       Font        ", "         字体        "),    
-    "TabFootprint": ("     Footprint     ", "         封装        "),
-    "TabSVG":       ("    SVG/Qrcode     ", "      SVG/二维码     "),
-    "TabAutoRouter":("    Autorouter     ", "      自动布线       "),
-    "TabTeardrops": ("    Teardrops      ", "      泪滴焊盘       "),
+    "TabFont":         ("     Font     ", "       字体      "),    
+    "TabFootprint":    ("   Footprint  ", "       封装      "),
+    "TabSVG":          ("  SVG/Qrcode  ", "    SVG/二维码   "),
+    "TabAutoRouter":   ("  Autorouter  ", "    自动布线     "),
+    "TabTeardrops":    ("  Teardrop    ", "    泪滴焊盘     "),
+    "TabRoundedTrack": (" RoundedTrack ", "    圆弧走线     "),
     "Import text": ("", "导入封装库中的文本"),
     "Kicad footprint": ("", "Kicad封装文件"),
     "easyEDA footprint": ("", "力创封装文件"),
@@ -153,6 +154,14 @@ class I18n:
     "Successfully added [{}] teardrop pads": ("", "成功添加 [{}] 个泪滴焊盘"),
     "Successfully removed [{}] teardrop pads": ("", "成功删除 [{}] 个泪滴焊盘"),
     "No teardrop pads found": ("", "没有找到泪滴焊盘"),
+    "rounded_track_features_tips": (
+        "Apply to all tracks when deselecting all, otherwise apply to selected tracks only",
+        "取消全部选择时应用到所有走线，否则仅应用到您选择的走线"),
+    "Tangent arc": ("", "切线圆弧"),
+    "Three points arc": ("", "三点圆弧"),
+    "Bezier curve": ("", "贝塞尔曲线"),
+    "Convert": ("", "转换"),
+    "No suitable track found": ("", "没有找到符合条件的走线"),
     }
 
     #这个属性是可以在程序执行过程中修改的
@@ -173,7 +182,13 @@ class I18n:
     @classmethod
     def setLanguage(cls, lang: str):
         idx = cls._getLangIndex(lang)
-        cls._langIndex = idx if (idx >= 0) else 0
+        cls._langIndex = idx if ((idx >= 0) and (idx < len(cls._supported_languages))) else 0
+
+    #查询当前使用的语种，比如：zh-cn
+    @classmethod
+    def getLanguage(cls):
+        idx = cls._langIndex if ((cls._langIndex >= 0) and (cls._langIndex < len(cls._supported_languages))) else 0
+        return cls._supported_languages[idx]
         
     #获取语种的内部索引
     @classmethod
