@@ -259,18 +259,3 @@ class SprintImportSes:
                     srcList[j] = setForEmpty
 
         return [i for i in srcList if (i != setForEmpty)] #筛掉空集合
-
-if __name__ == '__main__':
-    if 0:
-        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.pickle'
-        sesFile = r'C:\Users\su\Desktop\testSprint\dsnex.ses'
-        inputFile = r'C:\Users\su\Desktop\testSprint\1_in.txt'
-
-        with open(dsnFile, 'rb') as f:
-            dsn = pickle.load(f)
-
-        ses = SprintImportSes(sesFile, dsn)
-        textIo = ses.importSes(1, 0)
-        #with open(inputFile, 'w', encoding='utf-8') as f:
-        #    f.write(str(textIo))
-

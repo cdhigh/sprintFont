@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 """
-Sprint-Layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
+Sprint-Layout v6 2022版的插件
 Author: cdhigh <https://github.com/cdhigh>
 ==========================
 使用cx_freeze打包
@@ -36,7 +36,7 @@ from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
 __VERSION__ = "1.5"
-__DATE__ = "20220621"
+__DATE__ = "20220726"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -673,8 +673,6 @@ class Application(Application_ui):
         self.skipVersion = ''
         self.easyEdaSite = ''
 
-        #self.txtDsnFile.setText(r'C:/Users/su/Desktop/testSprint/dsnex.dsn') #TODO
-
         #这三行代码是修正python3.7的treeview颜色设置不生效的BUG，其他版本可能不需要
         #fixed_map = lambda op: [elm for elm in style.map("Treeview", query_opt=op) if elm[:2] != ("!disabled", "!selected")]
         #style = Style() #in ttk package
@@ -741,8 +739,6 @@ class Application(Application_ui):
                 
             self.pcbAll = True if a else False
         
-        #self.inFileName = self.inFileName.replace('su', 'Adminstrator') #TODO
-
         #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
             inExts = os.path.splitext(self.inFileName)

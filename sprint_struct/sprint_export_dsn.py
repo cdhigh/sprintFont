@@ -475,15 +475,3 @@ class SprintExportDsn:
 
         return padIdSeqDict
 
-if __name__ == '__main__':
-    if 0:
-        from sprint_struct.sprint_textio_parser import SprintTextIoParser
-        p = SprintTextIoParser()
-        textIo = p.parse(r'C:\Users\su\Desktop\testSprint\1.txt')
-        dsnFile = r'C:\Users\su\Desktop\testSprint\dsnex.dsn'
-        exporter = SprintExportDsn(textIo)
-        ret = exporter.export()
-        with open(dsnFile, 'w', encoding='utf-8') as f:
-            f.write(ret.output)
-        with open(dsnFile + '.pickle', 'wb') as f:
-            pickle.dump(exporter, f)
