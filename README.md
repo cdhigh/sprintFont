@@ -1,7 +1,10 @@
 # sprintFont 使用手册
 sprintFont 是 Sprint-Layout v6 2021及以上版本 的一个插件     
 
-适用版本：v1.5
+适用版本：v1.5   
+
+Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelease>   
+
 
 
 
