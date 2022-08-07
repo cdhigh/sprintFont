@@ -19,10 +19,11 @@ from sprint_struct.sprint_textio import *
 #        'tangent': 离交点一段距离创建和线段相切的圆弧
 #        'bizier': 贝塞尔曲线绘制
 #        '3Points': 通过三点构造圆弧
-#distance: 离交点位置的距离
+#bigDistance: 离交点位置的最大距离
+#smallDistance: 离交点位置的最小距离
 #segNum: 平滑圆弧的线段数
 #如果有走线被转换为弧形走线，则返回True
-def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10):
+def createArcTracksInTextIo(textIo, method: str, bigDistance: float, smallDistance: float, segNum: int=10):
     hasTracksReplaced = False
     tracks = textIo.getConductiveTracks()
     pads = textIo.getPads()
@@ -40,10 +41,14 @@ def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10
 
     #默认情况下线段长度小于2mm的不转换为弧形走线
     if method != 'tangent':
-        distance = 2.0
+        bigDistance = smallDistance = 1.0
 
-    if distance <= 1:
-        distance = 2
+    if bigDistance < 0.1:
+        bigDistance = 0.1
+    if smallDistance < 0.1:
+        smallDistance = 0.1
+    if smallDistance > bigDistance:
+        smallDistance, bigDistance = bigDistance, smallDistance
 
     if segNum < 2:
         segNum = 2
@@ -64,17 +69,24 @@ def createArcTracksInTextIo(textIo, method: str, distance: float, segNum: int=10
             newPoints.append(pt1)
 
             #如果第二个线段太短，则忽略前面两个线段，并且往后取两个点
-            if (pointDistance(pt2, pt3) <= distance):
+            distance23 = pointDistance(pt2, pt3)
+            distance12 = pointDistance(pt1, pt2)
+            if (distance23 <= smallDistance):
                 newPoints.append(pt2)
                 idx += 2
                 continue
             #如果第一个线段太短，则忽略之，并且往后再取一个点
             #中间点在导电区域内也跳过一个点
-            elif ((pointDistance(pt1, pt2) <= distance) or isPointInsideConductiveArea(pt2, track.layerIdx)):
+            elif ((distance12 <= smallDistance) or isPointInsideConductiveArea(pt2, track.layerIdx)):
                 idx += 1
                 continue
             
             if (method == 'tangent'):
+                distance = min(distance23, distance12)
+                if (distance > bigDistance):
+                    distance = bigDistance
+                else:
+                    distance = smallDistance
                 ptList = arcByTangentLine(pt1, pt2, pt3, distance, segNum)
                 #textIo.add(ptList)
                 #return

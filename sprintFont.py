@@ -35,8 +35,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5"
-__DATE__ = "20220726"
+__VERSION__ = "1.5.1"
+__DATE__ = "20220807"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -124,8 +124,8 @@ class Application_ui(Frame):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (360 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,360,x,y))
+        y = (hs / 2) - (359 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,359,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -166,7 +166,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.949, relheight=0.869)
+        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.949, relheight=0.872)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -584,15 +584,15 @@ class Application_ui(Frame):
         self.optRoundedTrackBezier.text = lambda : self.optRoundedTrackBezierTextVar.get()
         self.optRoundedTrackBezier.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackBezier' if x else '')
         self.optRoundedTrackBezier.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackBezier' else 0
-        self.optRoundedTrackBezier.place(relx=0.054, rely=0.46, relwidth=0.285, relheight=0.08)
-        self.optRoundedTrack3PointsTextVar = StringVar(value='Three points')
+        self.optRoundedTrackBezier.place(relx=0.418, rely=0.23, relwidth=0.164, relheight=0.08)
+        self.optRoundedTrack3PointsTextVar = StringVar(value='Three-point')
         self.style.configure('ToptRoundedTrack3Points.TRadiobutton', font=('微软雅黑',10))
-        self.optRoundedTrack3Points = Radiobutton(self.tabStrip__Tab6, text='Three points', value='optRoundedTrack3Points', textvariable=self.optRoundedTrack3PointsTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrack3Points.TRadiobutton')
+        self.optRoundedTrack3Points = Radiobutton(self.tabStrip__Tab6, text='Three-point', value='optRoundedTrack3Points', textvariable=self.optRoundedTrack3PointsTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrack3Points.TRadiobutton')
         self.optRoundedTrack3Points.setText = lambda x: self.optRoundedTrack3PointsTextVar.set(x)
         self.optRoundedTrack3Points.text = lambda : self.optRoundedTrack3PointsTextVar.get()
         self.optRoundedTrack3Points.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrack3Points' if x else '')
         self.optRoundedTrack3Points.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrack3Points' else 0
-        self.optRoundedTrack3Points.place(relx=0.054, rely=0.332, relwidth=0.245, relheight=0.105)
+        self.optRoundedTrack3Points.place(relx=0.202, rely=0.23, relwidth=0.191, relheight=0.08)
         self.optRoundedTrackTangentTextVar = StringVar(value='Tangent')
         self.style.configure('ToptRoundedTrackTangent.TRadiobutton', font=('微软雅黑',10))
         self.optRoundedTrackTangent = Radiobutton(self.tabStrip__Tab6, text='Tangent', value='optRoundedTrackTangent', textvariable=self.optRoundedTrackTangentTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrackTangent.TRadiobutton')
@@ -601,13 +601,13 @@ class Application_ui(Frame):
         self.optRoundedTrackTangent.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackTangent' if x else '')
         self.optRoundedTrackTangent.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackTangent' else 0
         self.optRoundedTrackTangent.setValue(1)
-        self.optRoundedTrackTangent.place(relx=0.054, rely=0.23, relwidth=0.164, relheight=0.08)
+        self.optRoundedTrackTangent.place(relx=0.027, rely=0.23, relwidth=0.15, relheight=0.08)
         self.cmbRoundedTrackSegsList = ['',]
         self.cmbRoundedTrackSegsVar = StringVar(value='')
         self.cmbRoundedTrackSegs = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSegsVar, values=self.cmbRoundedTrackSegsList, font=('微软雅黑',10))
         self.cmbRoundedTrackSegs.setText = lambda x: self.cmbRoundedTrackSegsVar.set(x)
         self.cmbRoundedTrackSegs.text = lambda : self.cmbRoundedTrackSegsVar.get()
-        self.cmbRoundedTrackSegs.place(relx=0.351, rely=0.613, relwidth=0.11)
+        self.cmbRoundedTrackSegs.place(relx=0.27, rely=0.613, relwidth=0.11)
         self.cmdRoundedTrackConvertVar = StringVar(value='Convert')
         self.style.configure('TcmdRoundedTrackConvert.TButton', font=('微软雅黑',10))
         self.cmdRoundedTrackConvert = Button(self.tabStrip__Tab6, text='Convert', textvariable=self.cmdRoundedTrackConvertVar, command=self.cmdRoundedTrackConvert_Cmd, style='TcmdRoundedTrackConvert.TButton')
@@ -620,32 +620,14 @@ class Application_ui(Frame):
         self.cmdRoundedTrackCancel.setText = lambda x: self.cmdRoundedTrackCancelVar.set(x)
         self.cmdRoundedTrackCancel.text = lambda : self.cmdRoundedTrackCancelVar.get()
         self.cmdRoundedTrackCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
-        self.cmbRoundedTrackDistanceList = ['',]
-        self.cmbRoundedTrackDistanceVar = StringVar(value='')
-        self.cmbRoundedTrackDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackDistanceVar, values=self.cmbRoundedTrackDistanceList, font=('微软雅黑',10))
-        self.cmbRoundedTrackDistance.setText = lambda x: self.cmbRoundedTrackDistanceVar.set(x)
-        self.cmbRoundedTrackDistance.text = lambda : self.cmbRoundedTrackDistanceVar.get()
-        self.cmbRoundedTrackDistance.place(relx=0.351, rely=0.23, relwidth=0.11)
+        self.cmbRoundedTrackBigDistanceList = ['',]
+        self.cmbRoundedTrackBigDistanceVar = StringVar(value='')
+        self.cmbRoundedTrackBigDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackBigDistanceVar, values=self.cmbRoundedTrackBigDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackBigDistance.setText = lambda x: self.cmbRoundedTrackBigDistanceVar.set(x)
+        self.cmbRoundedTrackBigDistance.text = lambda : self.cmbRoundedTrackBigDistanceVar.get()
+        self.cmbRoundedTrackBigDistance.place(relx=0.27, rely=0.358, relwidth=0.11)
         self.picRoundedTrack = Canvas(self.tabStrip__Tab6, takefocus=1, highlightthickness=0)
-        self.picRoundedTrack.place(relx=0.526, rely=0.204, relwidth=0.447, relheight=0.514)
-        self.Label1Var = StringVar(value='d(mm)')
-        self.style.configure('TLabel1.TLabel', anchor='e', font=('微软雅黑',10))
-        self.Label1 = Label(self.tabStrip__Tab6, text='d(mm)', textvariable=self.Label1Var, style='TLabel1.TLabel')
-        self.Label1.setText = lambda x: self.Label1Var.set(x)
-        self.Label1.text = lambda : self.Label1Var.get()
-        self.Label1.place(relx=0.243, rely=0.23, relwidth=0.096, relheight=0.08)
-        self.lblRoundedTrackSegsVar = StringVar(value='Number of segments')
-        self.style.configure('TlblRoundedTrackSegs.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='Number of segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
-        self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
-        self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
-        self.lblRoundedTrackSegs.place(relx=0.081, rely=0.613, relwidth=0.258, relheight=0.08)
-        self.lblRoundedTrackTipsVar = StringVar(value='rounded_track_features_tips')
-        self.style.configure('TlblRoundedTrackTips.TLabel', anchor='center', font=('微软雅黑',10))
-        self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='rounded_track_features_tips', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
-        self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
-        self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
-        self.lblRoundedTrackTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
+        self.picRoundedTrack.place(relx=0.594, rely=0.204, relwidth=0.379, relheight=0.514)
         self.lblSaveAsRoundedTrackVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsRoundedTrack = Label(self.tabStrip__Tab6, text='Save as', textvariable=self.lblSaveAsRoundedTrackVar, style='TlblSaveAsRoundedTrack.TLabel')
@@ -653,10 +635,41 @@ class Application_ui(Frame):
         self.lblSaveAsRoundedTrack.text = lambda : self.lblSaveAsRoundedTrackVar.get()
         self.lblSaveAsRoundedTrack.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
         self.lblSaveAsRoundedTrack.bind('<Button-1>', self.lblSaveAsRoundedTrack_Button_1)
+        self.lblRoundedTrackBigDVar = StringVar(value='big d(mm)')
+        self.style.configure('TlblRoundedTrackBigD.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackBigD = Label(self.tabStrip__Tab6, text='big d(mm)', textvariable=self.lblRoundedTrackBigDVar, style='TlblRoundedTrackBigD.TLabel')
+        self.lblRoundedTrackBigD.setText = lambda x: self.lblRoundedTrackBigDVar.set(x)
+        self.lblRoundedTrackBigD.text = lambda : self.lblRoundedTrackBigDVar.get()
+        self.lblRoundedTrackBigD.place(relx=0.054, rely=0.358, relwidth=0.204, relheight=0.08)
+        self.lblRoundedTrackSegsVar = StringVar(value='segments')
+        self.style.configure('TlblRoundedTrackSegs.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
+        self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
+        self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
+        self.lblRoundedTrackSegs.place(relx=0.054, rely=0.613, relwidth=0.204, relheight=0.08)
+        self.lblRoundedTrackTipsVar = StringVar(value='rounded_track_features_tips')
+        self.style.configure('TlblRoundedTrackTips.TLabel', anchor='center', font=('微软雅黑',10))
+        self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='rounded_track_features_tips', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
+        self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
+        self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
+        self.lblRoundedTrackTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
+        self.cmbRoundedTrackSmallDistanceList = ['',]
+        self.cmbRoundedTrackSmallDistanceVar = StringVar(value='')
+        self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackSmallDistance.setText = lambda x: self.cmbRoundedTrackSmallDistanceVar.set(x)
+        self.cmbRoundedTrackSmallDistance.text = lambda : self.cmbRoundedTrackSmallDistanceVar.get()
+        self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.486, relwidth=0.11)
+        self.lblRoundedTrackSmallDVar = StringVar(value='small d(mm)')
+        self.style.configure('TlblRoundedTrackSmallD.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackSmallD = Label(self.tabStrip__Tab6, text='small d(mm)', textvariable=self.lblRoundedTrackSmallDVar, style='TlblRoundedTrackSmallD.TLabel')
+        self.lblRoundedTrackSmallD.setText = lambda x: self.lblRoundedTrackSmallDVar.set(x)
+        self.lblRoundedTrackSmallD.text = lambda : self.lblRoundedTrackSmallDVar.get()
+        self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.486, relwidth=0.204, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab6, text='ArcTrack')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
+
 
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
@@ -794,7 +807,7 @@ class Application(Application_ui):
                     imgData = roundedTrackImageDataCn if I18n.getLanguage().startswith('zh') else roundedTrackImageData
                     self.roundedTrackImage = PhotoImage(data=imgData)
                     self.picRoundedTrack.create_image(0, 0, image=self.roundedTrackImage, anchor=NW)
-                self.cmbRoundedTrackDistance.focus_set()
+                self.cmbRoundedTrackBigDistance.focus_set()
         except Exception as e:
             print(str(e))
             #pass
@@ -883,9 +896,11 @@ class Application(Application_ui):
         self.cmdRemoveTeardrops.setText(_("Remove"))
         self.cmdCancelTeardrops.setText(_("Cancel"))
         self.lblRoundedTrackTips.setText(_("rounded_track_features_tips"))
-        self.optRoundedTrackTangent.setText(_("Tangent arc"))
-        self.optRoundedTrack3Points.setText(_("Three points arc"))
-        self.optRoundedTrackBezier.setText(_("Bezier curve"))
+        self.optRoundedTrackTangent.setText(_("Tangent"))
+        self.optRoundedTrack3Points.setText(_("Three-point"))
+        self.optRoundedTrackBezier.setText(_("Bezier"))
+        self.lblRoundedTrackBigD.setText(_("big d(mm)"))
+        self.lblRoundedTrackSmallD.setText(_("small d(mm)"))
         self.lblRoundedTrackSegs.setText(_("Number of segments"))
         self.cmdRoundedTrackConvert.setText(_("Convert"))
         self.cmdRoundedTrackCancel.setText(_("Cancel"))
@@ -980,9 +995,12 @@ class Application(Application_ui):
         self.cmbTeardropSegs.current(9) #默认10个线段
 
         #弧形走线
-        self.cmbRoundedTrackDistanceList = [2, 3, 4, 5, 6, 7, 8, 9, 10, 15]
-        self.cmbRoundedTrackDistance.configure(values=self.cmbRoundedTrackDistanceList)
-        self.cmbRoundedTrackDistance.current(1) #默认3mm
+        self.cmbRoundedTrackBigDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        self.cmbRoundedTrackBigDistance.configure(values=self.cmbRoundedTrackBigDistanceList)
+        self.cmbRoundedTrackBigDistance.current(3) #默认3mm
+        self.cmbRoundedTrackSmallDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        self.cmbRoundedTrackSmallDistance.configure(values=self.cmbRoundedTrackSmallDistanceList)
+        self.cmbRoundedTrackSmallDistance.current(0) #默认0.5mm
         self.cmbRoundedTrackSegsList = [3, 4, 5, 6, 7, 8, 9, 10]
         self.cmbRoundedTrackSegs.configure(values=self.cmbRoundedTrackSegsList)
         self.cmbRoundedTrackSegs.current(7) #默认10个线段
@@ -1115,16 +1133,19 @@ class Application(Application_ui):
             else:
                 self.optRoundedTrackTangent.setValue(1)
 
-            distance = str_to_int(cfg.get('roundedTrackDistance', ''))
+            distance = str_to_float(cfg.get('roundedTrackBigDistance', ''))
             if distance > 0:
-                self.cmbRoundedTrackDistance.setText(str(distance))
+                self.cmbRoundedTrackBigDistance.setText('{:.1f}'.format(distance))
+            distance = str_to_float(cfg.get('roundedTrackSmallDistance', ''))
+            if distance > 0:
+                self.cmbRoundedTrackSmallDistance.setText('{:.1f}'.format(distance))
             segs = str_to_int(cfg.get('roundedTrackSegs', '10'))
             if segs:
                 self.cmbRoundedTrackSegs.setText(segs)
 
     #保存当前配置数据
     def saveConfig(self):
-        if self.versionJson: #如果检查到版本更新，则明天再检查一次
+        if self.versionJson: #如果检查到版本更新，则第二天再检查一次
             self.lastCheckUpdate = datetime.datetime.now() - datetime.timedelta(days=29)
 
         cfg = {'language': self.language, 'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
@@ -1143,7 +1164,8 @@ class Application(Application_ui):
             'smdSmdClearance': str(self.pcbRule.smdSmdClearance),
             'teardropHPercent': self.cmbhPercent.text(), 'teardropVPercent': self.cmbvPercent.text(),
             'teardropSegs': self.cmbTeardropSegs.text(), 'tdIncludeSmdPads': str(self.chkIncludeSmdPads.value()),
-            'roundedTrackMethod': self.roundedTrackMethod(), 'roundedTrackDistance': self.cmbRoundedTrackDistance.text(),
+            'roundedTrackMethod': self.roundedTrackMethod(), 'roundedTrackBigDistance': self.cmbRoundedTrackBigDistance.text(),
+            'roundedTrackSmallDistance': self.cmbRoundedTrackSmallDistance.text(),
             'roundedTrackSegs': self.cmbRoundedTrackSegs.text(),
         }
         
@@ -2004,7 +2026,10 @@ class Application(Application_ui):
         if not textIo:
             return None
 
-        ret = createArcTracksInTextIo(textIo, self.roundedTrackMethod(), str_to_int(self.cmbRoundedTrackDistance.text()))
+        bigDistance = str_to_float(self.cmbRoundedTrackBigDistance.text())
+        smallDistance = str_to_float(self.cmbRoundedTrackSmallDistance.text())
+        segs = str_to_int(self.cmbRoundedTrackSegs.text())
+        ret = createArcTracksInTextIo(textIo, self.roundedTrackMethod(), bigDistance, smallDistance, segs)
         if not ret:
             showinfo(_("info"), _("No suitable track found"))
             return None

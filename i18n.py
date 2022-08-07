@@ -157,13 +157,15 @@ class I18n:
     "rounded_track_features_tips": (
         "Apply to all tracks when deselecting all, otherwise apply to selected tracks only",
         "取消全部选择时应用到所有走线，否则仅应用到您选择的走线"),
-    "Tangent arc": ("", "切线圆弧"),
-    "Three points arc": ("", "三点圆弧"),
-    "Bezier curve": ("", "贝塞尔曲线"),
+    "Tangent": ("", "切线圆弧"),
+    "Three-point": ("", "三点圆弧"),
+    "Bezier": ("", "贝塞尔曲线"),
+    "big d(mm)": ("", "大 d(mm)"),
+    "small d(mm)": ("", "小 d(mm)"),
     "Convert": ("", "转换"),
     "No suitable track found": ("", "没有找到符合条件的走线"),
     }
-
+    
     #这个属性是可以在程序执行过程中修改的
     _langIndex = 0
 

@@ -152,7 +152,7 @@ class SprintPolygon(SprintElement):
     #将polygon合并进自己，前提是polygon在自己内部
     #算法：将polygon的第一个点反向做一个水平射线，直到和另一个多边形的某个边相交
     #然后将交点同时做为polygon的起点和终点，将polygon展开为一个“线段”
-    #最好将此线段合并入另一个多边形（合并位置在交点位置）
+    #最后将此线段合并入另一个多边形（合并位置在交点位置）
     #因为用于字体，这里有一个假定，多边形都是凸多边形
     def devour(self, polygon):
         if (not polygon.isValid()):

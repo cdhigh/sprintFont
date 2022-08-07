@@ -3,10 +3,10 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5400
+   ClientHeight    =   5370
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   9375
+   ClientWidth     =   9360
    BeginProperty Font 
       Name            =   "Î¢ÈíÑÅºÚ"
       Size            =   10.5
@@ -19,8 +19,8 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5400
-   ScaleWidth      =   9375
+   ScaleHeight     =   5370
+   ScaleWidth      =   9360
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
    Begin VB.Frame tabStrip__Tab6 
@@ -30,37 +30,45 @@ Begin VB.Form frmMain
       TabIndex        =   74
       Top             =   5640
       Width           =   8895
+      Begin VB.ComboBox cmbRoundedTrackSmallDistance 
+         Height          =   420
+         Left            =   2400
+         TabIndex        =   87
+         Text            =   "cmbhPercent"
+         Top             =   2280
+         Width           =   975
+      End
       Begin VB.OptionButton optRoundedTrackBezier 
          Caption         =   "Bezier"
          Height          =   375
-         Left            =   480
+         Left            =   3720
          TabIndex        =   84
          Tag             =   "p@textvariable"
-         Top             =   2160
-         Width           =   2535
+         Top             =   1080
+         Width           =   1455
       End
       Begin VB.OptionButton optRoundedTrack3Points 
-         Caption         =   "Three points"
-         Height          =   495
-         Left            =   480
+         Caption         =   "Three-point"
+         Height          =   375
+         Left            =   1800
          TabIndex        =   83
          Tag             =   "p@textvariable"
-         Top             =   1560
-         Width           =   2175
+         Top             =   1080
+         Width           =   1695
       End
       Begin VB.OptionButton optRoundedTrackTangent 
          Caption         =   "Tangent"
          Height          =   375
-         Left            =   480
+         Left            =   240
          TabIndex        =   82
          Tag             =   "p@textvariable"
          Top             =   1080
          Value           =   -1  'True
-         Width           =   1455
+         Width           =   1335
       End
       Begin VB.ComboBox cmbRoundedTrackSegs 
          Height          =   420
-         Left            =   3120
+         Left            =   2400
          TabIndex        =   79
          Text            =   "cmbSegs"
          Top             =   2880
@@ -82,23 +90,32 @@ Begin VB.Form frmMain
          Top             =   3840
          Width           =   2175
       End
-      Begin VB.ComboBox cmbRoundedTrackDistance 
+      Begin VB.ComboBox cmbRoundedTrackBigDistance 
          Height          =   420
-         Left            =   3120
+         Left            =   2400
          TabIndex        =   76
          Text            =   "cmbhPercent"
-         Top             =   1080
+         Top             =   1680
          Width           =   975
       End
       Begin VB.PictureBox picRoundedTrack 
          BorderStyle     =   0  'None
          Height          =   2415
-         Left            =   4680
+         Left            =   5280
          ScaleHeight     =   2415
-         ScaleWidth      =   3975
+         ScaleWidth      =   3375
          TabIndex        =   75
          Top             =   960
-         Width           =   3975
+         Width           =   3375
+      End
+      Begin VB.Label lblRoundedTrackSmallD 
+         Alignment       =   1  'Right Justify
+         Caption         =   "small d(mm)"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   88
+         Top             =   2280
+         Width           =   1815
       End
       Begin VB.Label lblSaveAsRoundedTrack 
          Caption         =   "Save as"
@@ -118,23 +135,23 @@ Begin VB.Form frmMain
          Top             =   3960
          Width           =   975
       End
-      Begin VB.Label Label1 
+      Begin VB.Label lblRoundedTrackBigD 
          Alignment       =   1  'Right Justify
-         Caption         =   "d(mm)"
+         Caption         =   "big d(mm)"
          Height          =   375
-         Left            =   2160
+         Left            =   480
          TabIndex        =   85
-         Top             =   1080
-         Width           =   855
+         Top             =   1680
+         Width           =   1815
       End
       Begin VB.Label lblRoundedTrackSegs 
          Alignment       =   1  'Right Justify
-         Caption         =   "Number of segments"
+         Caption         =   "segments"
          Height          =   375
-         Left            =   720
+         Left            =   480
          TabIndex        =   81
          Top             =   2880
-         Width           =   2295
+         Width           =   1815
       End
       Begin VB.Label lblRoundedTrackTips 
          Alignment       =   2  'Center
@@ -672,9 +689,9 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5055
-      Width           =   9375
-      _ExtentX        =   16536
+      Top             =   5025
+      Width           =   9360
+      _ExtentX        =   16510
       _ExtentY        =   609
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
