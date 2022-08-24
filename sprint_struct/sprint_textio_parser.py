@@ -156,6 +156,8 @@ class SprintTextIoParser:
             elif (key == 'STYLE'):
                 component.txtStyle = str_to_int(value)
             elif (key == 'TEXT'):
+                component.compName = value.replace('|', '')
+            elif (key == 'NAME'):
                 component.name = value.replace('|', '')
             #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
             #    pass
@@ -182,6 +184,8 @@ class SprintTextIoParser:
                 component.txtStyle = str_to_int(value)
             elif (key == 'TEXT'):
                 component.value = value.replace('|', '')
+            elif (key == 'NAME'):
+                component.name = value.replace('|', '')
             #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
             #    pass
 
@@ -205,6 +209,8 @@ class SprintTextIoParser:
                 track.flatstart = self.parseBooleanStr(value)
             elif (key == 'FLATEND'):
                 track.flatend = self.parseBooleanStr(value)
+            elif (key == 'NAME'):
+                track.name = value.replace('|', '')
             elif (key.startswith('P') and (len(key) > 1)): #点列表
                 ptIdx = str_to_int(key[1:])
                 pointsList.append((ptIdx, self.parsePosStr(value)))
@@ -252,6 +258,8 @@ class SprintTextIoParser:
                 pad.thermalTracks = str_to_int(value)
             elif (key == 'PAD_ID'):
                 pad.padId = str_to_int(value)
+            elif (key == 'NAME'):
+                pad.name = value.replace('|', '')
             elif (key.startswith('CON') and (len(key) > 3)): #网络连接
                 pad.connectToOtherPads.append(str_to_int(value))
         self.containers[-1].add(pad)
@@ -277,6 +285,8 @@ class SprintTextIoParser:
                 poly.hatchAuto = self.parseBooleanStr(value)
             elif (key == 'HATCH_WIDTH'):
                 poly.hatchWidth = str_to_int(value) / 10000
+            elif (key == 'NAME'):
+                poly.name = value.replace('|', '')
             elif (key.startswith('P') and (len(key) > 1)): #点列表
                 ptIdx = str_to_int(key[1:])
                 pointsList.append((ptIdx, self.parsePosStr(value)))
@@ -316,6 +326,8 @@ class SprintTextIoParser:
                 text.mirrorH = self.parseBooleanStr(value)
             elif (key == 'MIRROR_VERT'):
                 text.mirrorV = self.parseBooleanStr(value)
+            elif (key == 'NAME'):
+                text.name = value.replace('|', '')
 
         self.containers[-1].add(text)
             
@@ -351,6 +363,8 @@ class SprintTextIoParser:
                     cir.stop += 360
             elif (key == 'FILL'):
                 cir.fill = self.parseBooleanStr(value)
+            elif (key == 'NAME'):
+                cir.name = value.replace('|', '')
 
         self.containers[-1].add(cir)
         

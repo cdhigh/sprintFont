@@ -99,6 +99,8 @@ class SprintPad(SprintElement):
                 outStr.append('PAD_ID={}'.format(self.padId))
             for conIdx, con in enumerate(self.connectToOtherPads):
                 outStr.append('CON{}={}'.format(conIdx, con))
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
 
         return ','.join(outStr) + ';'
 
@@ -125,6 +127,8 @@ class SprintPad(SprintElement):
                 outStr.append('PAD_ID={}'.format(self.padId))
             for conIdx, con in enumerate(self.connectToOtherPads):
                 outStr.append('CON{}={}'.format(conIdx, con))
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
 
         return ','.join(outStr) + ';'
         
@@ -175,6 +179,7 @@ class SprintPad(SprintElement):
         ins.thermalTracks = self.thermalTracks
         ins.padId = overwritePadId if overwritePadId is not None else self.padId
         ins.connectToOtherPads = self.connectToOtherPads[:]
+        ins.name = self.name
         ins.updateSelfBbox()
         return ins
 

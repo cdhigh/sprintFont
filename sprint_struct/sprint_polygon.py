@@ -60,6 +60,9 @@ class SprintPolygon(SprintElement):
         for idx, (x, y) in enumerate(self.points):
             outStr.append('P{}={}/{}'.format(idx, self.mm2um01(x), self.mm2um01(y)))
 
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+
         return ','.join(outStr) + ';'
 
     #重载等号运算符，判断两个是否相等
@@ -188,6 +191,7 @@ class SprintPolygon(SprintElement):
         ins.hatch = self.hatch
         ins.hatchAuto = self.hatchAuto
         ins.hatchWidth = self.hatchWidth
+        ins.name = self.name
         ins.updateSelfBbox()
         return ins
 

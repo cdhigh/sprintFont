@@ -32,7 +32,7 @@ class SprintText(SprintElement):
         self.yMin = self.yMax = self.pos[1]
 
     def __str__(self):
-        self.text = str(self.text).replace(';', '_').replace(',', '_').replace('|', '_')
+        self.text = self.justifiedText(self.text)
 
         outStr = ['TEXT,LAYER={},POS={}/{},HEIGHT={}'.format(
             self.layerIdx, self.mm2um01(self.pos[0]), self.mm2um01(self.pos[1]), self.mm2um01(self.height))]
@@ -52,7 +52,9 @@ class SprintText(SprintElement):
             outStr.append('MIRROR_HORZ={}'.format(self.booleanStr(self.mirrorH)))
         if self.mirrorV is not None:
             outStr.append('MIRROR_VERT={}'.format(self.booleanStr(self.mirrorV)))
-        outStr.append('TEXT=|{}|'.format(self.text))
+        outStr.append('TEXT=|{}|'.format(self.justifiedText(self.text)))
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
 
         return ','.join(outStr) + ';'
 
@@ -83,6 +85,7 @@ class SprintText(SprintElement):
         ins.rotation = self.rotation
         ins.mirrorH = self.mirrorH
         ins.mirrorV = self.mirrorV
+        ins.name = self.name
         ins.updateSelfBbox()
         return ins
 

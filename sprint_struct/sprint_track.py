@@ -60,6 +60,9 @@ class SprintTrack(SprintElement):
         for idx, (x, y) in enumerate(self.points):
             outStr.append('P{}={}/{}'.format(idx, self.mm2um01(x), self.mm2um01(y )))
 
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+
         return ','.join(outStr) + ';'
 
     #重载等号运算符，判断两个Track是否相等
@@ -82,6 +85,7 @@ class SprintTrack(SprintElement):
         ins.soldermask = self.soldermask
         ins.flatstart = self.flatstart
         ins.flatend = self.flatend
+        ins.name = self.name
         ins.updateSelfBbox()
         return ins
     

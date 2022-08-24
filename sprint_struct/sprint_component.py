@@ -12,7 +12,7 @@ class SprintComponent(SprintElement):
     def __init__(self):
         super().__init__(self)
         self.pos = (0, 0) #用于导出DSN使用，默认使用第一个焊盘的坐标，如果没有焊盘，使用第一个元素的坐标
-        self.name = '' #用于元件的名字，比如R1
+        self.compName = '' #用于元件的名字，比如R1
         self.value = '' #用于元件的值，比如10k
         self.comment = '' #元件注释
         self.package = '' #封装名字
@@ -62,10 +62,10 @@ class SprintComponent(SprintElement):
         outStr = []
 
         #先生成元件的描述头
-        self.name = str(self.name).replace(';', '_').replace(',', '_').replace('|', '_')
-        self.value = str(self.value).replace(';', '_').replace(',', '_').replace('|', '_')
-        self.comment = str(self.comment).replace(';', '_').replace(',', '_').replace('|', '_')
-        self.package = str(self.package).replace(';', '_').replace(',', '_').replace('|', '_')
+        self.compName = self.justifiedText(self.compName)
+        self.value = self.justifiedText(self.value)
+        self.comment = self.justifiedText(self.comment)
+        self.package = self.justifiedText(self.package)
 
         compHeadStrList = ['BEGIN_COMPONENT',]
         if self.comment:
@@ -92,7 +92,7 @@ class SprintComponent(SprintElement):
         
         #名字
         if not forCompare:
-            nameVisible = 'true' if (self.nameVisible and self.name) else 'false'
+            nameVisible = 'true' if (self.nameVisible and self.compName) else 'false'
             idText = ['ID_TEXT,VISIBLE={},LAYER={},POS={}/{},HEIGHT={}'.format(nameVisible, self.nameLayer, 
                 self.mm2um01(namePos[0]), self.mm2um01(namePos[1]), self.mm2um01(self.txtHeight))]
             if (self.txtThickness != 1):
@@ -101,8 +101,10 @@ class SprintComponent(SprintElement):
                 idText.append('STYLE={}'.format(self.txtStyle))
             if (self.nameLayer in (LAYER_C2, LAYER_S2)):
                 idText.append('MIRROR_HORZ=true')
-            idText.append('TEXT=|{}|;'.format(self.name)) #注意最后有一个分号
-            outStr.append(','.join(idText))
+            idText.append('TEXT=|{}|'.format(self.compName))
+            if self.name:
+                idText.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+            outStr.append(','.join(idText) + ';')
 
             #数值
             valueVisible = 'true' if (self.valueVisible and self.value) else 'false'
@@ -114,8 +116,10 @@ class SprintComponent(SprintElement):
                 valueText.append('STYLE={}'.format(self.txtStyle))
             if (self.valueLayer in (LAYER_C2, LAYER_S2)):
                 valueText.append('MIRROR_HORZ=true')
-            valueText.append('TEXT=|{}|;'.format(self.value)) #注意最后有一个分号
-            outStr.append(','.join(valueText))
+            valueText.append('TEXT=|{}|'.format(self.value))
+            if self.name:
+                valueText.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+            outStr.append(','.join(valueText) + ';')
 
             #逐个添加里面的绘图元素
             outStr.extend([str(obj) for obj in self.elements])
@@ -215,7 +219,7 @@ class SprintComponent(SprintElement):
     def cloneToOrigin(self, x: float=None, y: float=None):
         ins = SprintComponent()
         self.updateSelfBbox()
-        ins.name = self.name
+        ins.compName = self.compName
         ins.value = self.value
         ins.comment = self.comment
         ins.package = self.package
@@ -230,7 +234,7 @@ class SprintComponent(SprintElement):
         ins.nameVisible = self.nameVisible
         ins.valueVisible = self.valueVisible
         ins.pickRotation = self.pickRotation
-
+        ins.name = self.name
         self.updatePos()
         if x is None or y is None:
             x, y = self.pos

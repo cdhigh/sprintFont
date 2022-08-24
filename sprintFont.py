@@ -35,8 +35,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.1"
-__DATE__ = "20220807"
+__VERSION__ = "1.5.2"
+__DATE__ = "20220819"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -1001,7 +1001,7 @@ class Application(Application_ui):
         self.cmbRoundedTrackSmallDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.cmbRoundedTrackSmallDistance.configure(values=self.cmbRoundedTrackSmallDistanceList)
         self.cmbRoundedTrackSmallDistance.current(0) #默认0.5mm
-        self.cmbRoundedTrackSegsList = [3, 4, 5, 6, 7, 8, 9, 10]
+        self.cmbRoundedTrackSegsList = [3, 4, 5, 6, 7, 8, 9, 10, 20]
         self.cmbRoundedTrackSegs.configure(values=self.cmbRoundedTrackSegsList)
         self.cmbRoundedTrackSegs.current(7) #默认10个线段
 
@@ -1426,6 +1426,8 @@ class Application(Application_ui):
 
         retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
         if retFile:
+            if ('.' not in retFile): #自动添加后缀
+                retFile += '.txt'
             try:
                 with open(retFile, 'w', encoding='utf-8') as f:
                     f.write(txt)

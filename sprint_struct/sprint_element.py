@@ -41,6 +41,7 @@ class SprintElement:
         self.layerIdx = layerIdx
         self.xMin = self.yMin = 100000.0
         self.xMax = self.yMax = -100000.0
+        self.name = ''
     
     #子类实现是否有效的函数
     def isValid(self):
@@ -72,6 +73,11 @@ class SprintElement:
     @classmethod
     def booleanStr(cls, value):
         return 'true' if value else 'false'
+
+    #去除名字中的非法字符
+    @classmethod
+    def justifiedText(cls, txt):
+        return str(txt).replace(';', '_').replace(',', '_').replace('|', '_') if txt else ''
 
     #毫米浮点数转换为0.1微米整数
     @classmethod

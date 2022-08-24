@@ -89,6 +89,8 @@ class SprintCircle(SprintElement):
             outStr.append('STOP={:0.0f}'.format(self.stop * 1000))
         if self.fill is not None:
             outStr.append('FILL={}'.format(self.booleanStr(self.fill)))
+        if self.name:
+            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
         
         return ','.join(outStr) + ';'
 
@@ -117,6 +119,7 @@ class SprintCircle(SprintElement):
         ins.start = self.start
         ins.stop = self.stop
         ins.fill = self.fill
+        ins.name = self.name
         ins.updateSelfBbox()
         return ins
 
