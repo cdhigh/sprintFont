@@ -302,7 +302,10 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 1. Sprint-Layout通过临时文件和插件通讯，如果启动插件时你什么元件都没有选中，则Sprint-Layout会导出PCB中所有元件到临时文件。   
 2. 除了使用Sprint-Layout通过插件模式调用外，也可以单独执行，单独执行后“确定”按钮无效，可以使用“另存为”按钮将生成的符号文件保存到一个文本文件，之后可以使用Sprint-Layout的“导入：文本设计格式文件”功能单独导入，效果一样   
 3. 软件支持中英文界面，启动时自动识别系统语种，如果需要手动切换，可以在config.json里面修改 ("language":"en"/"zh-ch")    
-
+4. 如果插件无法执行，请下载安装VC运行库2015/2017/2019/2022（任意一个版本均可），如果还不行，可能还需要“Windows 通用 C 运行库（Universal C Runtime）”，下载链接可以自己搜索，或者直接使用下面的链接：    
+* [VC运行库 32位](https://aka.ms/vs/17/release/vc_redist.x86.exe)
+* [VC运行库 64位](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+* [Windows通用C运行库（Universal C Runtime）](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)
 
 
 
