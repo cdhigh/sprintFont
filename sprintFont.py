@@ -1487,7 +1487,7 @@ class Application(Application_ui):
             offsetX = 0.0 #每一行都从最左边开始
             maxHeight = 0
             for word in line:
-                ret = singleWordPolygon(font, code=ord(word), layerIdx=layerIdx, fontHeight=fontHeight,
+                ret = singleWordPolygon(fontName, font, code=ord(word), layerIdx=layerIdx, fontHeight=fontHeight,
                     offsetX=offsetX, offsetY=offsetY, smooth=smooth)
                 #print(ret)
                 #if not ret: #没有对应的字形，跳过一个空格位置
@@ -1562,12 +1562,14 @@ class Application(Application_ui):
                 try:
                     ttCol = ttCollection.TTCollection(fontFileName)
                     insList = ttCol.fonts
-                except:
+                except Exception as e:
+                    print(str(e))
                     continue
             else:
                 try:
                     insList = [ttFont.TTFont(fontFileName, lazy=True),]
-                except:
+                except Exception as e:
+                    print(str(e))
                     continue
             
             for fontIdx, font in enumerate(insList):

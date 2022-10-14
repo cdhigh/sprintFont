@@ -22,6 +22,7 @@ SMOOTH_MAP = {
 }
 
 #提取单个字体的字形，转换为spring-layout的多边形
+#fontName: 字体的显示名字
 #font: 字体对象ttfFont
 #code: 字的unicode编码
 #layer: 电路板图层索引，从1开始
@@ -31,7 +32,7 @@ SMOOTH_MAP = {
 #smooth: 曲线平滑系数，参见 SMOOTH_MAP
 #返回{'width':, 'height':, 'polygon':} 或 错误信息字符串
 #字体坐标原点在屏幕左下角，但Sprint-Layout坐标原点在左上角，所以字形需要垂直翻转
-def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, offsetX: float=0, 
+def singleWordPolygon(fontName: str, font, code: int, layerIdx: int=2, fontHeight: float=2.0, offsetX: float=0, 
     offsetY: float=0, smooth: int=2):
     
     #获取包含字形名称和字形对象的--字形集对象glyphSet
@@ -179,7 +180,9 @@ def singleWordPolygon(font, code: int, layerIdx: int=2, fontHeight: float=2.0, o
             currPolygon.addPoint(prevX, prevY)
 
     #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
-    mergePolygons(polygons)
+    #"楷体_GB2312"的制作不规范，其使用多个有部分重叠的多边形组成字体，不能将多边形进行合并
+    if (fontName != "楷体_GB2312"):
+        mergePolygons(polygons)
     return {'width':fontWidth, 'height':fontHeight, 'polygons':polygons}
 
 #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
