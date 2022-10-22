@@ -36,15 +36,14 @@ from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
 __VERSION__ = "1.5.2"
-__DATE__ = "20220819"
+__DATE__ = "20221022"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
 DEBUG_IN_FILE = ""
 
-#特定用户的字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
-#这里先直接使用系统字体，暂不考虑用户字体
-WIN_DIR = os.environ['WINDIR']
+#在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
+WIN_DIR = os.getenv('WINDIR')
 FONT_DIR = os.path.join(WIN_DIR if WIN_DIR else "c:/windows", "fonts")
 
 if getattr(sys, 'frozen', False): #在cxFreeze打包后
@@ -1546,10 +1545,25 @@ class Application(Application_ui):
     def generateFontFileNameMap(self, fontQueue: queue.Queue=None):
         fontNameMap = {}
         supportedFontExts = tuple(('.ttf', '.otf', '.ttc', '.otc'))
+        
+        #支持Widows10及以上系统的用户字体目录
+        localDir = os.getenv('LOCALAPPDATA')
+        userFontDir = ''
+        if localDir:
+            userFontDir = os.path.join(localDir, 'Microsoft', 'Windows', 'Fonts')
+            if not os.path.exists(userFontDir):
+                userFontDir = ''
+                
         try:
             fontFileList = [os.path.join(FONT_DIR, f) for f in os.listdir(FONT_DIR) if f.lower().endswith(supportedFontExts)]
         except:
             fontFileList = {}
+        
+        if userFontDir:
+            try:
+                fontFileList.extend([os.path.join(userFontDir, f) for f in os.listdir(userFontDir) if f.lower().endswith(supportedFontExts)])
+            except:
+                pass
             
         try:
             fontFileList.extend([os.path.join(MODULE_PATH, f) for f in os.listdir(MODULE_PATH) if f.lower().endswith(supportedFontExts)])
