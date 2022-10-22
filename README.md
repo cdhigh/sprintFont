@@ -1,7 +1,7 @@
 # sprintFont 使用手册
 sprintFont 是 Sprint-Layout v6 2021及以上版本 的一个插件     
 
-适用版本：v1.5.1   
+适用版本：v1.5.2   
 
 Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelease>   
 
@@ -311,6 +311,13 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 ## 4. 版本更新日志
+
+
+### v1.5.2
+* 支持所有元素的"NAME"属性（Sprint-Layout v6 08.07.2022更新版本开始支持）
+* 支持Windows10及以上系统的用户字体
+* 修正 "楷体_GB2312" 缺笔画的问题
+
 
 
 
