@@ -162,7 +162,7 @@ class LcComponent:
 
         #添加一些辅助信息
         if component.isValid():
-            component.name = self.prefix
+            component.compName = self.prefix
             component.nameVisible = True if self.prefix else False
             component.comment = '{} ({})'.format(self.fpName, self.lcId)
             component.package = self.packageName
