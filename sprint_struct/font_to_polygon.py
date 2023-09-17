@@ -6,7 +6,6 @@ Sprint-Layout v6 2022版的插件，在电路板插入其他字体（包括中�
 Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys
-from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
 from .sprint_textio import *

@@ -38,7 +38,6 @@ build_exe_options = {'packages': ['tkinter'],
                     }
 
 exe = Executable(script='sprintFont.py',
-    initScript=None,
     base=base,
     target_name='sprintFont.exe')
 
@@ -46,4 +45,4 @@ setup(name='sprintFont',
     version=appVersion,
     description='sprintFont - a plugin for Sprint-Layout',
     options={'build_exe': build_exe_options},
-    executables=[Executable('sprintFont.py', base=base, icon='app.ico',)])
+    executables=[Executable(script='sprintFont.py', base=base, icon='app.ico',)])

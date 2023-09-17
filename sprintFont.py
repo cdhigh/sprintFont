@@ -1693,7 +1693,10 @@ class Application(Application_ui):
         self.versionJson = checkUpdate(__VERSION__, self.skipVersion)
         #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
         if self.versionJson:
-            self.staBar.text(_('  New version found, double-click to show details'))
+            try:
+                self.staBar.text(_('  New version found, double-click to show details'))
+            except:
+                pass
 
     #将自动布线参数更新到界面控件
     def updateRuleView(self):
@@ -1842,8 +1845,6 @@ class Application(Application_ui):
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
-        #self.addTeardrops()
-        #return #TODO
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
