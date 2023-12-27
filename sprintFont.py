@@ -1,14 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 """
-Sprint-Layout v6 2022版的插件
+Sprint-Layout v6 2022及以上版本的插件
 Author: cdhigh <https://github.com/cdhigh>
 ==========================
 使用cx_freeze打包
 cxfreeze --base-name=Win32GUI --icon=app.ico sprintFont.py
 ==========================
 使用pyinstaller打包
--F: 打包单文件
+-F: 打包为单文件模式
+-D: 打包为文件夹模式
 -w: windows执行系统，不弹出cmd命令行
 -i: 图标
 pyinstaller.exe -F -w -i app.ico sprintFont.py
@@ -18,6 +19,9 @@ python -m nuitka --standalone --onefile --windows-disable-console --show-progres
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
 import os, sys, locale, json, threading, queue, datetime, pickle
+# Fix Tcl/Tk folder for windows xp
+os.environ["TCL_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tcl8.6")
+os.environ["TK_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tk8.6")
 from functools import partial
 from tkinter import *
 from tkinter.font import Font, families
@@ -35,8 +39,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.2"
-__DATE__ = "20221022"
+__VERSION__ = "1.5.3"
+__DATE__ = "20231227"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'

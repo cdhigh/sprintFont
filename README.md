@@ -1,7 +1,7 @@
 # sprintFont 使用手册
 sprintFont 是 Sprint-Layout v6 2021及以上版本 的一个插件     
 
-适用版本：v1.5.2   
+适用版本：v1.5.3   
 
 Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelease>   
 
@@ -311,6 +311,11 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 ## 4. 版本更新日志
+
+### v1.5.3
+* 修正力创EDA导入封装的一个name属性设置错误
+* 额外编译一个支持Windows XP的版本
+
 
 
 ### v1.5.2

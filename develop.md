@@ -1,6 +1,9 @@
 # 开发过程注意事项
 
-## 依赖:
+## Python版本
+需要Python 3.6及以上
+
+## 依赖
 1. qrcode
 2. fonttools
 3. cx_freeze: 如果需要打包的话
