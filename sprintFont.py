@@ -22,6 +22,7 @@ import os, sys, locale, json, threading, queue, datetime, pickle
 # Fix Tcl/Tk folder for windows xp
 os.environ["TCL_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tcl8.6")
 os.environ["TK_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tk8.6")
+os.environ["PATH"] = os.environ["PATH"] + ';' + sys.base_prefix
 from functools import partial
 from tkinter import *
 from tkinter.font import Font, families
