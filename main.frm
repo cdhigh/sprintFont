@@ -708,6 +708,15 @@ Begin VB.Form frmMain
       Top             =   5760
       Width           =   8895
       Begin VB.TextBox txtMain 
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   14.25
+            Charset         =   134
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
          Height          =   855
          Left            =   1440
          MultiLine       =   -1  'True
@@ -871,6 +880,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Private Sub cmbFont_Change()
+
+End Sub
+
 Private Sub lblSaveAs_Click()
 
 End Sub

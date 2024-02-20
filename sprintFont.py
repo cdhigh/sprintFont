@@ -22,7 +22,7 @@ import os, sys, locale, json, threading, queue, datetime, pickle
 # Fix Tcl/Tk folder for windows xp
 os.environ["TCL_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tcl8.6")
 os.environ["TK_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tk8.6")
-os.environ["PATH"] = os.environ["PATH"] + ';' + sys.base_prefix
+os.environ["PATH"] += ';' + sys.base_prefix
 from functools import partial
 from tkinter import *
 from tkinter.font import Font, families
@@ -40,7 +40,7 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.3"
+__VERSION__ = "1.5.2"
 __DATE__ = "20231227"
 __AUTHOR__ = "cdhigh"
 
@@ -123,13 +123,13 @@ class Statusbar(Frame):
 class Application_ui(Frame):
     #这个类仅实现界面生成功能，具体事件处理代码在子类Application中。
     def __init__(self, master=None):
-        Frame.__init__(self, master)
+        super().__init__(master)
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (359 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,359,x,y))
+        x = (ws / 2) - (624 / 2)
+        y = (hs / 2) - (358 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (624,358,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -159,7 +159,8 @@ class Application_ui(Frame):
             0oE/FjkcHSzt2OFRRjYJJGUrdibjQCVR4WSTimREYolLDhfPXmWN11l/Uwr0ETE2Bklg
             cGA8RWKZ9ggonGtRyRmcm9jB6REoLnqlmxnDWcZTec111hGIXUmo5IwRCufFc9hlh6Zw
             I0qJXKEkVZWpnQDIo9EABu20yHCM0NlbWwkEih2oby1I6W+Hkjzk26fDKUMiQiMNx8Jz
-            UPqUXXOWKSRmV7OqORwVcBoUXI68lrRSjcI59OReiKpIQHARZavtttx26y1DAQEAOw="""
+            UPqUXXOWKSRmV7OqORwVcBoUXI68lrRSjcI59OReiKpIQHARZavtttx26y1DAQEAOw==
+            ==="""
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
         self.createWidgets()
@@ -170,7 +171,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.949, relheight=0.872)
+        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.874)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -182,7 +183,7 @@ class Application_ui(Frame):
         self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
         self.cmbLayer.text = lambda : self.cmbLayerVar.get()
         self.cmbLayer.place(relx=0.162, rely=0.511, relwidth=0.352)
-        self.txtMainFont = Font(font=('微软雅黑',10))
+        self.txtMainFont = Font(font=('微软雅黑',14))
         self.txtMain = Text(self.tabStrip__Tab1, yscrollcommand=self.VScroll1.set, font=self.txtMainFont)
         self.txtMain.place(relx=0.162, rely=0.128, relwidth=0.757, relheight=0.182)
         self.txtMain.insert('1.0','')
@@ -229,6 +230,7 @@ class Application_ui(Frame):
         self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
         self.cmbFont.text = lambda : self.cmbFontVar.get()
         self.cmbFont.place(relx=0.162, rely=0.383, relwidth=0.352)
+        self.cmbFont.bind('<<ComboboxSelected>>', self.cmbFont_ComboboxSelected)
         self.lblTxtVar = StringVar(value='Text')
         self.style.configure('TlblTxt.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblTxt = Label(self.tabStrip__Tab1, text='Text', textvariable=self.lblTxtVar, style='TlblTxt.TLabel')
@@ -580,6 +582,12 @@ class Application_ui(Frame):
         self.tabStrip.add(self.tabStrip__Tab5, text='Teardrop')
 
         self.tabStrip__Tab6 = Frame(self.tabStrip)
+        self.cmbRoundedTrackSmallDistanceList = ['',]
+        self.cmbRoundedTrackSmallDistanceVar = StringVar(value='')
+        self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackSmallDistance.setText = lambda x: self.cmbRoundedTrackSmallDistanceVar.set(x)
+        self.cmbRoundedTrackSmallDistance.text = lambda : self.cmbRoundedTrackSmallDistanceVar.get()
+        self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.486, relwidth=0.11)
         self.optRoundedTrackBezierTextVar = StringVar(value='Bezier')
         self.tabStrip__Tab6RadioVar = StringVar()
         self.style.configure('ToptRoundedTrackBezier.TRadiobutton', font=('微软雅黑',10))
@@ -632,6 +640,12 @@ class Application_ui(Frame):
         self.cmbRoundedTrackBigDistance.place(relx=0.27, rely=0.358, relwidth=0.11)
         self.picRoundedTrack = Canvas(self.tabStrip__Tab6, takefocus=1, highlightthickness=0)
         self.picRoundedTrack.place(relx=0.594, rely=0.204, relwidth=0.379, relheight=0.514)
+        self.lblRoundedTrackSmallDVar = StringVar(value='small d(mm)')
+        self.style.configure('TlblRoundedTrackSmallD.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackSmallD = Label(self.tabStrip__Tab6, text='small d(mm)', textvariable=self.lblRoundedTrackSmallDVar, style='TlblRoundedTrackSmallD.TLabel')
+        self.lblRoundedTrackSmallD.setText = lambda x: self.lblRoundedTrackSmallDVar.set(x)
+        self.lblRoundedTrackSmallD.text = lambda : self.lblRoundedTrackSmallDVar.get()
+        self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.486, relwidth=0.204, relheight=0.08)
         self.lblSaveAsRoundedTrackVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsRoundedTrack = Label(self.tabStrip__Tab6, text='Save as', textvariable=self.lblSaveAsRoundedTrackVar, style='TlblSaveAsRoundedTrack.TLabel')
@@ -657,23 +671,10 @@ class Application_ui(Frame):
         self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
         self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
         self.lblRoundedTrackTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
-        self.cmbRoundedTrackSmallDistanceList = ['',]
-        self.cmbRoundedTrackSmallDistanceVar = StringVar(value='')
-        self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
-        self.cmbRoundedTrackSmallDistance.setText = lambda x: self.cmbRoundedTrackSmallDistanceVar.set(x)
-        self.cmbRoundedTrackSmallDistance.text = lambda : self.cmbRoundedTrackSmallDistanceVar.get()
-        self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.486, relwidth=0.11)
-        self.lblRoundedTrackSmallDVar = StringVar(value='small d(mm)')
-        self.style.configure('TlblRoundedTrackSmallD.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblRoundedTrackSmallD = Label(self.tabStrip__Tab6, text='small d(mm)', textvariable=self.lblRoundedTrackSmallDVar, style='TlblRoundedTrackSmallD.TLabel')
-        self.lblRoundedTrackSmallD.setText = lambda x: self.lblRoundedTrackSmallDVar.set(x)
-        self.lblRoundedTrackSmallD.text = lambda : self.lblRoundedTrackSmallDVar.get()
-        self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.486, relwidth=0.204, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab6, text='ArcTrack')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
-
 
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
@@ -683,7 +684,8 @@ class Application(Application_ui):
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
         self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数
-
+        self.txtFontSize = 14
+        
         self.versionJson = {} #用来更新版本使用
         self.checkUpdateFrequency = 30
         self.lastCheckUpdate = None
@@ -1043,6 +1045,8 @@ class Application(Application_ui):
             if lastFont and (lastFont in self.cmbFontList):
                 self.cmbFont.current(self.cmbFontList.index(lastFont))
 
+            self.txtFontSize = str_to_int(cfg.get('txtFontSize', '14'))
+
             lastHeight = str_to_float(cfg.get('height', ''))
             if lastHeight:
                 self.cmbFontHeight.setText(str(lastHeight))
@@ -1152,7 +1156,8 @@ class Application(Application_ui):
         if self.versionJson: #如果检查到版本更新，则第二天再检查一次
             self.lastCheckUpdate = datetime.datetime.now() - datetime.timedelta(days=29)
 
-        cfg = {'language': self.language, 'font': self.cmbFont.text(), 'height': self.cmbFontHeight.text(), 
+        cfg = {'language': self.language, 'font': self.cmbFont.text(), 
+            'txtFontSize': str(self.txtFontSize), 'height': self.cmbFontHeight.text(), 
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
             'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
             'importFootprintText': str(self.chkImportFootprintText.value()),
@@ -1182,6 +1187,9 @@ class Application(Application_ui):
             except:
                 pass
     
+    def cmbFont_ComboboxSelected(self, event=None):
+        self.txtMain.configure(font=Font(family=self.cmbFont.text(), size=self.txtFontSize))
+        
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
         ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"), "*.kicad_mod"), 
@@ -1582,13 +1590,13 @@ class Application(Application_ui):
                     ttCol = ttCollection.TTCollection(fontFileName)
                     insList = ttCol.fonts
                 except Exception as e:
-                    print(str(e))
+                    print('Load ttc/otc failed ({}) : {}'.format(fontFileName, str(e)))
                     continue
             else:
                 try:
                     insList = [ttFont.TTFont(fontFileName, lazy=True),]
                 except Exception as e:
-                    print(str(e))
+                    print('Load ttf failed ({}) : {}'.format(fontFileName, str(e)))
                     continue
             
             for fontIdx, font in enumerate(insList):
