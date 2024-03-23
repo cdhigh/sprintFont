@@ -164,6 +164,9 @@ class I18n:
     "small d(mm)": ("", "小 d(mm)"),
     "Convert": ("", "转换"),
     "No suitable track found": ("", "没有找到符合条件的走线"),
+    "The file contains no components.": ("", "此文件没有包含任何元件。"),
+    "The ID is empty.": ("", "ID为空。"),
+    "The content of this file is not in valid JSON format.": ("", "此文件的内容不是合法的json格式。"),
     }
     
     #这个属性是可以在程序执行过程中修改的

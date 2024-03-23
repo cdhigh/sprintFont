@@ -9,7 +9,8 @@ import os, sys
 from io import StringIO
 from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
-from kicad_pcb.kicad_mod import KicadMod
+from kicad_pcb.kicad_mod import KicadMod, FootPrint8NotSupported
+from kicad_pcb8.kicad_mod import KicadMod as KicadMod8
 from comm_utils import str_to_int
 
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
@@ -47,14 +48,19 @@ kicadPadShapeMap = {
 }
 
 
-#输入一个Kicad的封装文件(*.kicad_mod)，返回Sprint-Layout定义的Text-IO
+#输入一个Kicad的封装文件(*.kicad_mod)，返回Sprint-Layout定义的Text-IO或错误字符串
 #kicadFile: kicad_mod文件名
 #importText: 是否输出文本信息
 def kicadModToTextIo(kicadFile: str, importText: int):
     try:
         kicadMod = KicadMod(kicadFile)
-    except:
-        return None
+    except FootPrint8NotSupported:
+        try:
+            kicadMod = KicadMod8(kicadFile)
+        except Exception as e:
+            return str(e)
+    except Exception as e:
+        return str(e)
     
     textIo = SprintTextIO()
     component = SprintComponent()
@@ -208,7 +214,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
             continue
         spCir = SprintCircle(layerIdx=layerIdx)
         spCir.width = kiArc['width']
-        if kiArc['mid']: #Kicad v6定义
+        if kiArc['mid']: #Kicad v6开始定义，但是v6封装名使用module，v7才开始使用footprint
             spCir.center = (kiArc["center"]['x'], kiArc["center"]['y'])
             spCir.radius = kiArc['radius']
         else:
@@ -222,8 +228,9 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         textIo.add(component)
         return textIo
     else:
-        return None
+        return _("The file contains no components.")
 
+    #暂时先不支持曲线
     #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
     bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
     for kiCur in kicadMod.curves:

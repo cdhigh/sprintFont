@@ -87,13 +87,12 @@ class LcComponent:
     @classmethod
     def fromLcId(cls, lcId: str, easyEdaSite: str):
         if not lcId:
-            return None
+            return _("The ID is empty.")
 
         lcId = lcId.upper()
         if not lcId.startswith('C'):
             lcId = 'C' + lcId
-
-        errMsg = None
+            
         errMsg, fpUuid = cls.getFootprintUuid(lcId, easyEdaSite)
 
         if not fpUuid:
@@ -106,7 +105,7 @@ class LcComponent:
         #print(ins.fpShape) #TODO
         return ins
 
-    #从JSON文件创建
+    #从JSON文件创建，正确返回LcComponent实例，错误返回错误字符串
     @classmethod
     def fromFile(cls, fileName: str):
         data = None
@@ -115,10 +114,10 @@ class LcComponent:
                 data = json.loads(f.read())
         except Exception as e:
             #print('open failed: {}, {}'.format(fileName, str(e)))
-            return None
+            return _('open failed: {}, {}'.format(fileName, str(e)))
 
         if not isinstance(data, dict):
-            return None
+            return _('The content of this file is not in valid JSON format.')
 
         ins = LcComponent()
         ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromLocalJson(data)

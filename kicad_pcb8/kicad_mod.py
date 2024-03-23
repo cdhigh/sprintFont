@@ -1,21 +1,24 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
 """
 Library for handling KiCad's footprint files (`*.kicad_mod`).
-来源：https://gitlab.com/kicad/libraries/kicad-library-utils/-/tree/master/common
-此代码支持的格式：https://dev-docs.kicad.org/en/file-formats/legacy-4-to-6/
-新格式：https://dev-docs.kicad.org/en/file-formats/sexpr-intro/
-已经修改过：基于Gitlab上的2022-04-13版本修改，支持kicad 封装标准5/6
-1. 使用时注意ARC的新老版本定义不一样，要判断arc_dict["mid"]是否为空
-2. 打开文件时使用不同的解码策略
+docs <https://dev-docs.kicad.org/en/file-formats/sexpr-intro/>
+version 2024-03-01
+code <https://gitlab.com/kicad/libraries/kicad-library-utils/-/tree/master/common>
+supports footprint standard 7/8
+modified by cdhigh, search by using cdhigh to find all modified positions
 """
 
 import copy
 import math
 import time
-import locale
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-from .sexpr import parse_sexp, SexprBuilder
+from . import sexpr
 from .boundingbox import BoundingBox
+
+class FootPrint6NotSupported(Exception):
+    pass
 
 # Rotate a point by given angle (in degrees)
 def _rotatePoint(point: Dict[str, float], degrees: float) -> Dict[str, float]:
@@ -55,8 +58,6 @@ def _movePoint(point: Dict[str, float], offset: Dict[str, float]) -> Dict[str, f
 
     return p
 
-class FootPrint8NotSupported(Exception):
-    pass
 
 class KicadMod:
     """
@@ -65,25 +66,30 @@ class KicadMod:
 
     SEXPR_BOARD_FILE_VERSION = 20210108
 
-    def __init__(self, filename: str):
+    def __init__(self, filename: str=None, data=None):
         self.filename: str = filename
 
-        # read the s-expression data
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                sexpr_data = "".join(f.readlines())
-        except UnicodeDecodeError:
+        if data is not None:
+            sexpr_data = data
+        elif filename:
+            #Modified by cdhigh 2024-03-23, open with multiple encodings
             try:
-                with open(filename, 'r', encoding=locale.getpreferredencoding()) as f:
-                    sexpr_data = "".join(f.readlines())
-            except UnicodeDecodeError:  #如果还失败，则让其抛出异常，在外面捕获
-                with open(filename, 'r', encoding='latin-1') as f:
-                    sexpr_data = "".join(f.readlines())
+                with open(filename, 'r', encoding='utf-8') as f:
+                    sexpr_data = f.read()
+            except UnicodeDecodeError:
+                try:
+                    with open(filename, 'r', encoding=locale.getpreferredencoding()) as f:
+                        sexpr_data = f.read()
+                except UnicodeDecodeError:  #如果还失败，则让其抛出异常，在外面捕获
+                    with open(filename, 'r', encoding='latin-1') as f:
+                        sexpr_data = f.read()
+        else:
+            raise ValueError('Either filename or data must be given.')
 
         # parse s-expr
-        sexpr_data = parse_sexp(sexpr_data)
-        if sexpr_data[0] != "module":
-            raise FootPrint8NotSupported()
+        sexpr_data = sexpr.parse_sexp(sexpr_data)
+        if sexpr_data[0] != "footprint":
+            raise FootPrint6NotSupported()
 
         self.sexpr_data = sexpr_data
 
@@ -228,44 +234,49 @@ class KicadMod:
     def _getText(self, which_text) -> List[Any]:
         result = []
 
-        for text in self._getArray(self.sexpr_data, "fp_text"):
-            if text[1] == which_text:
-                text_dict = {}
-                text_dict[which_text] = text[2]
+        for propertykey in ["fp_text", "property"]:
+            for text in self._getArray(self.sexpr_data, propertykey):
+                if text[1] == which_text or text[1].lower() == which_text:
+                    text_dict = {}
+                    text_dict[which_text] = text[2]
 
-                # text position
-                a = self._getArray(text, "at")[0]
-                text_dict["pos"] = {"x": a[1], "y": a[2], "orientation": 0}
-                if len(a) > 3:
-                    text_dict["pos"]["orientation"] = a[3]
+                    # text position
+                    a = self._getArray(text, "at")[0]
+                    text_dict["pos"] = {"x": a[1], "y": a[2], "orientation": 0, "lock": 'locked'}
+                    if len(a) > 3:
+                        text_dict["pos"]["orientation"] = a[3]
+                        if text_dict["pos"]["orientation"] == 'unlocked':
+                            text_dict["pos"]["lock"] = a[3]
+                    if len(a) > 4 :
+                        text_dict["pos"]["lock"] = a[4]
 
-                # text layer
-                a = self._getArray(text, "layer")[0]
-                text_dict["layer"] = a[1]
+                    # text layer
+                    a = self._getArray(text, "layer")[0]
+                    text_dict["layer"] = a[1]
 
-                # text font
-                font = self._getArray(text, "font")[0]
+                    # text font
+                    font = self._getArray(text, "font")[0]
 
-                # Some footprints miss out some parameters
-                text_dict["font"] = {"thickness": 0, "height": 0, "width": 0}
+                    # Some footprints miss out some parameters
+                    text_dict["font"] = {"thickness": 0, "height": 0, "width": 0}
 
-                for pair in font[1:]:
-                    key = pair[0]
-                    data = pair[1:]
+                    for pair in font[1:]:
+                        key = pair[0]
+                        data = pair[1:]
 
-                    if key == "thickness":
-                        text_dict["font"]["thickness"] = data[0]
+                        if key == "thickness":
+                            text_dict["font"]["thickness"] = data[0]
 
-                    elif key == "size":
-                        text_dict["font"]["height"] = data[0]
-                        text_dict["font"]["width"] = data[1]
+                        elif key == "size":
+                            text_dict["font"]["height"] = data[0]
+                            text_dict["font"]["width"] = data[1]
 
-                text_dict["font"]["italic"] = self._hasValue(a, "italic")
+                    text_dict["font"]["italic"] = self._hasValue(a, "italic")
 
-                # text hide
-                text_dict["hide"] = self._hasValue(text, "hide")
+                    # text hide
+                    text_dict["hide"] = self._hasValue(text, "hide")
 
-                result.append(text_dict)
+                    result.append(text_dict)
 
         return result
 
@@ -402,24 +413,22 @@ class KicadMod:
                 a = self._getArray(arc, "end")[0]
                 arc_dict["end"] = {"x": a[1], "y": a[2]}
 
-                #Modified by cdhigh 2022-05-19, 适配老的封装格式，老的封装格式只有有start/end/angle
-                try:
-                    a = self._getArray(arc, "mid")[0]
-                    arc_dict["mid"] = {"x": a[1], "y": a[2]}
-                except:
-                    angleTmp = self._getArray(arc, "angle")[0]
-                    arc_dict["angle"] = angleTmp[-1] if angleTmp else 0
-                    arc_dict["mid"] = None
+                a = self._getArray(arc, "mid")[0]
+                arc_dict["mid"] = {"x": a[1], "y": a[2]}
 
                 # make readable names
-                if arc_dict["mid"]:
-                    p1x = arc_dict["start"]["x"]
-                    p1y = arc_dict["start"]["y"]
-                    p2x = arc_dict["mid"]["x"]
-                    p2y = arc_dict["mid"]["y"]
-                    p3x = arc_dict["end"]["x"]
-                    p3y = arc_dict["end"]["y"]
+                p1x = arc_dict["start"]["x"]
+                p1y = arc_dict["start"]["y"]
+                p2x = arc_dict["mid"]["x"]
+                p2y = arc_dict["mid"]["y"]
+                p3x = arc_dict["end"]["x"]
+                p3y = arc_dict["end"]["y"]
 
+                if math.sqrt((p1x - p3x)**2 + (p1y - p3y)**2) < 1e-7:
+                    # start and end points match --> center is half way between
+                    # start(=end) and mid
+                    rx, ry = 0.5 * (p1x + p2x), 0.5 * (p1y + p2y)
+                else:
                     # make square names
                     p1x_2 = p1x * p1x
                     p1y_2 = p1y * p1y
@@ -431,9 +440,6 @@ class KicadMod:
                     # Calculte coordinates of the Center (rx,ry) from the three points
                     # using formula found on http://ambrsoft.com/TrigoCalc/Circle3D.htm
                     A = 2 * (p1x * (p2y - p3y) - p1y * (p2x - p3x) + p2x * p3y - p3x * p2y)
-                    if A == 0: #先不管怎么回事，这个弧形跳过
-                        continue
-
                     rx = (
                         ((p1x_2 + p1y_2) * (p2y - p3y))
                         + ((p2x_2 + p2y_2) * (p3y - p1y))
@@ -445,23 +451,23 @@ class KicadMod:
                         + ((p3x_2 + p3y_2) * (p2x - p1x))
                     ) / A
 
-                    #Modified by cdhigh 2022-05-19, 保存圆心位置
-                    arc_dict["center"] = {}
-                    arc_dict["center"]['x'] = rx
-                    arc_dict["center"]['y'] = ry
-                    arc_dict['radius'] = math.sqrt(((rx - p1x) ** 2) + ((ry - p1y) ** 2))
+                #Modified by cdhigh 2024-03-23, 保存圆心位置
+                arc_dict["center"] = {}
+                arc_dict["center"]['x'] = rx
+                arc_dict["center"]['y'] = ry
+                arc_dict['radius'] = math.sqrt(((rx - p1x) ** 2) + ((ry - p1y) ** 2))
 
-                    # Then get diff between  vectors End-Center, Start-Center
-                    Diff = math.atan2(p3y - ry, p3x - rx) - math.atan2(p1y - ry, p1x - rx)
-                    # print ("\nangle =" , math.degrees( Diff ))
+                # Then get diff between  vectors End-Center, Start-Center
+                Diff = math.atan2(p3y - ry, p3x - rx) - math.atan2(p1y - ry, p1x - rx)
+                # print ("\nangle =" , math.degrees( Diff ))
 
-                    #  Diff is always the shorter angle, ignoring Mid. Need to adjust
-                    if Diff < 0.0:
-                        Diff = 2 * math.pi + Diff
+                #  Diff is always the shorter angle, ignoring Mid. Need to adjust
+                if Diff < 0.0:
+                    Diff = 2 * math.pi + Diff
 
-                    # print ("\n corrected angle =" , math.degrees( Diff ))
-                    arc_dict["angle"] = Diff
+                # print ("\n corrected angle =" , math.degrees( Diff ))
 
+                arc_dict["angle"] = Diff
                 try:
                     a = self._getArray(arc, "layer")[0]
                     arc_dict["layer"] = a[1]
@@ -498,11 +504,22 @@ class KicadMod:
             a = self._getArray(pad, "layers")[0]
             pad_dict["layers"] = a[1:]
 
+            # Property (fabrication property, e.g. pad_prop_heatsink)
+            pad_dict["property"] = None
+            a = self._getArray(pad, "property")
+            if a:
+                pad_dict["property"] = a[0][1]
+
             # rect delta
             pad_dict["rect_delta"] = {}
             a = self._getArray(pad, "rect_delta")
             if a:
                 pad_dict["rect_delta"] = a[0][1:]
+
+            pad_dict["roundrect_rratio"] = {}
+            a = self._getArray(pad, "roundrect_rratio")
+            if a:
+                pad_dict["roundrect_rratio"] = a[0][1]
 
             # drill
             pad_dict["drill"] = {}
@@ -608,7 +625,16 @@ class KicadMod:
                             p["pts"] = []
                             pts = self._getArray(primitive, "pts")
                             for pt in pts[0][1:]:
-                                p["pts"].append({"x": pt[1], "y": pt[2]})
+                                if pt[0] == "xy":
+                                    p["pts"].append({"x": pt[1], "y": pt[2]})
+                                elif pt[0] == "arc":
+                                    # in case there is an arc part of a polygon, add start/mid/end
+                                    for name in ["start", "mid", "end"]:
+                                        s = self._getArray(pt, name)
+                                        if s:
+                                            p["pts"].append({"x": s[0][1], "y": s[0][2]})
+                                else:
+                                    raise ValueError(f"unhandled primitive '{pt[0]}' in custom pad shape polygon")
                         elif primitive[0] == "gr_line":
                             # Read the line's start
                             p["start"] = {}
@@ -626,16 +652,16 @@ class KicadMod:
                             s = self._getArray(primitive, "start")
                             if s:
                                 p["start"] = {"x": s[0][1], "y": s[0][2]}
+                            # Read the arc's mid
+                            p["mid"] = {}
+                            s = self._getArray(primitive, "mid")
+                            if s:
+                                p["mid"] = {"x": s[0][1], "y": s[0][2]}
                             # Read the arc's end
                             p["end"] = {}
                             e = self._getArray(primitive, "end")
                             if e:
                                 p["end"] = {"x": e[0][1], "y": e[0][2]}
-                            # Read the arc's angle
-                            p["angle"] = {}
-                            n = self._getArray(primitive, "angle")
-                            if n:
-                                p["angle"] = n[0][1]
                         elif primitive[0] == "gr_circle":
                             # Read the line's start
                             p["center"] = {}
@@ -808,6 +834,7 @@ class KicadMod:
         # change arcs position
         for arc in self.arcs:
             arc["start"] = _rotatePoint(arc["start"], degrees)
+            arc["mid"] = _rotatePoint(arc["mid"], degrees)
             arc["end"] = _rotatePoint(arc["end"], degrees)
 
         # change pads positions
@@ -1092,7 +1119,7 @@ class KicadMod:
 
         return bb
 
-    def _formatText(self, text_type, text, se: SexprBuilder) -> None:
+    def _formatText(self, text_type, text, se: sexpr.SexprBuilder) -> None:
 
         """
         Text is formatted like thus:
@@ -1135,7 +1162,7 @@ class KicadMod:
         se.endGroup(False)
         se.endGroup(True)
 
-    def _formatLine(self, line, se: SexprBuilder):
+    def _formatLine(self, line, se: sexpr.SexprBuilder):
         se.startGroup("fp_line", newline=True, indent=False)
 
         start = line["start"]
@@ -1151,7 +1178,7 @@ class KicadMod:
         se.addItems(fp_line, newline=False)
         se.endGroup(newline=False)
 
-    def _formatRect(self, line, se: SexprBuilder):
+    def _formatRect(self, line, se: sexpr.SexprBuilder):
         se.startGroup("fp_rect", newline=True, indent=False)
 
         start = line["start"]
@@ -1167,7 +1194,7 @@ class KicadMod:
         se.addItems(fp_line, newline=False)
         se.endGroup(newline=False)
 
-    def _formatCircle(self, circle, se: SexprBuilder):
+    def _formatCircle(self, circle, se: sexpr.SexprBuilder):
         se.startGroup("fp_circle", newline=True, indent=False)
 
         center = circle["center"]
@@ -1183,7 +1210,7 @@ class KicadMod:
         se.addItems(fp_circle, newline=False)
         se.endGroup(newline=False)
 
-    def _formatPoly(self, poly, se: SexprBuilder):
+    def _formatPoly(self, poly, se: sexpr.SexprBuilder):
         se.startGroup("fp_poly", newline=True, indent=False)
 
         se.startGroup("pts", newline=False, indent=True)
@@ -1201,16 +1228,17 @@ class KicadMod:
         se.addItems(fp_poly, newline=False)
         se.endGroup(newline=False)
 
-    def _formatArc(self, arc, se: SexprBuilder):
+    def _formatArc(self, arc, se: sexpr.SexprBuilder):
         se.startGroup("fp_arc", newline=True, indent=False)
 
         start = arc["start"]
+        mid = arc["mid"]
         end = arc["end"]
 
         fp_arc = [
             {"start": [start["x"], start["y"]]},
+            {"mid": [mid["x"], mid["y"]]},
             {"end": [end["x"], end["y"]]},
-            {"angle": arc["angle"]},
             {"layer": arc["layer"]},
             {"width": arc["width"]},
         ]
@@ -1218,7 +1246,7 @@ class KicadMod:
         se.addItems(fp_arc, newline=False)
         se.endGroup(newline=False)
 
-    def _formatPad(self, pad, se: SexprBuilder):
+    def _formatPad(self, pad, se: sexpr.SexprBuilder):
         pos = pad["pos"]
 
         se.startGroup("pad", newline=True, indent=False)
@@ -1258,6 +1286,12 @@ class KicadMod:
 
         # Layers
         fp_pad.append({"layers": pad["layers"]})
+
+        # RoundRect Radius Ratio?
+        if pad["shape"] == "roundrect":
+            rratio = pad.get("roundrect_rratio", 0)
+            if rratio:
+                fp_pad.append({"roundrect_rratio": rratio})
 
         se.addItems(fp_pad, newline=False)
 
@@ -1306,7 +1340,7 @@ class KicadMod:
 
         se.endGroup(newline=False)
 
-    def _formatModel(self, model, se: SexprBuilder):
+    def _formatModel(self, model, se: sexpr.SexprBuilder):
         se.startGroup("model", newline=True, indent=False)
 
         se.addItems(model["file"], newline=False)
@@ -1335,7 +1369,7 @@ class KicadMod:
         if not filename:
             filename = self.filename
 
-        se = SexprBuilder("footprint")
+        se = sexpr.SexprBuilder("footprint")
 
         # Hex value of current epoch timestamp (in seconds)
         tedit = hex(int(time.time())).upper()[2:]
@@ -1442,4 +1476,3 @@ class KicadMod:
         with open(filename, "w", newline="\n") as f:
             f.write(se.output)
             f.write("\n")
-

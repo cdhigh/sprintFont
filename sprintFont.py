@@ -40,8 +40,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.2"
-__DATE__ = "20231227"
+__VERSION__ = "1.5.4"
+__DATE__ = "20240323"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -1647,7 +1647,7 @@ class Application(Application_ui):
             textIo = kicadModToTextIo(fileName, importText)
         elif (fileName.endswith('.json')):  #立创EDA离线封装文件
             ins = LcComponent.fromFile(fileName)
-            textIo = ins.createSprintTextIo(importText) if ins else None
+            textIo = ins if not ins or isinstance(ins, str) else ins.createSprintTextIo(importText)
         elif LcComponent.isLcedaComponent(fileName): #在线立创EDA
             easyEdaSite = self.easyEdaSite
             if not easyEdaSite:
@@ -1656,12 +1656,15 @@ class Application(Application_ui):
             ins = LcComponent.fromLcId(fileName, easyEdaSite)
             if isinstance(ins, LcComponent):
                 textIo = ins.createSprintTextIo(importText)
-            elif ins:
-                msg = str(ins)
+            else:
+                textIo = str(ins)
         else:
             msg = _("This file format is not supported")
 
-        return (msg, str(textIo) if (textIo and textIo.isValid()) else '')
+        if not msg and isinstance(textIo, str):
+            msg = textIo
+
+        return (msg, str(textIo))
 
     #将SVG文件转换为Sprint-Layout格式
     #fileName: SVG文件名或二维码文本
