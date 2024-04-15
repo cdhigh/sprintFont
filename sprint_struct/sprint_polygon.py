@@ -24,6 +24,7 @@ class SprintPolygon(SprintElement):
         self.clearance = None
         self.cutout = None  #是否为禁止布线区
         self.soldermask = None  #是否为阻焊区
+        self.soldermaskCutout = None #是否为单独的阻焊开窗
         self.hatch = None  #是否为网格填充
         self.hatchAuto = None  #是否自动选择网格填充的线宽
         self.hatchWidth = None  #网格填充的自定义线宽
@@ -49,6 +50,8 @@ class SprintPolygon(SprintElement):
             outStr.append('CUTOUT={}'.format(self.booleanStr(self.cutout)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
+        if self.soldermaskCutout is not None:
+            outStr.append('SOLDERMASK_CUTOUT={}'.format(self.booleanStr(self.soldermaskCutout)))
         if self.hatch is not None:
             outStr.append('HATCH={}'.format(self.booleanStr(self.hatch)))
         if self.hatchAuto is not None:
@@ -188,6 +191,7 @@ class SprintPolygon(SprintElement):
         ins.clearance = self.clearance
         ins.cutout = self.cutout
         ins.soldermask = self.soldermask
+        ins.soldermaskCutout = self.soldermaskCutout
         ins.hatch = self.hatch
         ins.hatchAuto = self.hatchAuto
         ins.hatchWidth = self.hatchWidth

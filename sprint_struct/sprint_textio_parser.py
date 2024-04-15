@@ -279,6 +279,8 @@ class SprintTextIoParser:
                 poly.cutout = self.parseBooleanStr(value)
             elif (key == 'SOLDERMASK'):
                 poly.soldermask = self.parseBooleanStr(value)
+            elif (key == 'SOLDERMASK_CUTOUT'):
+                poly.soldermaskCutout = self.parseBooleanStr(value)
             elif (key == 'HATCH'):
                 poly.hatch = self.parseBooleanStr(value)
             elif (key == 'HATCH_AUTO'):
