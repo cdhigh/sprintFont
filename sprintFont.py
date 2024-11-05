@@ -40,8 +40,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.4"
-__DATE__ = "20240323"
+__VERSION__ = "1.5.5"
+__DATE__ = "20241105"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -128,8 +128,8 @@ class Application_ui(Frame):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (624 / 2)
-        y = (hs / 2) - (358 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (624,358,x,y))
+        y = (hs / 2) - (366 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (624,366,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -171,7 +171,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.045, relwidth=0.95, relheight=0.874)
+        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.95, relheight=0.855)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -179,7 +179,7 @@ class Application_ui(Frame):
         self.VScroll1.place(relx=0.917, rely=0.128, relwidth=0.029, relheight=0.182)
         self.cmbLayerList = ['',]
         self.cmbLayerVar = StringVar(value='')
-        self.cmbLayer = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
+        self.cmbLayer = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
         self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
         self.cmbLayer.text = lambda : self.cmbLayerVar.get()
         self.cmbLayer.place(relx=0.162, rely=0.511, relwidth=0.352)
@@ -190,7 +190,7 @@ class Application_ui(Frame):
         self.VScroll1['command'] = self.txtMain.yview
         self.cmbSmoothList = ['',]
         self.cmbSmoothVar = StringVar(value='')
-        self.cmbSmooth = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
+        self.cmbSmooth = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
         self.cmbSmooth.setText = lambda x: self.cmbSmoothVar.set(x)
         self.cmbSmooth.text = lambda : self.cmbSmoothVar.get()
         self.cmbSmooth.place(relx=0.162, rely=0.639, relwidth=0.352)
@@ -208,25 +208,25 @@ class Application_ui(Frame):
         self.cmdCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
         self.cmbWordSpacingList = ['',]
         self.cmbWordSpacingVar = StringVar(value='')
-        self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
+        self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
         self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
         self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
         self.cmbWordSpacing.place(relx=0.782, rely=0.511, relwidth=0.177)
         self.cmbLineSpacingList = ['',]
         self.cmbLineSpacingVar = StringVar(value='')
-        self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
+        self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
         self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
         self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
         self.cmbLineSpacing.place(relx=0.782, rely=0.639, relwidth=0.177)
         self.cmbFontHeightList = ['',]
         self.cmbFontHeightVar = StringVar(value='')
-        self.cmbFontHeight = Combobox(self.tabStrip__Tab1, textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
+        self.cmbFontHeight = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
         self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
         self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
         self.cmbFontHeight.place(relx=0.782, rely=0.383, relwidth=0.177)
         self.cmbFontList = ['',]
         self.cmbFontVar = StringVar(value='')
-        self.cmbFont = Combobox(self.tabStrip__Tab1, state='readonly', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
+        self.cmbFont = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
         self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
         self.cmbFont.text = lambda : self.cmbFontVar.get()
         self.cmbFont.place(relx=0.162, rely=0.383, relwidth=0.352)
@@ -336,31 +336,31 @@ class Application_ui(Frame):
         self.tabStrip__Tab3 = Frame(self.tabStrip)
         self.cmbSvgQrcodeList = ['',]
         self.cmbSvgQrcodeVar = StringVar(value='')
-        self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
+        self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
         self.cmbSvgQrcode.setText = lambda x: self.cmbSvgQrcodeVar.set(x)
         self.cmbSvgQrcode.text = lambda : self.cmbSvgQrcodeVar.get()
         self.cmbSvgQrcode.place(relx=0.013, rely=0.319, relwidth=0.164)
         self.cmbSvgModeList = ['',]
         self.cmbSvgModeVar = StringVar(value='')
-        self.cmbSvgMode = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgModeVar, values=self.cmbSvgModeList, font=('微软雅黑',10))
+        self.cmbSvgMode = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgModeVar, values=self.cmbSvgModeList, font=('微软雅黑',10))
         self.cmbSvgMode.setText = lambda x: self.cmbSvgModeVar.set(x)
         self.cmbSvgMode.text = lambda : self.cmbSvgModeVar.get()
         self.cmbSvgMode.place(relx=0.175, rely=0.46, relwidth=0.352)
         self.cmbSvgHeightList = ['',]
         self.cmbSvgHeightVar = StringVar(value='')
-        self.cmbSvgHeight = Combobox(self.tabStrip__Tab3, textvariable=self.cmbSvgHeightVar, values=self.cmbSvgHeightList, font=('微软雅黑',10))
+        self.cmbSvgHeight = Combobox(self.tabStrip__Tab3, exportselection=0, textvariable=self.cmbSvgHeightVar, values=self.cmbSvgHeightList, font=('微软雅黑',10))
         self.cmbSvgHeight.setText = lambda x: self.cmbSvgHeightVar.set(x)
         self.cmbSvgHeight.text = lambda : self.cmbSvgHeightVar.get()
         self.cmbSvgHeight.place(relx=0.728, rely=0.46, relwidth=0.245)
         self.cmbSvgSmoothList = ['',]
         self.cmbSvgSmoothVar = StringVar(value='')
-        self.cmbSvgSmooth = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgSmoothVar, values=self.cmbSvgSmoothList, font=('微软雅黑',10))
+        self.cmbSvgSmooth = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgSmoothVar, values=self.cmbSvgSmoothList, font=('微软雅黑',10))
         self.cmbSvgSmooth.setText = lambda x: self.cmbSvgSmoothVar.set(x)
         self.cmbSvgSmooth.text = lambda : self.cmbSvgSmoothVar.get()
         self.cmbSvgSmooth.place(relx=0.728, rely=0.588, relwidth=0.245)
         self.cmbSvgLayerList = ['',]
         self.cmbSvgLayerVar = StringVar(value='')
-        self.cmbSvgLayer = Combobox(self.tabStrip__Tab3, state='readonly', textvariable=self.cmbSvgLayerVar, values=self.cmbSvgLayerList, font=('微软雅黑',10))
+        self.cmbSvgLayer = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgLayerVar, values=self.cmbSvgLayerList, font=('微软雅黑',10))
         self.cmbSvgLayer.setText = lambda x: self.cmbSvgLayerVar.set(x)
         self.cmbSvgLayer.text = lambda : self.cmbSvgLayerVar.get()
         self.cmbSvgLayer.place(relx=0.175, rely=0.588, relwidth=0.352)
@@ -510,15 +510,6 @@ class Application_ui(Frame):
         self.tabStrip__Tab5 = Frame(self.tabStrip)
         self.picTeardrops = Canvas(self.tabStrip__Tab5, takefocus=1, highlightthickness=0)
         self.picTeardrops.place(relx=0.499, rely=0.204, relwidth=0.447, relheight=0.514)
-        self.chkIncludeSmdPadsTextVar = StringVar(value='Include SMD pads')
-        self.chkIncludeSmdPadsVar = IntVar(value=0)
-        self.style.configure('TchkIncludeSmdPads.TCheckbutton', font=('微软雅黑',10))
-        self.chkIncludeSmdPads = Checkbutton(self.tabStrip__Tab5, text='Include SMD pads', textvariable=self.chkIncludeSmdPadsTextVar, variable=self.chkIncludeSmdPadsVar, style='TchkIncludeSmdPads.TCheckbutton')
-        self.chkIncludeSmdPads.setText = lambda x: self.chkIncludeSmdPadsTextVar.set(x)
-        self.chkIncludeSmdPads.text = lambda : self.chkIncludeSmdPadsTextVar.get()
-        self.chkIncludeSmdPads.setValue = lambda x: self.chkIncludeSmdPadsVar.set(x)
-        self.chkIncludeSmdPads.value = lambda : self.chkIncludeSmdPadsVar.get()
-        self.chkIncludeSmdPads.place(relx=0.121, rely=0.639, relwidth=0.312, relheight=0.08)
         self.cmdRemoveTeardropsVar = StringVar(value='Remove')
         self.style.configure('TcmdRemoveTeardrops.TButton', font=('微软雅黑',10))
         self.cmdRemoveTeardrops = Button(self.tabStrip__Tab5, text='Remove', textvariable=self.cmdRemoveTeardropsVar, command=self.cmdRemoveTeardrops_Cmd, style='TcmdRemoveTeardrops.TButton')
@@ -527,7 +518,7 @@ class Application_ui(Frame):
         self.cmdRemoveTeardrops.place(relx=0.31, rely=0.818, relwidth=0.204, relheight=0.096)
         self.cmbhPercentList = ['',]
         self.cmbhPercentVar = StringVar(value='')
-        self.cmbhPercent = Combobox(self.tabStrip__Tab5, textvariable=self.cmbhPercentVar, values=self.cmbhPercentList, font=('微软雅黑',10))
+        self.cmbhPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbhPercentVar, values=self.cmbhPercentList, font=('微软雅黑',10))
         self.cmbhPercent.setText = lambda x: self.cmbhPercentVar.set(x)
         self.cmbhPercent.text = lambda : self.cmbhPercentVar.get()
         self.cmbhPercent.place(relx=0.31, rely=0.23, relwidth=0.137)
@@ -545,13 +536,13 @@ class Application_ui(Frame):
         self.cmdAddTeardrops.place(relx=0.04, rely=0.818, relwidth=0.204, relheight=0.096)
         self.cmbTeardropSegsList = ['',]
         self.cmbTeardropSegsVar = StringVar(value='')
-        self.cmbTeardropSegs = Combobox(self.tabStrip__Tab5, textvariable=self.cmbTeardropSegsVar, values=self.cmbTeardropSegsList, font=('微软雅黑',10))
+        self.cmbTeardropSegs = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbTeardropSegsVar, values=self.cmbTeardropSegsList, font=('微软雅黑',10))
         self.cmbTeardropSegs.setText = lambda x: self.cmbTeardropSegsVar.set(x)
         self.cmbTeardropSegs.text = lambda : self.cmbTeardropSegsVar.get()
         self.cmbTeardropSegs.place(relx=0.31, rely=0.486, relwidth=0.137)
         self.cmbvPercentList = ['',]
         self.cmbvPercentVar = StringVar(value='')
-        self.cmbvPercent = Combobox(self.tabStrip__Tab5, textvariable=self.cmbvPercentVar, values=self.cmbvPercentList, font=('微软雅黑',10))
+        self.cmbvPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbvPercentVar, values=self.cmbvPercentList, font=('微软雅黑',10))
         self.cmbvPercent.setText = lambda x: self.cmbvPercentVar.set(x)
         self.cmbvPercent.text = lambda : self.cmbvPercentVar.get()
         self.cmbvPercent.place(relx=0.31, rely=0.358, relwidth=0.137)
@@ -579,12 +570,24 @@ class Application_ui(Frame):
         self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
         self.lblvPercent.text = lambda : self.lblvPercentVar.get()
         self.lblvPercent.place(relx=0.027, rely=0.358, relwidth=0.258, relheight=0.08)
+        self.cmbTeardropPadTypeList = ['',]
+        self.cmbTeardropPadTypeVar = StringVar(value='')
+        self.cmbTeardropPadType = Combobox(self.tabStrip__Tab5, exportselection=0, state='readonly', textvariable=self.cmbTeardropPadTypeVar, values=self.cmbTeardropPadTypeList, font=('微软雅黑',10))
+        self.cmbTeardropPadType.setText = lambda x: self.cmbTeardropPadTypeVar.set(x)
+        self.cmbTeardropPadType.text = lambda : self.cmbTeardropPadTypeVar.get()
+        self.cmbTeardropPadType.place(relx=0.31, rely=0.613, relwidth=0.137)
+        self.lblTeardropPadTypeVar = StringVar(value='Pad type')
+        self.style.configure('TlblTeardropPadType.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblTeardropPadType = Label(self.tabStrip__Tab5, text='Pad type', textvariable=self.lblTeardropPadTypeVar, style='TlblTeardropPadType.TLabel')
+        self.lblTeardropPadType.setText = lambda x: self.lblTeardropPadTypeVar.set(x)
+        self.lblTeardropPadType.text = lambda : self.lblTeardropPadTypeVar.get()
+        self.lblTeardropPadType.place(relx=0.027, rely=0.613, relwidth=0.258, relheight=0.08)
         self.tabStrip.add(self.tabStrip__Tab5, text='Teardrop')
 
         self.tabStrip__Tab6 = Frame(self.tabStrip)
         self.cmbRoundedTrackSmallDistanceList = ['',]
         self.cmbRoundedTrackSmallDistanceVar = StringVar(value='')
-        self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
         self.cmbRoundedTrackSmallDistance.setText = lambda x: self.cmbRoundedTrackSmallDistanceVar.set(x)
         self.cmbRoundedTrackSmallDistance.text = lambda : self.cmbRoundedTrackSmallDistanceVar.get()
         self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.486, relwidth=0.11)
@@ -616,7 +619,7 @@ class Application_ui(Frame):
         self.optRoundedTrackTangent.place(relx=0.027, rely=0.23, relwidth=0.15, relheight=0.08)
         self.cmbRoundedTrackSegsList = ['',]
         self.cmbRoundedTrackSegsVar = StringVar(value='')
-        self.cmbRoundedTrackSegs = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackSegsVar, values=self.cmbRoundedTrackSegsList, font=('微软雅黑',10))
+        self.cmbRoundedTrackSegs = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackSegsVar, values=self.cmbRoundedTrackSegsList, font=('微软雅黑',10))
         self.cmbRoundedTrackSegs.setText = lambda x: self.cmbRoundedTrackSegsVar.set(x)
         self.cmbRoundedTrackSegs.text = lambda : self.cmbRoundedTrackSegsVar.get()
         self.cmbRoundedTrackSegs.place(relx=0.27, rely=0.613, relwidth=0.11)
@@ -634,7 +637,7 @@ class Application_ui(Frame):
         self.cmdRoundedTrackCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
         self.cmbRoundedTrackBigDistanceList = ['',]
         self.cmbRoundedTrackBigDistanceVar = StringVar(value='')
-        self.cmbRoundedTrackBigDistance = Combobox(self.tabStrip__Tab6, textvariable=self.cmbRoundedTrackBigDistanceVar, values=self.cmbRoundedTrackBigDistanceList, font=('微软雅黑',10))
+        self.cmbRoundedTrackBigDistance = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackBigDistanceVar, values=self.cmbRoundedTrackBigDistanceList, font=('微软雅黑',10))
         self.cmbRoundedTrackBigDistance.setText = lambda x: self.cmbRoundedTrackBigDistanceVar.set(x)
         self.cmbRoundedTrackBigDistance.text = lambda : self.cmbRoundedTrackBigDistanceVar.get()
         self.cmbRoundedTrackBigDistance.place(relx=0.27, rely=0.358, relwidth=0.11)
@@ -702,8 +705,6 @@ class Application(Application_ui):
         self.treRules.configure(selectmode='browse') #只允许单行选择
         #self.treRules.tag_configure('gray_row', background='#cccccc')
 
-        #先暂时屏蔽SMD焊盘的选项
-        self.chkIncludeSmdPads.configure(state='disabled')
         self.teardropImage = None
         self.roundedTrackImage = None
 
@@ -897,7 +898,7 @@ class Application(Application_ui):
         self.lblhPercent.setText(_("Horizontal percent"))
         self.lblvPercent.setText(_("Vertical percent"))
         self.lblTeardropSegs.setText(_("Number of segments"))
-        self.chkIncludeSmdPads.setText(_("Include SMD pads"))
+        self.lblTeardropPadType.setText(_("Pad type"))
         self.cmdAddTeardrops.setText(_("Add"))
         self.cmdRemoveTeardrops.setText(_("Remove"))
         self.cmdCancelTeardrops.setText(_("Cancel"))
@@ -999,6 +1000,9 @@ class Application(Application_ui):
         self.cmbTeardropSegsList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
         self.cmbTeardropSegs.configure(values=self.cmbTeardropSegsList)
         self.cmbTeardropSegs.current(9) #默认10个线段
+        self.cmbTeardropPadTypeList = [_("PTH pad"), _("SMD pad"), _("PTH/SMD")]
+        self.cmbTeardropPadType.configure(values=self.cmbTeardropPadTypeList)
+        self.cmbTeardropPadType.current(2)
 
         #弧形走线
         self.cmbRoundedTrackBigDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -1022,6 +1026,8 @@ class Application(Application_ui):
 
         if fontMap:
             self.fontNameMap = fontMap
+            #with open('d:/fontNameMap.json', 'w', encoding='utf-8') as f: #TODO
+            #    f.write(json.dumps(fontMap, ensure_ascii=False, indent=2))
             self.cmbFontList = sorted(self.fontNameMap.keys())
             self.cmbFont.configure(value=self.cmbFontList)
             lastFont = self.cfg.get('font', '')
@@ -1125,12 +1131,13 @@ class Application(Application_ui):
             hPercent = str_to_int(cfg.get('teardropHPercent', '50'))
             vPercent = str_to_int(cfg.get('teardropVPercent', '90'))
             segs = str_to_int(cfg.get('teardropSegs', '10'))
-            includeSmdPads = str_to_int(cfg.get('tdIncludeSmdPads', '0'))
+            padTypeIdx = str_to_int(cfg.get('teardropPadType', '2'))
             self.cmbhPercent.setText(str(hPercent))
             self.cmbvPercent.setText(str(vPercent))
-            self.chkIncludeSmdPads.setValue(includeSmdPads)
             if segs:
                 self.cmbTeardropSegs.setText(str(segs))
+            if 0 <= padTypeIdx <= 2:
+                self.cmbTeardropPadType.current(padTypeIdx)
 
             #弧形走线
             method = cfg.get('roundedTrackMethod', '')
@@ -1172,7 +1179,7 @@ class Application(Application_ui):
             'viaDrill': str(self.pcbRule.viaDrill), 'clearance': str(self.pcbRule.clearance),
             'smdSmdClearance': str(self.pcbRule.smdSmdClearance),
             'teardropHPercent': self.cmbhPercent.text(), 'teardropVPercent': self.cmbvPercent.text(),
-            'teardropSegs': self.cmbTeardropSegs.text(), 'tdIncludeSmdPads': str(self.chkIncludeSmdPads.value()),
+            'teardropSegs': self.cmbTeardropSegs.text(), 'teardropPadType': str(self.cmbTeardropPadType.current()),
             'roundedTrackMethod': self.roundedTrackMethod(), 'roundedTrackBigDistance': self.cmbRoundedTrackBigDistance.text(),
             'roundedTrackSmallDistance': self.cmbRoundedTrackSmallDistance.text(),
             'roundedTrackSegs': self.cmbRoundedTrackSegs.text(),
@@ -1937,11 +1944,15 @@ class Application(Application_ui):
         hPercent = str_to_int(self.cmbhPercent.text())
         vPercent = str_to_int(self.cmbvPercent.text())
         segs = str_to_int(self.cmbTeardropSegs.text())
-        if ((hPercent <= 0) or (vPercent <= 0)):
+        padType = self.cmbTeardropPadType.current()
+        if ((hPercent <= 0) or (vPercent <= 0) or (segs <= 0)):
             showwarning(_("info"), _("Wrong parameter value"))
             return
 
-        polys = createTeardrops(textIo, hPercent=hPercent, vPercent=vPercent, segs=10)
+        usePth = True if padType in (0, 2) else False
+        useSmd = True if padType in (1, 2) else False
+        polys = createTeardrops(textIo, hPercent=hPercent, vPercent=vPercent, segs=segs, 
+            usePth=usePth, useSmd=useSmd)
         if polys:
             newTextIo = SprintTextIO()
             newTextIo.addAll(polys)
@@ -1971,18 +1982,16 @@ class Application(Application_ui):
 
         teardrops = []
         #搜集焊盘
-        pads = textIo.getPads('PAD')
-        if self.chkIncludeSmdPads.value():
+        padType = self.cmbTeardropPadType.current()
+        pads = textIo.getPads('PAD') if padType in (0, 2) else []
+        if padType in (1, 2):
             pads.extend(textIo.getPads('SMDPAD'))
         
         #搜集走线
         tracks = textIo.getConductiveTracks()
 
-        if not pads or not tracks:
-            return
-
         #搜集已有的泪滴焊盘，每个泪滴焊盘就是一个多边形
-        oldTeardrops = getTeardrops(textIo, pads, tracks)
+        oldTeardrops = getTeardrops(textIo, pads, tracks) if pads and tracks else None
         if oldTeardrops:
             for t in oldTeardrops:
                 textIo.remove(t)

@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   5370
+   ClientHeight    =   5490
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   9360
@@ -19,7 +19,7 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5370
+   ScaleHeight     =   5490
    ScaleWidth      =   9360
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
@@ -27,13 +27,13 @@ Begin VB.Form frmMain
       Caption         =   "ArcTrack"
       Height          =   4695
       Left            =   4920
-      TabIndex        =   74
+      TabIndex        =   73
       Top             =   5640
       Width           =   8895
       Begin VB.ComboBox cmbRoundedTrackSmallDistance 
          Height          =   420
          Left            =   2400
-         TabIndex        =   87
+         TabIndex        =   86
          Text            =   "cmbhPercent"
          Top             =   2280
          Width           =   975
@@ -42,7 +42,7 @@ Begin VB.Form frmMain
          Caption         =   "Bezier"
          Height          =   375
          Left            =   3720
-         TabIndex        =   84
+         TabIndex        =   83
          Tag             =   "p@textvariable"
          Top             =   1080
          Width           =   1455
@@ -51,7 +51,7 @@ Begin VB.Form frmMain
          Caption         =   "Three-point"
          Height          =   375
          Left            =   1800
-         TabIndex        =   83
+         TabIndex        =   82
          Tag             =   "p@textvariable"
          Top             =   1080
          Width           =   1695
@@ -60,7 +60,7 @@ Begin VB.Form frmMain
          Caption         =   "Tangent"
          Height          =   375
          Left            =   240
-         TabIndex        =   82
+         TabIndex        =   81
          Tag             =   "p@textvariable"
          Top             =   1080
          Value           =   -1  'True
@@ -69,7 +69,7 @@ Begin VB.Form frmMain
       Begin VB.ComboBox cmbRoundedTrackSegs 
          Height          =   420
          Left            =   2400
-         TabIndex        =   79
+         TabIndex        =   78
          Text            =   "cmbSegs"
          Top             =   2880
          Width           =   975
@@ -78,7 +78,7 @@ Begin VB.Form frmMain
          Caption         =   "Convert"
          Height          =   450
          Left            =   1200
-         TabIndex        =   78
+         TabIndex        =   77
          Top             =   3840
          Width           =   2175
       End
@@ -86,14 +86,14 @@ Begin VB.Form frmMain
          Caption         =   "Cancel"
          Height          =   450
          Left            =   4440
-         TabIndex        =   77
+         TabIndex        =   76
          Top             =   3840
          Width           =   2175
       End
       Begin VB.ComboBox cmbRoundedTrackBigDistance 
          Height          =   420
          Left            =   2400
-         TabIndex        =   76
+         TabIndex        =   75
          Text            =   "cmbhPercent"
          Top             =   1680
          Width           =   975
@@ -104,7 +104,7 @@ Begin VB.Form frmMain
          Left            =   5280
          ScaleHeight     =   2415
          ScaleWidth      =   3375
-         TabIndex        =   75
+         TabIndex        =   74
          Top             =   960
          Width           =   3375
       End
@@ -113,7 +113,7 @@ Begin VB.Form frmMain
          Caption         =   "small d(mm)"
          Height          =   375
          Left            =   480
-         TabIndex        =   88
+         TabIndex        =   87
          Top             =   2280
          Width           =   1815
       End
@@ -131,7 +131,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00FF0000&
          Height          =   375
          Left            =   7800
-         TabIndex        =   86
+         TabIndex        =   85
          Top             =   3960
          Width           =   975
       End
@@ -140,7 +140,7 @@ Begin VB.Form frmMain
          Caption         =   "big d(mm)"
          Height          =   375
          Left            =   480
-         TabIndex        =   85
+         TabIndex        =   84
          Top             =   1680
          Width           =   1815
       End
@@ -149,7 +149,7 @@ Begin VB.Form frmMain
          Caption         =   "segments"
          Height          =   375
          Left            =   480
-         TabIndex        =   81
+         TabIndex        =   80
          Top             =   2880
          Width           =   1815
       End
@@ -158,7 +158,7 @@ Begin VB.Form frmMain
          Caption         =   "rounded_track_features_tips"
          Height          =   495
          Left            =   240
-         TabIndex        =   80
+         TabIndex        =   79
          Top             =   360
          Width           =   8415
       End
@@ -170,24 +170,23 @@ Begin VB.Form frmMain
       TabIndex        =   61
       Top             =   5760
       Width           =   8895
+      Begin VB.ComboBox cmbTeardropPadType 
+         Height          =   420
+         Left            =   2760
+         Style           =   2  'Dropdown List
+         TabIndex        =   88
+         Top             =   2880
+         Width           =   1215
+      End
       Begin VB.PictureBox picTeardrops 
          BorderStyle     =   0  'None
          Height          =   2415
          Left            =   4440
          ScaleHeight     =   2415
          ScaleWidth      =   3975
-         TabIndex        =   73
+         TabIndex        =   72
          Top             =   960
          Width           =   3975
-      End
-      Begin VB.CheckBox chkIncludeSmdPads 
-         Caption         =   "Include SMD pads"
-         Height          =   375
-         Left            =   1080
-         TabIndex        =   72
-         Tag             =   "p@textvariable"
-         Top             =   3000
-         Width           =   2775
       End
       Begin VB.CommandButton cmdRemoveTeardrops 
          Caption         =   "Remove"
@@ -236,6 +235,15 @@ Begin VB.Form frmMain
          Text            =   "cmbvPercent"
          Top             =   1680
          Width           =   1215
+      End
+      Begin VB.Label lblTeardropPadType 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Pad type"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   89
+         Top             =   2880
+         Width           =   2295
       End
       Begin VB.Label lblTeardropsTips 
          Alignment       =   2  'Center
@@ -689,7 +697,7 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5025
+      Top             =   5145
       Width           =   9360
       _ExtentX        =   16510
       _ExtentY        =   609

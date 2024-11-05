@@ -188,12 +188,14 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
     return pts
 
 #添加泪滴焊盘的入口，外部调用此函数
-#follow_tracks: 如果走线太短，则延长 Follow tracks if shorter than needed
+# usePth: 是否应用到通孔焊盘
+# useSmd: 是否应用到贴片焊盘
+# follow_tracks: 如果走线太短，则延长 Follow tracks if shorter than needed
 #返回一个多边形列表[poly,...]
-def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, useSmd=False, followTracks=False, noBulge=True):
+def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, usePth=True, useSmd=False, followTracks=False, noBulge=True):
     teardrops = []
     #搜集焊盘
-    pads = textIo.getPads('PAD')
+    pads = textIo.getPads('PAD') if usePth else []
     if useSmd:
         pads.extend(textIo.getPads('SMDPAD'))
     

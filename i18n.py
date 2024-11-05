@@ -144,7 +144,10 @@ class I18n:
     "Horizontal percent": ("", "水平比例 (H)"),
     "Vertical percent": ("", "垂直比例 (W)"),
     "Number of segments": ("", "线段数量"),
-    "Include SMD pads": ("", "包含贴片焊盘"),
+    "Pad type": ("", "焊盘类型"),
+    "PTH pad": ("", "通孔焊盘"),
+    "SMD pad": ("", "贴片焊盘"),
+    "PTH/SMD": ("", "通孔/贴片"),
     "Add": ("", "添加"),
     "Remove": ("", "删除"),
     "Dangerous operation:\nThis operation may delete some small polygons by mistake or not delete the desired polygons\nDo you want to continue?":
