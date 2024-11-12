@@ -18,7 +18,7 @@ pyinstaller.exe -F -w -i app.ico sprintFont.py
 python -m nuitka --standalone --onefile --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico  sprintFont.py
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
-import os, sys, locale, json, threading, queue, datetime, pickle
+import os, sys, locale, json, threading, queue, datetime, pickle, math
 # Fix Tcl/Tk folder for windows xp
 os.environ["TCL_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tcl8.6")
 os.environ["TK_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tk8.6")
@@ -40,8 +40,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.5.5"
-__DATE__ = "20241105"
+__VERSION__ = "1.6"
+__DATE__ = "20241112"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -119,7 +119,7 @@ class Statusbar(Frame):
             panel.config(text='')
             panel.update_idletasks()
 
-#界面使用作者自己的工具 tkinter-designer <https://github.com/cdhigh/tkinter-designer> 自动生成
+#界面使用作者自己的工具 vb6tkinter <https://github.com/cdhigh/vb6tkinter> 自动生成
 class Application_ui(Frame):
     #这个类仅实现界面生成功能，具体事件处理代码在子类Application中。
     def __init__(self, master=None):
@@ -127,9 +127,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (624 / 2)
-        y = (hs / 2) - (366 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (624,366,x,y))
+        x = (ws / 2) - (625 / 2)
+        y = (hs / 2) - (409 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (625,409,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -171,21 +171,69 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.044, relwidth=0.95, relheight=0.855)
+        self.tabStrip.place(relx=0.026, rely=0.039, relwidth=0.949, relheight=0.883)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
+        self.style.configure('TfrmInvertedBg.TFrame', background='#C0C0C0')
+        self.frmInvertedBg = Frame(self.tabStrip__Tab1, style='TfrmInvertedBg.TFrame')
+        self.frmInvertedBg.place(relx=0., rely=0.593, relwidth=1., relheight=0.264)
+        self.chkInvertedBackgroundVar = IntVar(value=0)
+        self.style.configure('TchkInvertedBackground.TCheckbutton', foreground='#000000', background='#C0C0C0', font=('微软雅黑',10,'bold'))
+        self.chkInvertedBackground = Checkbutton(self.frmInvertedBg, text='Inverted Background', variable=self.chkInvertedBackgroundVar, command=self.chkInvertedBackground_Cmd, style='TchkInvertedBackground.TCheckbutton')
+        self.chkInvertedBackground.setValue = lambda x: self.chkInvertedBackgroundVar.set(x)
+        self.chkInvertedBackground.value = lambda : self.chkInvertedBackgroundVar.get()
+        self.chkInvertedBackground.place(relx=0.162, rely=0.09, relwidth=0.352, relheight=0.281)
+        self.cmbPaddingList = ['',]
+        self.cmbPaddingVar = StringVar(value='')
+        self.style.configure('TcmbPadding.TCombobox', background='#808080')
+        self.cmbPadding = Combobox(self.frmInvertedBg, exportselection=0, textvariable=self.cmbPaddingVar, values=self.cmbPaddingList, font=('微软雅黑',10), style='TcmbPadding.TCombobox')
+        self.cmbPadding.setText = lambda x: self.cmbPaddingVar.set(x)
+        self.cmbPadding.text = lambda : self.cmbPaddingVar.get()
+        self.cmbPadding.place(relx=0.175, rely=0.539, relwidth=0.339)
+        self.cmbCapLeftList = ['',]
+        self.cmbCapLeftVar = StringVar(value='')
+        self.style.configure('TcmbCapLeft.TCombobox', background='#808080')
+        self.cmbCapLeft = Combobox(self.frmInvertedBg, exportselection=0, state='readonly', textvariable=self.cmbCapLeftVar, values=self.cmbCapLeftList, font=('Times New Roman',12,'bold'), style='TcmbCapLeft.TCombobox')
+        self.cmbCapLeft.setText = lambda x: self.cmbCapLeftVar.set(x)
+        self.cmbCapLeft.text = lambda : self.cmbCapLeftVar.get()
+        self.cmbCapLeft.place(relx=0.782, rely=0.09, relwidth=0.177)
+        self.cmbCapRightList = ['',]
+        self.cmbCapRightVar = StringVar(value='')
+        self.style.configure('TcmbCapRight.TCombobox', background='#808080')
+        self.cmbCapRight = Combobox(self.frmInvertedBg, exportselection=0, state='readonly', textvariable=self.cmbCapRightVar, values=self.cmbCapRightList, font=('Times New Roman',12,'bold'), style='TcmbCapRight.TCombobox')
+        self.cmbCapRight.setText = lambda x: self.cmbCapRightVar.set(x)
+        self.cmbCapRight.text = lambda : self.cmbCapRightVar.get()
+        self.cmbCapRight.place(relx=0.782, rely=0.539, relwidth=0.177)
+        self.lblBkPaddingVar = StringVar(value='Padding')
+        self.style.configure('TlblBkPadding.TLabel', anchor='e', foreground='#000000', background='#C0C0C0', font=('微软雅黑',10))
+        self.lblBkPadding = Label(self.frmInvertedBg, text='Padding', textvariable=self.lblBkPaddingVar, style='TlblBkPadding.TLabel')
+        self.lblBkPadding.setText = lambda x: self.lblBkPaddingVar.set(x)
+        self.lblBkPadding.text = lambda : self.lblBkPaddingVar.get()
+        self.lblBkPadding.place(relx=0.027, rely=0.539, relwidth=0.137, relheight=0.281)
+        self.lblCapLeftVar = StringVar(value='Cap left')
+        self.style.configure('TlblCapLeft.TLabel', anchor='e', foreground='#000000', background='#C0C0C0', font=('微软雅黑',10))
+        self.lblCapLeft = Label(self.frmInvertedBg, text='Cap left', textvariable=self.lblCapLeftVar, style='TlblCapLeft.TLabel')
+        self.lblCapLeft.setText = lambda x: self.lblCapLeftVar.set(x)
+        self.lblCapLeft.text = lambda : self.lblCapLeftVar.get()
+        self.lblCapLeft.place(relx=0.526, rely=0.09, relwidth=0.245, relheight=0.281)
+        self.lblCapRightVar = StringVar(value='Cap right')
+        self.style.configure('TlblCapRight.TLabel', anchor='e', foreground='#000000', background='#C0C0C0', font=('微软雅黑',10))
+        self.lblCapRight = Label(self.frmInvertedBg, text='Cap right', textvariable=self.lblCapRightVar, style='TlblCapRight.TLabel')
+        self.lblCapRight.setText = lambda x: self.lblCapRightVar.set(x)
+        self.lblCapRight.text = lambda : self.lblCapRightVar.get()
+        self.lblCapRight.place(relx=0.526, rely=0.539, relwidth=0.245, relheight=0.281)
         self.VScroll1 = Scrollbar(self.tabStrip__Tab1, orient='vertical')
-        self.VScroll1.place(relx=0.917, rely=0.128, relwidth=0.029, relheight=0.182)
+        self.VScroll1.place(relx=0.931, rely=0.071, relwidth=0.029, relheight=0.169)
         self.cmbLayerList = ['',]
         self.cmbLayerVar = StringVar(value='')
         self.cmbLayer = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbLayerVar, values=self.cmbLayerList, font=('微软雅黑',10))
         self.cmbLayer.setText = lambda x: self.cmbLayerVar.set(x)
         self.cmbLayer.text = lambda : self.cmbLayerVar.get()
-        self.cmbLayer.place(relx=0.162, rely=0.511, relwidth=0.352)
+        self.cmbLayer.place(relx=0.175, rely=0.38, relwidth=0.339)
         self.txtMainFont = Font(font=('微软雅黑',14))
         self.txtMain = Text(self.tabStrip__Tab1, yscrollcommand=self.VScroll1.set, font=self.txtMainFont)
-        self.txtMain.place(relx=0.162, rely=0.128, relwidth=0.757, relheight=0.182)
+        self.txtMain.place(relx=0.175, rely=0.071, relwidth=0.754, relheight=0.169)
         self.txtMain.insert('1.0','')
         self.VScroll1['command'] = self.txtMain.yview
         self.cmbSmoothList = ['',]
@@ -193,93 +241,93 @@ class Application_ui(Frame):
         self.cmbSmooth = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbSmoothVar, values=self.cmbSmoothList, font=('微软雅黑',10))
         self.cmbSmooth.setText = lambda x: self.cmbSmoothVar.set(x)
         self.cmbSmooth.text = lambda : self.cmbSmoothVar.get()
-        self.cmbSmooth.place(relx=0.162, rely=0.639, relwidth=0.352)
+        self.cmbSmooth.place(relx=0.175, rely=0.499, relwidth=0.339)
         self.cmdOkVar = StringVar(value='Ok')
         self.style.configure('TcmdOk.TButton', font=('微软雅黑',10))
         self.cmdOk = Button(self.tabStrip__Tab1, text='Ok', textvariable=self.cmdOkVar, command=self.cmdOk_Cmd, style='TcmdOk.TButton')
         self.cmdOk.setText = lambda x: self.cmdOkVar.set(x)
         self.cmdOk.text = lambda : self.cmdOkVar.get()
-        self.cmdOk.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdOk.place(relx=0.135, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmdCancelVar = StringVar(value='Cancel')
         self.style.configure('TcmdCancel.TButton', font=('微软雅黑',10))
         self.cmdCancel = Button(self.tabStrip__Tab1, text='Cancel', textvariable=self.cmdCancelVar, command=self.cmdCancel_Cmd, style='TcmdCancel.TButton')
         self.cmdCancel.setText = lambda x: self.cmdCancelVar.set(x)
         self.cmdCancel.text = lambda : self.cmdCancelVar.get()
-        self.cmdCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdCancel.place(relx=0.499, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmbWordSpacingList = ['',]
         self.cmbWordSpacingVar = StringVar(value='')
         self.cmbWordSpacing = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbWordSpacingVar, values=self.cmbWordSpacingList, font=('微软雅黑',10))
         self.cmbWordSpacing.setText = lambda x: self.cmbWordSpacingVar.set(x)
         self.cmbWordSpacing.text = lambda : self.cmbWordSpacingVar.get()
-        self.cmbWordSpacing.place(relx=0.782, rely=0.511, relwidth=0.177)
+        self.cmbWordSpacing.place(relx=0.782, rely=0.38, relwidth=0.177)
         self.cmbLineSpacingList = ['',]
         self.cmbLineSpacingVar = StringVar(value='')
         self.cmbLineSpacing = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbLineSpacingVar, values=self.cmbLineSpacingList, font=('微软雅黑',10))
         self.cmbLineSpacing.setText = lambda x: self.cmbLineSpacingVar.set(x)
         self.cmbLineSpacing.text = lambda : self.cmbLineSpacingVar.get()
-        self.cmbLineSpacing.place(relx=0.782, rely=0.639, relwidth=0.177)
+        self.cmbLineSpacing.place(relx=0.782, rely=0.499, relwidth=0.177)
         self.cmbFontHeightList = ['',]
         self.cmbFontHeightVar = StringVar(value='')
         self.cmbFontHeight = Combobox(self.tabStrip__Tab1, exportselection=0, textvariable=self.cmbFontHeightVar, values=self.cmbFontHeightList, font=('微软雅黑',10))
         self.cmbFontHeight.setText = lambda x: self.cmbFontHeightVar.set(x)
         self.cmbFontHeight.text = lambda : self.cmbFontHeightVar.get()
-        self.cmbFontHeight.place(relx=0.782, rely=0.383, relwidth=0.177)
+        self.cmbFontHeight.place(relx=0.782, rely=0.261, relwidth=0.177)
         self.cmbFontList = ['',]
         self.cmbFontVar = StringVar(value='')
         self.cmbFont = Combobox(self.tabStrip__Tab1, exportselection=0, state='readonly', textvariable=self.cmbFontVar, values=self.cmbFontList, font=('微软雅黑',10))
         self.cmbFont.setText = lambda x: self.cmbFontVar.set(x)
         self.cmbFont.text = lambda : self.cmbFontVar.get()
-        self.cmbFont.place(relx=0.162, rely=0.383, relwidth=0.352)
+        self.cmbFont.place(relx=0.175, rely=0.261, relwidth=0.339)
         self.cmbFont.bind('<<ComboboxSelected>>', self.cmbFont_ComboboxSelected)
         self.lblTxtVar = StringVar(value='Text')
         self.style.configure('TlblTxt.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblTxt = Label(self.tabStrip__Tab1, text='Text', textvariable=self.lblTxtVar, style='TlblTxt.TLabel')
         self.lblTxt.setText = lambda x: self.lblTxtVar.set(x)
         self.lblTxt.text = lambda : self.lblTxtVar.get()
-        self.lblTxt.place(relx=0.027, rely=0.128, relwidth=0.11, relheight=0.08)
+        self.lblTxt.place(relx=0.054, rely=0.071, relwidth=0.11, relheight=0.074)
         self.lblLayerVar = StringVar(value='Layer')
         self.style.configure('TlblLayer.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblLayer = Label(self.tabStrip__Tab1, text='Layer', textvariable=self.lblLayerVar, style='TlblLayer.TLabel')
         self.lblLayer.setText = lambda x: self.lblLayerVar.set(x)
         self.lblLayer.text = lambda : self.lblLayerVar.get()
-        self.lblLayer.place(relx=0.027, rely=0.511, relwidth=0.11, relheight=0.08)
+        self.lblLayer.place(relx=0.027, rely=0.38, relwidth=0.137, relheight=0.074)
         self.lblSmoothVar = StringVar(value='Smooth')
         self.style.configure('TlblSmooth.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSmooth = Label(self.tabStrip__Tab1, text='Smooth', textvariable=self.lblSmoothVar, style='TlblSmooth.TLabel')
         self.lblSmooth.setText = lambda x: self.lblSmoothVar.set(x)
         self.lblSmooth.text = lambda : self.lblSmoothVar.get()
-        self.lblSmooth.place(relx=0.027, rely=0.639, relwidth=0.11, relheight=0.08)
+        self.lblSmooth.place(relx=0.027, rely=0.499, relwidth=0.137, relheight=0.074)
         self.lblWordSpacingVar = StringVar(value='Word spacing (mm)')
         self.style.configure('TlblWordSpacing.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblWordSpacing = Label(self.tabStrip__Tab1, text='Word spacing (mm)', textvariable=self.lblWordSpacingVar, style='TlblWordSpacing.TLabel')
         self.lblWordSpacing.setText = lambda x: self.lblWordSpacingVar.set(x)
         self.lblWordSpacing.text = lambda : self.lblWordSpacingVar.get()
-        self.lblWordSpacing.place(relx=0.526, rely=0.511, relwidth=0.245, relheight=0.08)
+        self.lblWordSpacing.place(relx=0.526, rely=0.38, relwidth=0.245, relheight=0.074)
         self.LblLineSpacingVar = StringVar(value='Line spacing (mm)')
         self.style.configure('TLblLineSpacing.TLabel', anchor='e', font=('微软雅黑',10))
         self.LblLineSpacing = Label(self.tabStrip__Tab1, text='Line spacing (mm)', textvariable=self.LblLineSpacingVar, style='TLblLineSpacing.TLabel')
         self.LblLineSpacing.setText = lambda x: self.LblLineSpacingVar.set(x)
         self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
-        self.LblLineSpacing.place(relx=0.526, rely=0.639, relwidth=0.245, relheight=0.08)
+        self.LblLineSpacing.place(relx=0.526, rely=0.499, relwidth=0.245, relheight=0.074)
         self.lblSaveAsVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAs = Label(self.tabStrip__Tab1, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
         self.lblSaveAs.setText = lambda x: self.lblSaveAsVar.set(x)
         self.lblSaveAs.text = lambda : self.lblSaveAsVar.get()
-        self.lblSaveAs.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAs.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAs.bind('<Button-1>', self.lblSaveAs_Button_1)
         self.lblFontVar = StringVar(value='Font')
         self.style.configure('TlblFont.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblFont = Label(self.tabStrip__Tab1, text='Font', textvariable=self.lblFontVar, style='TlblFont.TLabel')
         self.lblFont.setText = lambda x: self.lblFontVar.set(x)
         self.lblFont.text = lambda : self.lblFontVar.get()
-        self.lblFont.place(relx=0.027, rely=0.383, relwidth=0.11, relheight=0.08)
+        self.lblFont.place(relx=0.027, rely=0.261, relwidth=0.137, relheight=0.074)
         self.lblFontHeightVar = StringVar(value='Height (mm)')
         self.style.configure('TlblFontHeight.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblFontHeight = Label(self.tabStrip__Tab1, text='Height (mm)', textvariable=self.lblFontHeightVar, style='TlblFontHeight.TLabel')
         self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
         self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
-        self.lblFontHeight.place(relx=0.526, rely=0.383, relwidth=0.245, relheight=0.08)
+        self.lblFontHeight.place(relx=0.526, rely=0.261, relwidth=0.245, relheight=0.074)
         self.tabStrip.add(self.tabStrip__Tab1, text='Font')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
@@ -288,48 +336,48 @@ class Application_ui(Frame):
         self.chkImportFootprintText = Checkbutton(self.tabStrip__Tab2, text='Import text', variable=self.chkImportFootprintTextVar, style='TchkImportFootprintText.TCheckbutton')
         self.chkImportFootprintText.setValue = lambda x: self.chkImportFootprintTextVar.set(x)
         self.chkImportFootprintText.value = lambda : self.chkImportFootprintTextVar.get()
-        self.chkImportFootprintText.place(relx=0.175, rely=0.613, relwidth=0.339, relheight=0.08)
+        self.chkImportFootprintText.place(relx=0.175, rely=0.57, relwidth=0.339, relheight=0.074)
         self.cmdFootprintFileVar = StringVar(value='...')
         self.style.configure('TcmdFootprintFile.TButton', font=('Arial',9))
         self.cmdFootprintFile = Button(self.tabStrip__Tab2, text='...', textvariable=self.cmdFootprintFileVar, command=self.cmdFootprintFile_Cmd, style='TcmdFootprintFile.TButton')
         self.cmdFootprintFile.setText = lambda x: self.cmdFootprintFileVar.set(x)
         self.cmdFootprintFile.text = lambda : self.cmdFootprintFileVar.get()
-        self.cmdFootprintFile.place(relx=0.917, rely=0.46, relwidth=0.056, relheight=0.08)
+        self.cmdFootprintFile.place(relx=0.917, rely=0.427, relwidth=0.056, relheight=0.074)
         self.txtFootprintFileVar = StringVar(value='')
         self.txtFootprintFile = Entry(self.tabStrip__Tab2, textvariable=self.txtFootprintFileVar, font=('微软雅黑',10))
         self.txtFootprintFile.setText = lambda x: self.txtFootprintFileVar.set(x)
         self.txtFootprintFile.text = lambda : self.txtFootprintFileVar.get()
-        self.txtFootprintFile.place(relx=0.175, rely=0.46, relwidth=0.73, relheight=0.089)
+        self.txtFootprintFile.place(relx=0.175, rely=0.427, relwidth=0.73, relheight=0.083)
         self.cmdOkFootprintVar = StringVar(value='Ok')
         self.style.configure('TcmdOkFootprint.TButton', font=('微软雅黑',10))
         self.cmdOkFootprint = Button(self.tabStrip__Tab2, text='Ok', textvariable=self.cmdOkFootprintVar, command=self.cmdOkFootprint_Cmd, style='TcmdOkFootprint.TButton')
         self.cmdOkFootprint.setText = lambda x: self.cmdOkFootprintVar.set(x)
         self.cmdOkFootprint.text = lambda : self.cmdOkFootprintVar.get()
-        self.cmdOkFootprint.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdOkFootprint.place(relx=0.135, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmdCancelFootprintVar = StringVar(value='Cancel')
         self.style.configure('TcmdCancelFootprint.TButton', font=('微软雅黑',10))
         self.cmdCancelFootprint = Button(self.tabStrip__Tab2, text='Cancel', textvariable=self.cmdCancelFootprintVar, command=self.cmdCancelFootprint_Cmd, style='TcmdCancelFootprint.TButton')
         self.cmdCancelFootprint.setText = lambda x: self.cmdCancelFootprintVar.set(x)
         self.cmdCancelFootprint.text = lambda : self.cmdCancelFootprintVar.get()
-        self.cmdCancelFootprint.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdCancelFootprint.place(relx=0.499, rely=0.878, relwidth=0.245, relheight=0.089)
         self.lblFootprintFileVar = StringVar(value='Input')
         self.style.configure('TlblFootprintFile.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblFootprintFile = Label(self.tabStrip__Tab2, text='Input', textvariable=self.lblFootprintFileVar, style='TlblFootprintFile.TLabel')
         self.lblFootprintFile.setText = lambda x: self.lblFootprintFileVar.set(x)
         self.lblFootprintFile.text = lambda : self.lblFootprintFileVar.get()
-        self.lblFootprintFile.place(relx=0.027, rely=0.46, relwidth=0.11, relheight=0.08)
+        self.lblFootprintFile.place(relx=0.027, rely=0.427, relwidth=0.11, relheight=0.074)
         self.lblFootprintTipsVar = StringVar(value='Footprint_features_tips')
         self.style.configure('TlblFootprintTips.TLabel', anchor='w', font=('微软雅黑',10))
         self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Footprint_features_tips', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
         self.lblFootprintTips.setText = lambda x: self.lblFootprintTipsVar.set(x)
         self.lblFootprintTips.text = lambda : self.lblFootprintTipsVar.get()
-        self.lblFootprintTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.335)
+        self.lblFootprintTips.place(relx=0.175, rely=0.071, relwidth=0.771, relheight=0.312)
         self.lblSaveAsFootprintVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsFootprint.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsFootprint = Label(self.tabStrip__Tab2, text='Save as', textvariable=self.lblSaveAsFootprintVar, style='TlblSaveAsFootprint.TLabel')
         self.lblSaveAsFootprint.setText = lambda x: self.lblSaveAsFootprintVar.set(x)
         self.lblSaveAsFootprint.text = lambda : self.lblSaveAsFootprintVar.get()
-        self.lblSaveAsFootprint.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsFootprint.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsFootprint.bind('<Button-1>', self.lblSaveAsFootprint_Button_1)
         self.tabStrip.add(self.tabStrip__Tab2, text='Footprint')
 
@@ -339,99 +387,99 @@ class Application_ui(Frame):
         self.cmbSvgQrcode = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', justify='right', textvariable=self.cmbSvgQrcodeVar, values=self.cmbSvgQrcodeList, font=('微软雅黑',10))
         self.cmbSvgQrcode.setText = lambda x: self.cmbSvgQrcodeVar.set(x)
         self.cmbSvgQrcode.text = lambda : self.cmbSvgQrcodeVar.get()
-        self.cmbSvgQrcode.place(relx=0.013, rely=0.319, relwidth=0.164)
+        self.cmbSvgQrcode.place(relx=0.013, rely=0.297, relwidth=0.164)
         self.cmbSvgModeList = ['',]
         self.cmbSvgModeVar = StringVar(value='')
         self.cmbSvgMode = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgModeVar, values=self.cmbSvgModeList, font=('微软雅黑',10))
         self.cmbSvgMode.setText = lambda x: self.cmbSvgModeVar.set(x)
         self.cmbSvgMode.text = lambda : self.cmbSvgModeVar.get()
-        self.cmbSvgMode.place(relx=0.175, rely=0.46, relwidth=0.352)
+        self.cmbSvgMode.place(relx=0.175, rely=0.451, relwidth=0.352)
         self.cmbSvgHeightList = ['',]
         self.cmbSvgHeightVar = StringVar(value='')
         self.cmbSvgHeight = Combobox(self.tabStrip__Tab3, exportselection=0, textvariable=self.cmbSvgHeightVar, values=self.cmbSvgHeightList, font=('微软雅黑',10))
         self.cmbSvgHeight.setText = lambda x: self.cmbSvgHeightVar.set(x)
         self.cmbSvgHeight.text = lambda : self.cmbSvgHeightVar.get()
-        self.cmbSvgHeight.place(relx=0.728, rely=0.46, relwidth=0.245)
+        self.cmbSvgHeight.place(relx=0.728, rely=0.451, relwidth=0.245)
         self.cmbSvgSmoothList = ['',]
         self.cmbSvgSmoothVar = StringVar(value='')
         self.cmbSvgSmooth = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgSmoothVar, values=self.cmbSvgSmoothList, font=('微软雅黑',10))
         self.cmbSvgSmooth.setText = lambda x: self.cmbSvgSmoothVar.set(x)
         self.cmbSvgSmooth.text = lambda : self.cmbSvgSmoothVar.get()
-        self.cmbSvgSmooth.place(relx=0.728, rely=0.588, relwidth=0.245)
+        self.cmbSvgSmooth.place(relx=0.728, rely=0.57, relwidth=0.245)
         self.cmbSvgLayerList = ['',]
         self.cmbSvgLayerVar = StringVar(value='')
         self.cmbSvgLayer = Combobox(self.tabStrip__Tab3, exportselection=0, state='readonly', textvariable=self.cmbSvgLayerVar, values=self.cmbSvgLayerList, font=('微软雅黑',10))
         self.cmbSvgLayer.setText = lambda x: self.cmbSvgLayerVar.set(x)
         self.cmbSvgLayer.text = lambda : self.cmbSvgLayerVar.get()
-        self.cmbSvgLayer.place(relx=0.175, rely=0.588, relwidth=0.352)
+        self.cmbSvgLayer.place(relx=0.175, rely=0.57, relwidth=0.352)
         self.cmdCancelSvgVar = StringVar(value='Cancel')
         self.style.configure('TcmdCancelSvg.TButton', font=('微软雅黑',10))
         self.cmdCancelSvg = Button(self.tabStrip__Tab3, text='Cancel', textvariable=self.cmdCancelSvgVar, command=self.cmdCancelSvg_Cmd, style='TcmdCancelSvg.TButton')
         self.cmdCancelSvg.setText = lambda x: self.cmdCancelSvgVar.set(x)
         self.cmdCancelSvg.text = lambda : self.cmdCancelSvgVar.get()
-        self.cmdCancelSvg.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdCancelSvg.place(relx=0.499, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmdOkSvgVar = StringVar(value='Ok')
         self.style.configure('TcmdOkSvg.TButton', font=('微软雅黑',10))
         self.cmdOkSvg = Button(self.tabStrip__Tab3, text='Ok', textvariable=self.cmdOkSvgVar, command=self.cmdOkSvg_Cmd, style='TcmdOkSvg.TButton')
         self.cmdOkSvg.setText = lambda x: self.cmdOkSvgVar.set(x)
         self.cmdOkSvg.text = lambda : self.cmdOkSvgVar.get()
-        self.cmdOkSvg.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdOkSvg.place(relx=0.135, rely=0.878, relwidth=0.245, relheight=0.089)
         self.txtSvgFileVar = StringVar(value='')
         self.txtSvgFile = Entry(self.tabStrip__Tab3, textvariable=self.txtSvgFileVar, font=('微软雅黑',10))
         self.txtSvgFile.setText = lambda x: self.txtSvgFileVar.set(x)
         self.txtSvgFile.text = lambda : self.txtSvgFileVar.get()
-        self.txtSvgFile.place(relx=0.175, rely=0.319, relwidth=0.73, relheight=0.089)
+        self.txtSvgFile.place(relx=0.175, rely=0.297, relwidth=0.73, relheight=0.083)
         self.cmdSvgFileVar = StringVar(value='...')
         self.style.configure('TcmdSvgFile.TButton', font=('Arial',9))
         self.cmdSvgFile = Button(self.tabStrip__Tab3, text='...', textvariable=self.cmdSvgFileVar, command=self.cmdSvgFile_Cmd, style='TcmdSvgFile.TButton')
         self.cmdSvgFile.setText = lambda x: self.cmdSvgFileVar.set(x)
         self.cmdSvgFile.text = lambda : self.cmdSvgFileVar.get()
-        self.cmdSvgFile.place(relx=0.917, rely=0.319, relwidth=0.056, relheight=0.08)
+        self.cmdSvgFile.place(relx=0.917, rely=0.297, relwidth=0.056, relheight=0.074)
         self.lblSvgHeightVar = StringVar(value='Height (mm)')
         self.style.configure('TlblSvgHeight.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSvgHeight = Label(self.tabStrip__Tab3, text='Height (mm)', textvariable=self.lblSvgHeightVar, style='TlblSvgHeight.TLabel')
         self.lblSvgHeight.setText = lambda x: self.lblSvgHeightVar.set(x)
         self.lblSvgHeight.text = lambda : self.lblSvgHeightVar.get()
-        self.lblSvgHeight.place(relx=0.526, rely=0.46, relwidth=0.191, relheight=0.08)
+        self.lblSvgHeight.place(relx=0.526, rely=0.451, relwidth=0.191, relheight=0.074)
         self.lblSvgModeVar = StringVar(value='Mode')
         self.style.configure('TlblSvgMode.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSvgMode = Label(self.tabStrip__Tab3, text='Mode', textvariable=self.lblSvgModeVar, style='TlblSvgMode.TLabel')
         self.lblSvgMode.setText = lambda x: self.lblSvgModeVar.set(x)
         self.lblSvgMode.text = lambda : self.lblSvgModeVar.get()
-        self.lblSvgMode.place(relx=0.04, rely=0.46, relwidth=0.11, relheight=0.08)
+        self.lblSvgMode.place(relx=0.04, rely=0.451, relwidth=0.11, relheight=0.074)
         self.lblSvgSmoothVar = StringVar(value='Smooth')
         self.style.configure('TlblSvgSmooth.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSvgSmooth = Label(self.tabStrip__Tab3, text='Smooth', textvariable=self.lblSvgSmoothVar, style='TlblSvgSmooth.TLabel')
         self.lblSvgSmooth.setText = lambda x: self.lblSvgSmoothVar.set(x)
         self.lblSvgSmooth.text = lambda : self.lblSvgSmoothVar.get()
-        self.lblSvgSmooth.place(relx=0.526, rely=0.588, relwidth=0.191, relheight=0.08)
+        self.lblSvgSmooth.place(relx=0.526, rely=0.57, relwidth=0.191, relheight=0.074)
         self.lblSvgLayerVar = StringVar(value='Layer')
         self.style.configure('TlblSvgLayer.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSvgLayer = Label(self.tabStrip__Tab3, text='Layer', textvariable=self.lblSvgLayerVar, style='TlblSvgLayer.TLabel')
         self.lblSvgLayer.setText = lambda x: self.lblSvgLayerVar.set(x)
         self.lblSvgLayer.text = lambda : self.lblSvgLayerVar.get()
-        self.lblSvgLayer.place(relx=0.04, rely=0.588, relwidth=0.11, relheight=0.08)
+        self.lblSvgLayer.place(relx=0.04, rely=0.57, relwidth=0.11, relheight=0.074)
         self.lblSaveAsSvgVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsSvg.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsSvg = Label(self.tabStrip__Tab3, text='Save as', textvariable=self.lblSaveAsSvgVar, style='TlblSaveAsSvg.TLabel')
         self.lblSaveAsSvg.setText = lambda x: self.lblSaveAsSvgVar.set(x)
         self.lblSaveAsSvg.text = lambda : self.lblSaveAsSvgVar.get()
-        self.lblSaveAsSvg.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsSvg.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsSvg.bind('<Button-1>', self.lblSaveAsSvg_Button_1)
         self.lblSvgTipsVar = StringVar(value='svg_features_tips')
         self.style.configure('TlblSvgTips.TLabel', anchor='w', font=('微软雅黑',10))
         self.lblSvgTips = Label(self.tabStrip__Tab3, text='svg_features_tips', textvariable=self.lblSvgTipsVar, style='TlblSvgTips.TLabel')
         self.lblSvgTips.setText = lambda x: self.lblSvgTipsVar.set(x)
         self.lblSvgTips.text = lambda : self.lblSvgTipsVar.get()
-        self.lblSvgTips.place(relx=0.175, rely=0.077, relwidth=0.771, relheight=0.208)
+        self.lblSvgTips.place(relx=0.175, rely=0.071, relwidth=0.771, relheight=0.193)
         self.tabStrip.add(self.tabStrip__Tab3, text='SVG')
 
         self.tabStrip__Tab4 = Frame(self.tabStrip)
         self.VSrlRules = Scrollbar(self.tabStrip__Tab4, orient='vertical')
-        self.VSrlRules.place(relx=0.904, rely=0.46, relwidth=0.029, relheight=0.31)
+        self.VSrlRules.place(relx=0.904, rely=0.427, relwidth=0.029, relheight=0.359)
         self.style.configure('TtreRules.Treeview', font=('微软雅黑',10))
         self.treRules = Treeview(self.tabStrip__Tab4, show='tree', yscrollcommand=self.VSrlRules.set, style='TtreRules.Treeview')
-        self.treRules.place(relx=0.175, rely=0.46, relwidth=0.73, relheight=0.31)
+        self.treRules.place(relx=0.175, rely=0.427, relwidth=0.73, relheight=0.359)
         self.treRules.bind('<Double-Button-1>', self.treRules_Double_Button_1)
         self.VSrlRules['command'] = self.treRules.yview
         self.cmdImportSesVar = StringVar(value='Import')
@@ -439,241 +487,227 @@ class Application_ui(Frame):
         self.cmdImportSes = Button(self.tabStrip__Tab4, text='Import', textvariable=self.cmdImportSesVar, command=self.cmdImportSes_Cmd, style='TcmdImportSes.TButton')
         self.cmdImportSes.setText = lambda x: self.cmdImportSesVar.set(x)
         self.cmdImportSes.text = lambda : self.cmdImportSesVar.get()
-        self.cmdImportSes.place(relx=0.31, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmdImportSes.place(relx=0.31, rely=0.878, relwidth=0.204, relheight=0.089)
         self.txtSesFileVar = StringVar(value='')
         self.txtSesFile = Entry(self.tabStrip__Tab4, textvariable=self.txtSesFileVar, font=('微软雅黑',10))
         self.txtSesFile.setText = lambda x: self.txtSesFileVar.set(x)
         self.txtSesFile.text = lambda : self.txtSesFileVar.get()
-        self.txtSesFile.place(relx=0.175, rely=0.358, relwidth=0.73, relheight=0.089)
+        self.txtSesFile.place(relx=0.175, rely=0.332, relwidth=0.73, relheight=0.083)
         self.cmdSesFileVar = StringVar(value='...')
         self.style.configure('TcmdSesFile.TButton', font=('Arial',9))
         self.cmdSesFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdSesFileVar, command=self.cmdSesFile_Cmd, style='TcmdSesFile.TButton')
         self.cmdSesFile.setText = lambda x: self.cmdSesFileVar.set(x)
         self.cmdSesFile.text = lambda : self.cmdSesFileVar.get()
-        self.cmdSesFile.place(relx=0.917, rely=0.358, relwidth=0.056, relheight=0.08)
+        self.cmdSesFile.place(relx=0.917, rely=0.332, relwidth=0.056, relheight=0.074)
         self.cmdCancelAutoRouterVar = StringVar(value='Cancel')
         self.style.configure('TcmdCancelAutoRouter.TButton', font=('微软雅黑',10))
         self.cmdCancelAutoRouter = Button(self.tabStrip__Tab4, text='Cancel', textvariable=self.cmdCancelAutoRouterVar, command=self.cmdCancelAutoRouter_Cmd, style='TcmdCancelAutoRouter.TButton')
         self.cmdCancelAutoRouter.setText = lambda x: self.cmdCancelAutoRouterVar.set(x)
         self.cmdCancelAutoRouter.text = lambda : self.cmdCancelAutoRouterVar.get()
-        self.cmdCancelAutoRouter.place(relx=0.58, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmdCancelAutoRouter.place(relx=0.58, rely=0.878, relwidth=0.204, relheight=0.089)
         self.cmdExportDsnVar = StringVar(value='Export')
         self.style.configure('TcmdExportDsn.TButton', font=('微软雅黑',10))
         self.cmdExportDsn = Button(self.tabStrip__Tab4, text='Export', textvariable=self.cmdExportDsnVar, command=self.cmdExportDsn_Cmd, style='TcmdExportDsn.TButton')
         self.cmdExportDsn.setText = lambda x: self.cmdExportDsnVar.set(x)
         self.cmdExportDsn.text = lambda : self.cmdExportDsnVar.get()
-        self.cmdExportDsn.place(relx=0.04, rely=0.818, relwidth=0.204, relheight=0.096)
+        self.cmdExportDsn.place(relx=0.04, rely=0.878, relwidth=0.204, relheight=0.089)
         self.txtDsnFileVar = StringVar(value='')
         self.txtDsnFile = Entry(self.tabStrip__Tab4, textvariable=self.txtDsnFileVar, font=('微软雅黑',10))
         self.txtDsnFile.setText = lambda x: self.txtDsnFileVar.set(x)
         self.txtDsnFile.text = lambda : self.txtDsnFileVar.get()
-        self.txtDsnFile.place(relx=0.175, rely=0.256, relwidth=0.73, relheight=0.089)
+        self.txtDsnFile.place(relx=0.175, rely=0.237, relwidth=0.73, relheight=0.083)
         self.cmdDsnFileVar = StringVar(value='...')
         self.style.configure('TcmdDsnFile.TButton', font=('Arial',9))
         self.cmdDsnFile = Button(self.tabStrip__Tab4, text='...', textvariable=self.cmdDsnFileVar, command=self.cmdDsnFile_Cmd, style='TcmdDsnFile.TButton')
         self.cmdDsnFile.setText = lambda x: self.cmdDsnFileVar.set(x)
         self.cmdDsnFile.text = lambda : self.cmdDsnFileVar.get()
-        self.cmdDsnFile.place(relx=0.917, rely=0.256, relwidth=0.056, relheight=0.08)
+        self.cmdDsnFile.place(relx=0.917, rely=0.237, relwidth=0.056, relheight=0.074)
         self.lblRulesVar = StringVar(value='Rules')
         self.style.configure('TlblRules.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblRules = Label(self.tabStrip__Tab4, text='Rules', textvariable=self.lblRulesVar, style='TlblRules.TLabel')
         self.lblRules.setText = lambda x: self.lblRulesVar.set(x)
         self.lblRules.text = lambda : self.lblRulesVar.get()
-        self.lblRules.place(relx=0.027, rely=0.511, relwidth=0.11, relheight=0.08)
+        self.lblRules.place(relx=0.027, rely=0.475, relwidth=0.11, relheight=0.074)
         self.lblSesFileVar = StringVar(value='Ses file')
         self.style.configure('TlblSesFile.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblSesFile = Label(self.tabStrip__Tab4, text='Ses file', textvariable=self.lblSesFileVar, style='TlblSesFile.TLabel')
         self.lblSesFile.setText = lambda x: self.lblSesFileVar.set(x)
         self.lblSesFile.text = lambda : self.lblSesFileVar.get()
-        self.lblSesFile.place(relx=0.027, rely=0.358, relwidth=0.11, relheight=0.08)
+        self.lblSesFile.place(relx=0.027, rely=0.332, relwidth=0.11, relheight=0.074)
         self.lblSaveAsAutoRouterVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsAutoRouter.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsAutoRouter = Label(self.tabStrip__Tab4, text='Save as', textvariable=self.lblSaveAsAutoRouterVar, style='TlblSaveAsAutoRouter.TLabel')
         self.lblSaveAsAutoRouter.setText = lambda x: self.lblSaveAsAutoRouterVar.set(x)
         self.lblSaveAsAutoRouter.text = lambda : self.lblSaveAsAutoRouterVar.get()
-        self.lblSaveAsAutoRouter.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsAutoRouter.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsAutoRouter.bind('<Button-1>', self.lblSaveAsAutoRouter_Button_1)
         self.lblAutoRouterTipsVar = StringVar(value='AutoRouter_features_tips')
         self.style.configure('TlblAutoRouterTips.TLabel', anchor='w', font=('微软雅黑',10))
         self.lblAutoRouterTips = Label(self.tabStrip__Tab4, text='AutoRouter_features_tips', textvariable=self.lblAutoRouterTipsVar, style='TlblAutoRouterTips.TLabel')
         self.lblAutoRouterTips.setText = lambda x: self.lblAutoRouterTipsVar.set(x)
         self.lblAutoRouterTips.text = lambda : self.lblAutoRouterTipsVar.get()
-        self.lblAutoRouterTips.place(relx=0.175, rely=0.051, relwidth=0.771, relheight=0.182)
+        self.lblAutoRouterTips.place(relx=0.175, rely=0.047, relwidth=0.771, relheight=0.169)
         self.lblDsnFileVar = StringVar(value='Dsn file')
         self.style.configure('TlblDsnFile.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblDsnFile = Label(self.tabStrip__Tab4, text='Dsn file', textvariable=self.lblDsnFileVar, style='TlblDsnFile.TLabel')
         self.lblDsnFile.setText = lambda x: self.lblDsnFileVar.set(x)
         self.lblDsnFile.text = lambda : self.lblDsnFileVar.get()
-        self.lblDsnFile.place(relx=0.027, rely=0.256, relwidth=0.11, relheight=0.08)
+        self.lblDsnFile.place(relx=0.027, rely=0.237, relwidth=0.11, relheight=0.074)
         self.tabStrip.add(self.tabStrip__Tab4, text='AutoRouter')
 
         self.tabStrip__Tab5 = Frame(self.tabStrip)
-        self.picTeardrops = Canvas(self.tabStrip__Tab5, takefocus=1, highlightthickness=0)
-        self.picTeardrops.place(relx=0.499, rely=0.204, relwidth=0.447, relheight=0.514)
-        self.cmdRemoveTeardropsVar = StringVar(value='Remove')
-        self.style.configure('TcmdRemoveTeardrops.TButton', font=('微软雅黑',10))
-        self.cmdRemoveTeardrops = Button(self.tabStrip__Tab5, text='Remove', textvariable=self.cmdRemoveTeardropsVar, command=self.cmdRemoveTeardrops_Cmd, style='TcmdRemoveTeardrops.TButton')
-        self.cmdRemoveTeardrops.setText = lambda x: self.cmdRemoveTeardropsVar.set(x)
-        self.cmdRemoveTeardrops.text = lambda : self.cmdRemoveTeardropsVar.get()
-        self.cmdRemoveTeardrops.place(relx=0.31, rely=0.818, relwidth=0.204, relheight=0.096)
-        self.cmbhPercentList = ['',]
-        self.cmbhPercentVar = StringVar(value='')
-        self.cmbhPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbhPercentVar, values=self.cmbhPercentList, font=('微软雅黑',10))
-        self.cmbhPercent.setText = lambda x: self.cmbhPercentVar.set(x)
-        self.cmbhPercent.text = lambda : self.cmbhPercentVar.get()
-        self.cmbhPercent.place(relx=0.31, rely=0.23, relwidth=0.137)
-        self.cmdCancelTeardropsVar = StringVar(value='Cancel')
-        self.style.configure('TcmdCancelTeardrops.TButton', font=('微软雅黑',10))
-        self.cmdCancelTeardrops = Button(self.tabStrip__Tab5, text='Cancel', textvariable=self.cmdCancelTeardropsVar, command=self.cmdCancelTeardrops_Cmd, style='TcmdCancelTeardrops.TButton')
-        self.cmdCancelTeardrops.setText = lambda x: self.cmdCancelTeardropsVar.set(x)
-        self.cmdCancelTeardrops.text = lambda : self.cmdCancelTeardropsVar.get()
-        self.cmdCancelTeardrops.place(relx=0.58, rely=0.818, relwidth=0.204, relheight=0.096)
-        self.cmdAddTeardropsVar = StringVar(value='Add')
-        self.style.configure('TcmdAddTeardrops.TButton', font=('微软雅黑',10))
-        self.cmdAddTeardrops = Button(self.tabStrip__Tab5, text='Add', textvariable=self.cmdAddTeardropsVar, command=self.cmdAddTeardrops_Cmd, style='TcmdAddTeardrops.TButton')
-        self.cmdAddTeardrops.setText = lambda x: self.cmdAddTeardropsVar.set(x)
-        self.cmdAddTeardrops.text = lambda : self.cmdAddTeardropsVar.get()
-        self.cmdAddTeardrops.place(relx=0.04, rely=0.818, relwidth=0.204, relheight=0.096)
-        self.cmbTeardropSegsList = ['',]
-        self.cmbTeardropSegsVar = StringVar(value='')
-        self.cmbTeardropSegs = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbTeardropSegsVar, values=self.cmbTeardropSegsList, font=('微软雅黑',10))
-        self.cmbTeardropSegs.setText = lambda x: self.cmbTeardropSegsVar.set(x)
-        self.cmbTeardropSegs.text = lambda : self.cmbTeardropSegsVar.get()
-        self.cmbTeardropSegs.place(relx=0.31, rely=0.486, relwidth=0.137)
-        self.cmbvPercentList = ['',]
-        self.cmbvPercentVar = StringVar(value='')
-        self.cmbvPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbvPercentVar, values=self.cmbvPercentList, font=('微软雅黑',10))
-        self.cmbvPercent.setText = lambda x: self.cmbvPercentVar.set(x)
-        self.cmbvPercent.text = lambda : self.cmbvPercentVar.get()
-        self.cmbvPercent.place(relx=0.31, rely=0.358, relwidth=0.137)
-        self.lblTeardropsTipsVar = StringVar(value='teardrops_features_tips')
-        self.style.configure('TlblTeardropsTips.TLabel', anchor='center', font=('微软雅黑',10))
-        self.lblTeardropsTips = Label(self.tabStrip__Tab5, text='teardrops_features_tips', textvariable=self.lblTeardropsTipsVar, style='TlblTeardropsTips.TLabel')
-        self.lblTeardropsTips.setText = lambda x: self.lblTeardropsTipsVar.set(x)
-        self.lblTeardropsTips.text = lambda : self.lblTeardropsTipsVar.get()
-        self.lblTeardropsTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
-        self.lblhPercentVar = StringVar(value='Horizontal percent')
-        self.style.configure('TlblhPercent.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblhPercent = Label(self.tabStrip__Tab5, text='Horizontal percent', textvariable=self.lblhPercentVar, style='TlblhPercent.TLabel')
-        self.lblhPercent.setText = lambda x: self.lblhPercentVar.set(x)
-        self.lblhPercent.text = lambda : self.lblhPercentVar.get()
-        self.lblhPercent.place(relx=0.027, rely=0.23, relwidth=0.258, relheight=0.08)
-        self.lblTeardropSegsVar = StringVar(value='Number of segments')
-        self.style.configure('TlblTeardropSegs.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblTeardropSegs = Label(self.tabStrip__Tab5, text='Number of segments', textvariable=self.lblTeardropSegsVar, style='TlblTeardropSegs.TLabel')
-        self.lblTeardropSegs.setText = lambda x: self.lblTeardropSegsVar.set(x)
-        self.lblTeardropSegs.text = lambda : self.lblTeardropSegsVar.get()
-        self.lblTeardropSegs.place(relx=0.027, rely=0.486, relwidth=0.258, relheight=0.08)
-        self.lblvPercentVar = StringVar(value='Vertical percent')
-        self.style.configure('TlblvPercent.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblvPercent = Label(self.tabStrip__Tab5, text='Vertical percent', textvariable=self.lblvPercentVar, style='TlblvPercent.TLabel')
-        self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
-        self.lblvPercent.text = lambda : self.lblvPercentVar.get()
-        self.lblvPercent.place(relx=0.027, rely=0.358, relwidth=0.258, relheight=0.08)
         self.cmbTeardropPadTypeList = ['',]
         self.cmbTeardropPadTypeVar = StringVar(value='')
         self.cmbTeardropPadType = Combobox(self.tabStrip__Tab5, exportselection=0, state='readonly', textvariable=self.cmbTeardropPadTypeVar, values=self.cmbTeardropPadTypeList, font=('微软雅黑',10))
         self.cmbTeardropPadType.setText = lambda x: self.cmbTeardropPadTypeVar.set(x)
         self.cmbTeardropPadType.text = lambda : self.cmbTeardropPadTypeVar.get()
-        self.cmbTeardropPadType.place(relx=0.31, rely=0.613, relwidth=0.137)
+        self.cmbTeardropPadType.place(relx=0.31, rely=0.617, relwidth=0.137)
+        self.picTeardrops = Canvas(self.tabStrip__Tab5, takefocus=1, highlightthickness=0)
+        self.picTeardrops.place(relx=0.499, rely=0.237, relwidth=0.447, relheight=0.478)
+        self.cmdRemoveTeardropsVar = StringVar(value='Remove')
+        self.style.configure('TcmdRemoveTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdRemoveTeardrops = Button(self.tabStrip__Tab5, text='Remove', textvariable=self.cmdRemoveTeardropsVar, command=self.cmdRemoveTeardrops_Cmd, style='TcmdRemoveTeardrops.TButton')
+        self.cmdRemoveTeardrops.setText = lambda x: self.cmdRemoveTeardropsVar.set(x)
+        self.cmdRemoveTeardrops.text = lambda : self.cmdRemoveTeardropsVar.get()
+        self.cmdRemoveTeardrops.place(relx=0.31, rely=0.878, relwidth=0.204, relheight=0.089)
+        self.cmbhPercentList = ['',]
+        self.cmbhPercentVar = StringVar(value='')
+        self.cmbhPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbhPercentVar, values=self.cmbhPercentList, font=('微软雅黑',10))
+        self.cmbhPercent.setText = lambda x: self.cmbhPercentVar.set(x)
+        self.cmbhPercent.text = lambda : self.cmbhPercentVar.get()
+        self.cmbhPercent.place(relx=0.31, rely=0.261, relwidth=0.137)
+        self.cmdCancelTeardropsVar = StringVar(value='Cancel')
+        self.style.configure('TcmdCancelTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdCancelTeardrops = Button(self.tabStrip__Tab5, text='Cancel', textvariable=self.cmdCancelTeardropsVar, command=self.cmdCancelTeardrops_Cmd, style='TcmdCancelTeardrops.TButton')
+        self.cmdCancelTeardrops.setText = lambda x: self.cmdCancelTeardropsVar.set(x)
+        self.cmdCancelTeardrops.text = lambda : self.cmdCancelTeardropsVar.get()
+        self.cmdCancelTeardrops.place(relx=0.58, rely=0.878, relwidth=0.204, relheight=0.089)
+        self.cmdAddTeardropsVar = StringVar(value='Add')
+        self.style.configure('TcmdAddTeardrops.TButton', font=('微软雅黑',10))
+        self.cmdAddTeardrops = Button(self.tabStrip__Tab5, text='Add', textvariable=self.cmdAddTeardropsVar, command=self.cmdAddTeardrops_Cmd, style='TcmdAddTeardrops.TButton')
+        self.cmdAddTeardrops.setText = lambda x: self.cmdAddTeardropsVar.set(x)
+        self.cmdAddTeardrops.text = lambda : self.cmdAddTeardropsVar.get()
+        self.cmdAddTeardrops.place(relx=0.04, rely=0.878, relwidth=0.204, relheight=0.089)
+        self.cmbTeardropSegsList = ['',]
+        self.cmbTeardropSegsVar = StringVar(value='')
+        self.cmbTeardropSegs = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbTeardropSegsVar, values=self.cmbTeardropSegsList, font=('微软雅黑',10))
+        self.cmbTeardropSegs.setText = lambda x: self.cmbTeardropSegsVar.set(x)
+        self.cmbTeardropSegs.text = lambda : self.cmbTeardropSegsVar.get()
+        self.cmbTeardropSegs.place(relx=0.31, rely=0.499, relwidth=0.137)
+        self.cmbvPercentList = ['',]
+        self.cmbvPercentVar = StringVar(value='')
+        self.cmbvPercent = Combobox(self.tabStrip__Tab5, exportselection=0, textvariable=self.cmbvPercentVar, values=self.cmbvPercentList, font=('微软雅黑',10))
+        self.cmbvPercent.setText = lambda x: self.cmbvPercentVar.set(x)
+        self.cmbvPercent.text = lambda : self.cmbvPercentVar.get()
+        self.cmbvPercent.place(relx=0.31, rely=0.38, relwidth=0.137)
         self.lblTeardropPadTypeVar = StringVar(value='Pad type')
         self.style.configure('TlblTeardropPadType.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblTeardropPadType = Label(self.tabStrip__Tab5, text='Pad type', textvariable=self.lblTeardropPadTypeVar, style='TlblTeardropPadType.TLabel')
         self.lblTeardropPadType.setText = lambda x: self.lblTeardropPadTypeVar.set(x)
         self.lblTeardropPadType.text = lambda : self.lblTeardropPadTypeVar.get()
-        self.lblTeardropPadType.place(relx=0.027, rely=0.613, relwidth=0.258, relheight=0.08)
+        self.lblTeardropPadType.place(relx=0.027, rely=0.617, relwidth=0.258, relheight=0.074)
+        self.lblTeardropsTipsVar = StringVar(value='teardrops_features_tips')
+        self.style.configure('TlblTeardropsTips.TLabel', anchor='center', font=('微软雅黑',10))
+        self.lblTeardropsTips = Label(self.tabStrip__Tab5, text='teardrops_features_tips', textvariable=self.lblTeardropsTipsVar, style='TlblTeardropsTips.TLabel')
+        self.lblTeardropsTips.setText = lambda x: self.lblTeardropsTipsVar.set(x)
+        self.lblTeardropsTips.text = lambda : self.lblTeardropsTipsVar.get()
+        self.lblTeardropsTips.place(relx=0.027, rely=0.071, relwidth=0.946, relheight=0.098)
+        self.lblhPercentVar = StringVar(value='Horizontal percent')
+        self.style.configure('TlblhPercent.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblhPercent = Label(self.tabStrip__Tab5, text='Horizontal percent', textvariable=self.lblhPercentVar, style='TlblhPercent.TLabel')
+        self.lblhPercent.setText = lambda x: self.lblhPercentVar.set(x)
+        self.lblhPercent.text = lambda : self.lblhPercentVar.get()
+        self.lblhPercent.place(relx=0.027, rely=0.261, relwidth=0.258, relheight=0.074)
+        self.lblTeardropSegsVar = StringVar(value='Number of segments')
+        self.style.configure('TlblTeardropSegs.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblTeardropSegs = Label(self.tabStrip__Tab5, text='Number of segments', textvariable=self.lblTeardropSegsVar, style='TlblTeardropSegs.TLabel')
+        self.lblTeardropSegs.setText = lambda x: self.lblTeardropSegsVar.set(x)
+        self.lblTeardropSegs.text = lambda : self.lblTeardropSegsVar.get()
+        self.lblTeardropSegs.place(relx=0.027, rely=0.499, relwidth=0.258, relheight=0.074)
+        self.lblvPercentVar = StringVar(value='Vertical percent')
+        self.style.configure('TlblvPercent.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblvPercent = Label(self.tabStrip__Tab5, text='Vertical percent', textvariable=self.lblvPercentVar, style='TlblvPercent.TLabel')
+        self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
+        self.lblvPercent.text = lambda : self.lblvPercentVar.get()
+        self.lblvPercent.place(relx=0.027, rely=0.38, relwidth=0.258, relheight=0.074)
         self.tabStrip.add(self.tabStrip__Tab5, text='Teardrop')
 
         self.tabStrip__Tab6 = Frame(self.tabStrip)
+        self.cmbRoundedTrackTypeList = ['',]
+        self.cmbRoundedTrackTypeVar = StringVar(value='')
+        self.cmbRoundedTrackType = Combobox(self.tabStrip__Tab6, exportselection=0, state='readonly', textvariable=self.cmbRoundedTrackTypeVar, values=self.cmbRoundedTrackTypeList, font=('微软雅黑',10))
+        self.cmbRoundedTrackType.setText = lambda x: self.cmbRoundedTrackTypeVar.set(x)
+        self.cmbRoundedTrackType.text = lambda : self.cmbRoundedTrackTypeVar.get()
+        self.cmbRoundedTrackType.place(relx=0.27, rely=0.285, relwidth=0.218)
         self.cmbRoundedTrackSmallDistanceList = ['',]
         self.cmbRoundedTrackSmallDistanceVar = StringVar(value='')
         self.cmbRoundedTrackSmallDistance = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackSmallDistanceVar, values=self.cmbRoundedTrackSmallDistanceList, font=('微软雅黑',10))
         self.cmbRoundedTrackSmallDistance.setText = lambda x: self.cmbRoundedTrackSmallDistanceVar.set(x)
         self.cmbRoundedTrackSmallDistance.text = lambda : self.cmbRoundedTrackSmallDistanceVar.get()
-        self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.486, relwidth=0.11)
-        self.optRoundedTrackBezierTextVar = StringVar(value='Bezier')
-        self.tabStrip__Tab6RadioVar = StringVar()
-        self.style.configure('ToptRoundedTrackBezier.TRadiobutton', font=('微软雅黑',10))
-        self.optRoundedTrackBezier = Radiobutton(self.tabStrip__Tab6, text='Bezier', value='optRoundedTrackBezier', textvariable=self.optRoundedTrackBezierTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrackBezier.TRadiobutton')
-        self.optRoundedTrackBezier.setText = lambda x: self.optRoundedTrackBezierTextVar.set(x)
-        self.optRoundedTrackBezier.text = lambda : self.optRoundedTrackBezierTextVar.get()
-        self.optRoundedTrackBezier.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackBezier' if x else '')
-        self.optRoundedTrackBezier.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackBezier' else 0
-        self.optRoundedTrackBezier.place(relx=0.418, rely=0.23, relwidth=0.164, relheight=0.08)
-        self.optRoundedTrack3PointsTextVar = StringVar(value='Three-point')
-        self.style.configure('ToptRoundedTrack3Points.TRadiobutton', font=('微软雅黑',10))
-        self.optRoundedTrack3Points = Radiobutton(self.tabStrip__Tab6, text='Three-point', value='optRoundedTrack3Points', textvariable=self.optRoundedTrack3PointsTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrack3Points.TRadiobutton')
-        self.optRoundedTrack3Points.setText = lambda x: self.optRoundedTrack3PointsTextVar.set(x)
-        self.optRoundedTrack3Points.text = lambda : self.optRoundedTrack3PointsTextVar.get()
-        self.optRoundedTrack3Points.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrack3Points' if x else '')
-        self.optRoundedTrack3Points.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrack3Points' else 0
-        self.optRoundedTrack3Points.place(relx=0.202, rely=0.23, relwidth=0.191, relheight=0.08)
-        self.optRoundedTrackTangentTextVar = StringVar(value='Tangent')
-        self.style.configure('ToptRoundedTrackTangent.TRadiobutton', font=('微软雅黑',10))
-        self.optRoundedTrackTangent = Radiobutton(self.tabStrip__Tab6, text='Tangent', value='optRoundedTrackTangent', textvariable=self.optRoundedTrackTangentTextVar, variable=self.tabStrip__Tab6RadioVar, style='ToptRoundedTrackTangent.TRadiobutton')
-        self.optRoundedTrackTangent.setText = lambda x: self.optRoundedTrackTangentTextVar.set(x)
-        self.optRoundedTrackTangent.text = lambda : self.optRoundedTrackTangentTextVar.get()
-        self.optRoundedTrackTangent.setValue = lambda x: self.tabStrip__Tab6RadioVar.set('optRoundedTrackTangent' if x else '')
-        self.optRoundedTrackTangent.value = lambda : 1 if self.tabStrip__Tab6RadioVar.get() == 'optRoundedTrackTangent' else 0
-        self.optRoundedTrackTangent.setValue(1)
-        self.optRoundedTrackTangent.place(relx=0.027, rely=0.23, relwidth=0.15, relheight=0.08)
+        self.cmbRoundedTrackSmallDistance.place(relx=0.27, rely=0.522, relwidth=0.218)
         self.cmbRoundedTrackSegsList = ['',]
         self.cmbRoundedTrackSegsVar = StringVar(value='')
         self.cmbRoundedTrackSegs = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackSegsVar, values=self.cmbRoundedTrackSegsList, font=('微软雅黑',10))
         self.cmbRoundedTrackSegs.setText = lambda x: self.cmbRoundedTrackSegsVar.set(x)
         self.cmbRoundedTrackSegs.text = lambda : self.cmbRoundedTrackSegsVar.get()
-        self.cmbRoundedTrackSegs.place(relx=0.27, rely=0.613, relwidth=0.11)
+        self.cmbRoundedTrackSegs.place(relx=0.27, rely=0.641, relwidth=0.218)
         self.cmdRoundedTrackConvertVar = StringVar(value='Convert')
         self.style.configure('TcmdRoundedTrackConvert.TButton', font=('微软雅黑',10))
         self.cmdRoundedTrackConvert = Button(self.tabStrip__Tab6, text='Convert', textvariable=self.cmdRoundedTrackConvertVar, command=self.cmdRoundedTrackConvert_Cmd, style='TcmdRoundedTrackConvert.TButton')
         self.cmdRoundedTrackConvert.setText = lambda x: self.cmdRoundedTrackConvertVar.set(x)
         self.cmdRoundedTrackConvert.text = lambda : self.cmdRoundedTrackConvertVar.get()
-        self.cmdRoundedTrackConvert.place(relx=0.135, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdRoundedTrackConvert.place(relx=0.135, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmdRoundedTrackCancelVar = StringVar(value='Cancel')
         self.style.configure('TcmdRoundedTrackCancel.TButton', font=('微软雅黑',10))
         self.cmdRoundedTrackCancel = Button(self.tabStrip__Tab6, text='Cancel', textvariable=self.cmdRoundedTrackCancelVar, command=self.cmdRoundedTrackCancel_Cmd, style='TcmdRoundedTrackCancel.TButton')
         self.cmdRoundedTrackCancel.setText = lambda x: self.cmdRoundedTrackCancelVar.set(x)
         self.cmdRoundedTrackCancel.text = lambda : self.cmdRoundedTrackCancelVar.get()
-        self.cmdRoundedTrackCancel.place(relx=0.499, rely=0.818, relwidth=0.245, relheight=0.096)
+        self.cmdRoundedTrackCancel.place(relx=0.499, rely=0.878, relwidth=0.245, relheight=0.089)
         self.cmbRoundedTrackBigDistanceList = ['',]
         self.cmbRoundedTrackBigDistanceVar = StringVar(value='')
         self.cmbRoundedTrackBigDistance = Combobox(self.tabStrip__Tab6, exportselection=0, textvariable=self.cmbRoundedTrackBigDistanceVar, values=self.cmbRoundedTrackBigDistanceList, font=('微软雅黑',10))
         self.cmbRoundedTrackBigDistance.setText = lambda x: self.cmbRoundedTrackBigDistanceVar.set(x)
         self.cmbRoundedTrackBigDistance.text = lambda : self.cmbRoundedTrackBigDistanceVar.get()
-        self.cmbRoundedTrackBigDistance.place(relx=0.27, rely=0.358, relwidth=0.11)
+        self.cmbRoundedTrackBigDistance.place(relx=0.27, rely=0.404, relwidth=0.218)
         self.picRoundedTrack = Canvas(self.tabStrip__Tab6, takefocus=1, highlightthickness=0)
-        self.picRoundedTrack.place(relx=0.594, rely=0.204, relwidth=0.379, relheight=0.514)
+        self.picRoundedTrack.place(relx=0.594, rely=0.261, relwidth=0.379, relheight=0.478)
+        self.lblRoundedTrackTypeVar = StringVar(value='Type')
+        self.style.configure('TlblRoundedTrackType.TLabel', anchor='e', font=('微软雅黑',10))
+        self.lblRoundedTrackType = Label(self.tabStrip__Tab6, text='Type', textvariable=self.lblRoundedTrackTypeVar, style='TlblRoundedTrackType.TLabel')
+        self.lblRoundedTrackType.setText = lambda x: self.lblRoundedTrackTypeVar.set(x)
+        self.lblRoundedTrackType.text = lambda : self.lblRoundedTrackTypeVar.get()
+        self.lblRoundedTrackType.place(relx=0.054, rely=0.285, relwidth=0.204, relheight=0.074)
         self.lblRoundedTrackSmallDVar = StringVar(value='small d(mm)')
         self.style.configure('TlblRoundedTrackSmallD.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblRoundedTrackSmallD = Label(self.tabStrip__Tab6, text='small d(mm)', textvariable=self.lblRoundedTrackSmallDVar, style='TlblRoundedTrackSmallD.TLabel')
         self.lblRoundedTrackSmallD.setText = lambda x: self.lblRoundedTrackSmallDVar.set(x)
         self.lblRoundedTrackSmallD.text = lambda : self.lblRoundedTrackSmallDVar.get()
-        self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.486, relwidth=0.204, relheight=0.08)
+        self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.522, relwidth=0.204, relheight=0.074)
         self.lblSaveAsRoundedTrackVar = StringVar(value='Save as')
         self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsRoundedTrack = Label(self.tabStrip__Tab6, text='Save as', textvariable=self.lblSaveAsRoundedTrackVar, style='TlblSaveAsRoundedTrack.TLabel')
         self.lblSaveAsRoundedTrack.setText = lambda x: self.lblSaveAsRoundedTrackVar.set(x)
         self.lblSaveAsRoundedTrack.text = lambda : self.lblSaveAsRoundedTrackVar.get()
-        self.lblSaveAsRoundedTrack.place(relx=0.877, rely=0.843, relwidth=0.11, relheight=0.08)
+        self.lblSaveAsRoundedTrack.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsRoundedTrack.bind('<Button-1>', self.lblSaveAsRoundedTrack_Button_1)
         self.lblRoundedTrackBigDVar = StringVar(value='big d(mm)')
         self.style.configure('TlblRoundedTrackBigD.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblRoundedTrackBigD = Label(self.tabStrip__Tab6, text='big d(mm)', textvariable=self.lblRoundedTrackBigDVar, style='TlblRoundedTrackBigD.TLabel')
         self.lblRoundedTrackBigD.setText = lambda x: self.lblRoundedTrackBigDVar.set(x)
         self.lblRoundedTrackBigD.text = lambda : self.lblRoundedTrackBigDVar.get()
-        self.lblRoundedTrackBigD.place(relx=0.054, rely=0.358, relwidth=0.204, relheight=0.08)
+        self.lblRoundedTrackBigD.place(relx=0.054, rely=0.404, relwidth=0.204, relheight=0.074)
         self.lblRoundedTrackSegsVar = StringVar(value='segments')
         self.style.configure('TlblRoundedTrackSegs.TLabel', anchor='e', font=('微软雅黑',10))
         self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
         self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
         self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
-        self.lblRoundedTrackSegs.place(relx=0.054, rely=0.613, relwidth=0.204, relheight=0.08)
+        self.lblRoundedTrackSegs.place(relx=0.054, rely=0.641, relwidth=0.204, relheight=0.074)
         self.lblRoundedTrackTipsVar = StringVar(value='rounded_track_features_tips')
         self.style.configure('TlblRoundedTrackTips.TLabel', anchor='center', font=('微软雅黑',10))
         self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='rounded_track_features_tips', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
         self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
         self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
-        self.lblRoundedTrackTips.place(relx=0.027, rely=0.077, relwidth=0.946, relheight=0.105)
+        self.lblRoundedTrackTips.place(relx=0.027, rely=0.071, relwidth=0.946, relheight=0.098)
         self.tabStrip.add(self.tabStrip__Tab6, text='ArcTrack')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
@@ -704,7 +738,12 @@ class Application(Application_ui):
         self.treRules.configure(show='') #'headings'
         self.treRules.configure(selectmode='browse') #只允许单行选择
         #self.treRules.tag_configure('gray_row', background='#cccccc')
-
+        #设置反转字体背景的下拉框字体
+        popdown = self.master.tk.call("ttk::combobox::PopdownWindow", self.cmbCapLeft)
+        self.master.tk.call(f"{popdown}.f.l", "configure", "-font", '{Times New Roman} 14 bold')
+        popdown = self.master.tk.call("ttk::combobox::PopdownWindow", self.cmbCapRight)
+        self.master.tk.call(f"{popdown}.f.l", "configure", "-font", '{Times New Roman} 14 bold')
+        
         self.teardropImage = None
         self.roundedTrackImage = None
 
@@ -872,6 +911,10 @@ class Application(Application_ui):
         self.lblFontHeight.setText(_("Height (mm)"))
         self.lblWordSpacing.setText(_("Word spacing (mm)"))
         self.LblLineSpacing.setText(_("Line spacing (mm)"))
+        self.chkInvertedBackground.configure(text=_("Inverted Background"))
+        self.lblBkPadding.setText(_("Padding"))
+        self.lblCapLeft.setText(_("Cap left"))
+        self.lblCapRight.setText(_("Cap right"))
         self.lblFootprintFile.setText(_("Input"))
         self.tabStrip.tab(0, text=_("TabFont"))
         self.tabStrip.tab(1, text=_("TabFootprint"))
@@ -903,9 +946,7 @@ class Application(Application_ui):
         self.cmdRemoveTeardrops.setText(_("Remove"))
         self.cmdCancelTeardrops.setText(_("Cancel"))
         self.lblRoundedTrackTips.setText(_("rounded_track_features_tips"))
-        self.optRoundedTrackTangent.setText(_("Tangent"))
-        self.optRoundedTrack3Points.setText(_("Three-point"))
-        self.optRoundedTrackBezier.setText(_("Bezier"))
+        self.lblRoundedTrackType.setText(_("Type"))
         self.lblRoundedTrackBigD.setText(_("big d(mm)"))
         self.lblRoundedTrackSmallD.setText(_("small d(mm)"))
         self.lblRoundedTrackSegs.setText(_("Number of segments"))
@@ -945,7 +986,7 @@ class Application(Application_ui):
             print('create thread failed: {}'.format(str(e)))
             self.populateFontCombox(self.generateFontFileNameMap())
             
-        #填充板层
+        #字体板层
         self.cmbLayerList = [_("C1 (Front copper)"), _("S1 (Front silkscreen)"), _("C2 (Back copper)"), 
             _("S2 (Back silkscreen)"), _("I1 (Inner copper1)"), _("I2 (Inner copper2)"), _("U (Edge.cuts)"), ]
         self.cmbLayer.configure(values=self.cmbLayerList)
@@ -953,7 +994,7 @@ class Application(Application_ui):
         self.cmbSvgLayer.configure(values=self.cmbLayerList)
         self.cmbSvgLayer.current(1)
 
-        #字高
+        #字体字高
         self.cmbFontHeightList = [1.0, 2.0, 3.0, 4.0]
         self.cmbFontHeight.configure(values=self.cmbFontHeightList)
         self.cmbFontHeight.current(1) #字高默认2mm
@@ -963,17 +1004,31 @@ class Application(Application_ui):
         self.cmbWordSpacing.configure(values=self.cmbWordSpacingList)
         self.cmbWordSpacing.current(0) #默认-0.8，电路板空间比较宝贵，文字可以相互靠近一些
         
-        #行间距
-        self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5]
+        #字体行间距
+        self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5, 1.0, 2.0]
         self.cmbLineSpacing.configure(values=self.cmbLineSpacingList)
         self.cmbLineSpacing.current(2)
         
-        #平滑程度
+        #字体平滑程度
         self.cmbSmoothList = [_("Super fine (super slow)"), _("Fine (slow)"), _("Normal"), _("Rough"), _("Super Rough"), ]
         self.cmbSmooth.configure(values=self.cmbSmoothList)
         self.cmbSmooth.current(2)
         self.cmbSvgSmooth.configure(values=self.cmbSmoothList)
         self.cmbSvgSmooth.current(2)
+
+        #字体反转背景
+        self.cmbPaddingList = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0]
+        self.cmbPadding.configure(values=self.cmbPaddingList)
+        self.cmbPadding.current(0)
+        self.cmbPadding.configure(state='disabled')
+        self.cmbCapLeftList = ['  [', '  \\', '  /', '  (', '  <', '  >']
+        self.cmbCapLeft.configure(values=self.cmbCapLeftList)
+        self.cmbCapLeft.current(0)
+        self.cmbCapLeft.configure(state='disabled')
+        self.cmbCapRightList = ['  ]', '  \\', '  /', '  )', '  <', '  >']
+        self.cmbCapRight.configure(values=self.cmbCapRightList)
+        self.cmbCapRight.current(0)
+        self.cmbCapRight.configure(state='disabled')
 
         #SVG/QRCODE选择
         self.cmbSvgQrcodeList = [_("SVG"), _("Qrcode")]
@@ -1002,9 +1057,12 @@ class Application(Application_ui):
         self.cmbTeardropSegs.current(9) #默认10个线段
         self.cmbTeardropPadTypeList = [_("PTH pad"), _("SMD pad"), _("PTH/SMD")]
         self.cmbTeardropPadType.configure(values=self.cmbTeardropPadTypeList)
-        self.cmbTeardropPadType.current(2)
+        self.cmbTeardropPadType.current(0)
 
         #弧形走线
+        self.cmbRoundedTrackTypeList = [_("Tangent"), _("Three-point"), _("Bezier")]
+        self.cmbRoundedTrackType.configure(values=self.cmbRoundedTrackTypeList)
+        self.cmbRoundedTrackType.current(0)
         self.cmbRoundedTrackBigDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.cmbRoundedTrackBigDistance.configure(values=self.cmbRoundedTrackBigDistanceList)
         self.cmbRoundedTrackBigDistance.current(3) #默认3mm
@@ -1045,118 +1103,131 @@ class Application(Application_ui):
     #从配置文件中恢复以前的配置数据
     def restoreConfig(self):
         cfg = self.cfg
-        if isinstance(cfg, dict):
-            #字体界面
-            lastFont = cfg.get('font', '')
-            if lastFont and (lastFont in self.cmbFontList):
-                self.cmbFont.current(self.cmbFontList.index(lastFont))
+        if not isinstance(cfg, dict):
+            return
 
-            self.txtFontSize = str_to_int(cfg.get('txtFontSize', '14'))
+        #字体界面
+        lastFont = cfg.get('font', '')
+        if lastFont and (lastFont in self.cmbFontList):
+            self.cmbFont.current(self.cmbFontList.index(lastFont))
 
-            lastHeight = str_to_float(cfg.get('height', ''))
-            if lastHeight:
-                self.cmbFontHeight.setText(str(lastHeight))
+        self.txtFontSize = str_to_int(cfg.get('txtFontSize', '14'))
 
-            lastLayer = str_to_int(cfg.get('layer', '1'), 100)
-            if 0 <= lastLayer < len(self.cmbLayerList):
-                self.cmbLayer.current(lastLayer)
-            smooth = str_to_int(cfg.get('smooth', '2'), 100)
-            if 0 <= smooth < len(self.cmbSmoothList):
-                self.cmbSmooth.current(smooth)
+        lastHeight = str_to_float(cfg.get('height', ''))
+        if lastHeight:
+            self.cmbFontHeight.setText(str(lastHeight))
 
-            ws = str_to_float(cfg.get('wordSpacing', "-0.8"))
-            self.cmbWordSpacing.setText(str(ws))
-            ls = str_to_float(cfg.get('lineSpacing', "0"))
-            self.cmbLineSpacing.setText(str(ls))
+        lastLayer = str_to_int(cfg.get('layer', '1'), 100)
+        if 0 <= lastLayer < len(self.cmbLayerList):
+            self.cmbLayer.current(lastLayer)
+        smooth = str_to_int(cfg.get('smooth', '2'), 100)
+        if 0 <= smooth < len(self.cmbSmoothList):
+            self.cmbSmooth.current(smooth)
 
-            #封装导入页面
-            if (str_to_int(cfg.get('importFootprintText', '0'))):
-                self.chkImportFootprintText.setValue(1)
+        ws = str_to_float(cfg.get('wordSpacing', "-0.8"))
+        self.cmbWordSpacing.setText(str(ws))
+        ls = str_to_float(cfg.get('lineSpacing', "0"))
+        self.cmbLineSpacing.setText(str(ls))
 
-            #SVG页面
-            svgQrcode = str_to_int(cfg.get('svgQrcode', '0'), 100)
-            if 0 <= svgQrcode < len(self.cmbSvgQrcodeList):
-                self.cmbSvgQrcode.current(svgQrcode)
-            svgMode = str_to_int(cfg.get('svgMode', '2'), 100)
-            if 0 <= svgMode < len(self.cmbSvgModeList):
-                self.cmbSvgMode.current(svgMode)
-            smooth = str_to_int(cfg.get('svgSmooth', '2'), 100)
-            if 0 <= smooth < len(self.cmbSmoothList):
-                self.cmbSvgSmooth.current(smooth)
-            svgLayer = str_to_int(cfg.get('svgLayer', '2'), 100)
-            if 0 <= svgLayer < len(self.cmbSvgLayerList):
-                self.cmbSvgLayer.current(svgLayer)
-            lastHeight = str_to_float(cfg.get('svgHeight', ''))
-            if lastHeight:
-                self.cmbSvgHeight.setText(str(lastHeight))
+        if (str_to_int(cfg.get('invertBackground', '0'))):
+            self.chkInvertedBackground.setValue(1)
+            self.cmbPadding.configure(state='normal')
+            self.cmbCapLeft.configure(state='readonly')
+            self.cmbCapRight.configure(state='readonly')
+        padding = cfg.get('padding', '')
+        if padding:
+            self.cmbPadding.setText(padding)
+        capLeft = str_to_int(cfg.get('capLeft', '0'))
+        if 0 <= capLeft < len(self.cmbCapLeftList):
+            self.cmbCapLeft.current(capLeft)
+        capRight = str_to_int(cfg.get('capRight', '0'))
+        if 0 <= capRight < len(self.cmbCapRightList):
+            self.cmbCapRight.current(capRight)
 
-            lastTab = str_to_int(cfg.get('lastTab', '0'))
-            if (lastTab > 0):
-                self.setCurrentTabStripTab(lastTab)
+        #封装导入页面
+        if (str_to_int(cfg.get('importFootprintText', '0'))):
+            self.chkImportFootprintText.setValue(1)
 
-            #立创EDA的服务器节点
-            easyEdaSite = cfg.get('easyEdaSite', '').lower()
-            if (easyEdaSite in ('cn', 'global')):
-                self.easyEdaSite = easyEdaSite
-            else:
-                self.easyEdaSite = ''
+        #SVG页面
+        svgQrcode = str_to_int(cfg.get('svgQrcode', '0'), 100)
+        if 0 <= svgQrcode < len(self.cmbSvgQrcodeList):
+            self.cmbSvgQrcode.current(svgQrcode)
+        svgMode = str_to_int(cfg.get('svgMode', '2'), 100)
+        if 0 <= svgMode < len(self.cmbSvgModeList):
+            self.cmbSvgMode.current(svgMode)
+        smooth = str_to_int(cfg.get('svgSmooth', '2'), 100)
+        if 0 <= smooth < len(self.cmbSmoothList):
+            self.cmbSvgSmooth.current(smooth)
+        svgLayer = str_to_int(cfg.get('svgLayer', '2'), 100)
+        if 0 <= svgLayer < len(self.cmbSvgLayerList):
+            self.cmbSvgLayer.current(svgLayer)
+        lastHeight = str_to_float(cfg.get('svgHeight', ''))
+        if lastHeight:
+            self.cmbSvgHeight.setText(str(lastHeight))
 
-            #版本更新检查
-            self.checkUpdateFrequency = str_to_int(cfg.get('checkUpdateFrequency', '30'))
-            if (self.checkUpdateFrequency < 0):
-                self.checkUpdateFrequency = 0
-            lastCheck = cfg.get('lastCheckUpdate', '')
-            try:
-                self.lastCheckUpdate = datetime.datetime.strptime(lastCheck, '%Y-%m-%d')
-            except:
-                self.lastCheckUpdate = None
-            self.skipVersion = cfg.get('skipVersion', '')
+        lastTab = str_to_int(cfg.get('lastTab', '0'))
+        if (lastTab > 0):
+            self.setCurrentTabStripTab(lastTab)
 
-            #自动布线规则和其他配置
-            trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
-            viaDiameter = str_to_float(cfg.get('viaDiameter', '0.7'))
-            viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
-            clearance = str_to_float(cfg.get('clearance', '0.3'))
-            smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.06'))
-            self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
-            self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.7
-            self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
-            self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.3
-            self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.06
-            if (self.pcbRule.viaDiameter <= self.pcbRule.viaDrill):
-                self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
-            self.updateRuleView()
+        #立创EDA的服务器节点
+        easyEdaSite = cfg.get('easyEdaSite', '').lower()
+        if (easyEdaSite in ('cn', 'global')):
+            self.easyEdaSite = easyEdaSite
+        else:
+            self.easyEdaSite = ''
 
-            #泪滴焊盘
-            hPercent = str_to_int(cfg.get('teardropHPercent', '50'))
-            vPercent = str_to_int(cfg.get('teardropVPercent', '90'))
-            segs = str_to_int(cfg.get('teardropSegs', '10'))
-            padTypeIdx = str_to_int(cfg.get('teardropPadType', '2'))
-            self.cmbhPercent.setText(str(hPercent))
-            self.cmbvPercent.setText(str(vPercent))
-            if segs:
-                self.cmbTeardropSegs.setText(str(segs))
-            if 0 <= padTypeIdx <= 2:
-                self.cmbTeardropPadType.current(padTypeIdx)
+        #版本更新检查
+        self.checkUpdateFrequency = str_to_int(cfg.get('checkUpdateFrequency', '30'))
+        if (self.checkUpdateFrequency < 0):
+            self.checkUpdateFrequency = 0
+        lastCheck = cfg.get('lastCheckUpdate', '')
+        try:
+            self.lastCheckUpdate = datetime.datetime.strptime(lastCheck, '%Y-%m-%d')
+        except:
+            self.lastCheckUpdate = None
+        self.skipVersion = cfg.get('skipVersion', '')
 
-            #弧形走线
-            method = cfg.get('roundedTrackMethod', '')
-            if (method == '3Points'):
-                self.optRoundedTrack3Points.setValue(1)
-            elif (method == 'bezier'):
-                self.optRoundedTrackBezier.setValue(1)
-            else:
-                self.optRoundedTrackTangent.setValue(1)
+        #自动布线规则和其他配置
+        trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
+        viaDiameter = str_to_float(cfg.get('viaDiameter', '0.7'))
+        viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
+        clearance = str_to_float(cfg.get('clearance', '0.3'))
+        smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.06'))
+        self.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
+        self.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.7
+        self.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
+        self.pcbRule.clearance = clearance if (clearance > 0.1) else 0.3
+        self.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.06
+        if (self.pcbRule.viaDiameter <= self.pcbRule.viaDrill):
+            self.pcbRule.viaDiameter = self.pcbRule.viaDrill + 0.1
+        self.updateRuleView()
 
-            distance = str_to_float(cfg.get('roundedTrackBigDistance', ''))
-            if distance > 0:
-                self.cmbRoundedTrackBigDistance.setText('{:.1f}'.format(distance))
-            distance = str_to_float(cfg.get('roundedTrackSmallDistance', ''))
-            if distance > 0:
-                self.cmbRoundedTrackSmallDistance.setText('{:.1f}'.format(distance))
-            segs = str_to_int(cfg.get('roundedTrackSegs', '10'))
-            if segs:
-                self.cmbRoundedTrackSegs.setText(segs)
+        #泪滴焊盘
+        hPercent = str_to_int(cfg.get('teardropHPercent', '50'))
+        vPercent = str_to_int(cfg.get('teardropVPercent', '90'))
+        segs = str_to_int(cfg.get('teardropSegs', '10'))
+        padTypeIdx = str_to_int(cfg.get('teardropPadType', '0'))
+        self.cmbhPercent.setText(str(hPercent))
+        self.cmbvPercent.setText(str(vPercent))
+        if segs:
+            self.cmbTeardropSegs.setText(str(segs))
+        if 0 <= padTypeIdx <= 2:
+            self.cmbTeardropPadType.current(padTypeIdx)
+
+        #弧形走线
+        rtType = str_to_int(cfg.get('roundedTrackType', '0'))
+        if 0 <= rtType <= 2:
+            self.cmbRoundedTrackType.current(rtType)
+        
+        distance = str_to_float(cfg.get('roundedTrackBigDistance', ''))
+        if distance > 0:
+            self.cmbRoundedTrackBigDistance.setText('{:.1f}'.format(distance))
+        distance = str_to_float(cfg.get('roundedTrackSmallDistance', ''))
+        if distance > 0:
+            self.cmbRoundedTrackSmallDistance.setText('{:.1f}'.format(distance))
+        segs = str_to_int(cfg.get('roundedTrackSegs', '10'))
+        if segs:
+            self.cmbRoundedTrackSegs.setText(segs)
 
     #保存当前配置数据
     def saveConfig(self):
@@ -1167,6 +1238,8 @@ class Application(Application_ui):
             'txtFontSize': str(self.txtFontSize), 'height': self.cmbFontHeight.text(), 
             'layer': str(self.cmbLayer.current()), 'wordSpacing': self.cmbWordSpacing.text(), 
             'lineSpacing': self.cmbLineSpacing.text(), 'smooth': str(self.cmbSmooth.current()), 
+            'invertBackground': str(self.chkInvertedBackground.value()), 'padding': self.cmbPadding.text(),
+            'capLeft': str(self.cmbCapLeft.current()), 'capRight': str(self.cmbCapRight.current()),
             'importFootprintText': str(self.chkImportFootprintText.value()),
             'svgQrcode': str(self.cmbSvgQrcode.current()),
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
@@ -1180,7 +1253,7 @@ class Application(Application_ui):
             'smdSmdClearance': str(self.pcbRule.smdSmdClearance),
             'teardropHPercent': self.cmbhPercent.text(), 'teardropVPercent': self.cmbvPercent.text(),
             'teardropSegs': self.cmbTeardropSegs.text(), 'teardropPadType': str(self.cmbTeardropPadType.current()),
-            'roundedTrackMethod': self.roundedTrackMethod(), 'roundedTrackBigDistance': self.cmbRoundedTrackBigDistance.text(),
+            'roundedTrackType': str(self.cmbRoundedTrackType.current()), 'roundedTrackBigDistance': self.cmbRoundedTrackBigDistance.text(),
             'roundedTrackSmallDistance': self.cmbRoundedTrackSmallDistance.text(),
             'roundedTrackSegs': self.cmbRoundedTrackSegs.text(),
         }
@@ -1254,6 +1327,17 @@ class Application(Application_ui):
     def cmdRoundedTrackCancel_Cmd(self, event=None):
         self.destroy()
         sys.exit(RETURN_CODE_NONE)
+
+    #点击翻转字体背景
+    def chkInvertedBackground_Cmd(self, event=None):
+        if self.chkInvertedBackground.value():
+            self.cmbPadding.configure(state='normal')
+            self.cmbCapLeft.configure(state='readonly')
+            self.cmbCapRight.configure(state='readonly')
+        else:
+            self.cmbPadding.configure(state='disabled')
+            self.cmbCapLeft.configure(state='disabled')
+            self.cmbCapRight.configure(state='disabled')
 
     #保存为单独一个文本文件
     def lblSaveAs_Button_1(self, event):
@@ -1475,8 +1559,14 @@ class Application(Application_ui):
         fontHeight = str_to_float(self.cmbFontHeight.text())
         wordSpacing = str_to_float(self.cmbWordSpacing.text())
         lineSpacing = str_to_float(self.cmbLineSpacing.text())
+        invert = self.chkInvertedBackground.value()
+        padding = str_to_float(self.cmbPadding.text())
+        capLeft = self.cmbCapLeft.text().strip()
+        capRight = self.cmbCapRight.text().strip()
         if fontHeight <= 0.0:
             fontHeight = 1.0
+        if padding < 0.01:
+            padding = 0.0
         
         fontFileName, fontIdx = self.fontNameMap.get(fontName, ('', 0))
         if not fontFileName or not os.path.exists(fontFileName):
@@ -1499,9 +1589,9 @@ class Application(Application_ui):
         
         #开始逐字转换
         txt = self.translateUnicodeSymbol(txt)
-        textIo = SprintTextIO()
         offsetY = 0.0
         prevWidth = 0
+        polygons = []
         for line in txt.split('\n'):
             offsetX = 0.0 #每一行都从最左边开始
             maxHeight = 0
@@ -1518,19 +1608,101 @@ class Application(Application_ui):
                     return ret
                     
                 prevWidth = ret['width']
-                textIo.addAll(ret['polygons'])
-                inc = prevWidth + (wordSpacing * 10000)
+                polygons.extend(ret['polygons'])
+                inc = prevWidth + wordSpacing
                 offsetX += inc if (inc > 0) else prevWidth
                 if ret['height'] > maxHeight:
                     maxHeight = ret['height']
             #新行
-            inc = maxHeight + (lineSpacing * 10000)
+            inc = maxHeight + lineSpacing
             offsetY += inc if (inc > 0) else maxHeight
 
         font.close()
 
+        textIo = SprintTextIO()
+        if invert: #生成负像
+            textIo.add(self.invertFontBackground(polygons, padding, capLeft, capRight))
+        else:
+            textIo.addAll(polygons)
+
         #返回字符串
         return textIo
+
+    #反转字体的背景（镂空字）
+    #原理：创建一个包含所有多边形的大四边形，形成一个负像
+    #padding: 大四边形边线到字体外框的距离，单位为mm
+    #capLeft: 四边形左侧形状
+    #capRight: 四边形右侧形状
+    def invertFontBackground(self, polygons, padding, capLeft, capRight):
+        from sprint_struct.sprint_polygon import SprintPolygon
+        extPoly = SprintPolygon(polygons[0].layerIdx)
+
+        # 计算包含所有多边形的最小外接矩形
+        minX = min(point[0] for poly in polygons for point in poly) - padding
+        minY = min(point[1] for poly in polygons for point in poly) - padding
+        maxX = max(point[0] for poly in polygons for point in poly) + padding
+        maxY = max(point[1] for poly in polygons for point in poly) + padding
+        slashAngle = math.radians(70) #斜边的角度: 70度
+        tipAngle = math.radians(60) #尖角的角度：120度
+        slashOffX = (maxY - minY) / math.tan(slashAngle) #斜杠和反斜杠的X偏移
+        tipOffX = ((maxY - minY) / 2) / math.tan(tipAngle) #尖角的X偏移
+        midY = (maxY - minY) / 2
+        cutNumMap = {0: 50, 1: 20, 2: 10, 3: 5, 4: 2} #一个圆要切割的份数
+        #逆时针添加外框坐标，先添加左侧
+        if capLeft == '/':
+            extPoly.addPoint(minX, minY)
+            extPoly.addPoint(minX - slashOffX, maxY)
+        elif capLeft == '\\':
+            extPoly.addPoint(minX - slashOffX, minY)
+            extPoly.addPoint(minX, maxY)
+        elif capLeft == '<':
+            extPoly.addPoint(minX, minY)
+            extPoly.addPoint(minX - tipOffX, maxY - midY)
+            extPoly.addPoint(minX, maxY)
+        elif capLeft == '>':
+            extPoly.addPoint(minX - tipOffX, minY)
+            extPoly.addPoint(minX, maxY - midY)
+            extPoly.addPoint(minX - tipOffX, maxY)
+        elif capLeft == '(':
+            extPoly.addPoint(minX, minY)
+            cutNum = cutNumMap.get(self.cmbSmooth.current(), 10)
+            extPoly.addAllPoints(cutCircle(cx=minX, cy=maxY-midY, radius=midY, cutNum=cutNum,
+                start=180, stop=360))
+            extPoly.addPoint(minX, maxY)
+        else: # |
+            extPoly.addPoint(minX, minY)
+            extPoly.addPoint(minX, maxY)
+            
+        if capRight == '/':
+            extPoly.addPoint(maxX, maxY)
+            extPoly.addPoint(maxX + slashOffX, minY)
+        elif capRight == '\\':
+            extPoly.addPoint(maxX + slashOffX, maxY)
+            extPoly.addPoint(maxX, minY)
+        elif capRight == '<':
+            extPoly.addPoint(maxX + tipOffX, maxY)
+            extPoly.addPoint(maxX, maxY - midY)
+            extPoly.addPoint(maxX + tipOffX, minY)
+        elif capRight == '>':
+            extPoly.addPoint(maxX, maxY)
+            extPoly.addPoint(maxX + tipOffX, maxY - midY)
+            extPoly.addPoint(maxX, minY)
+        elif capRight == ')':
+            extPoly.addPoint(maxX, maxY)
+            cutNum = cutNumMap.get(self.cmbSmooth.current(), 10)
+            extPoly.addAllPoints(cutCircle(cx=maxX, cy=maxY-midY, radius=midY, cutNum=cutNum,
+                start=0, stop=180))
+            extPoly.addPoint(maxX, minY)
+        else:
+            extPoly.addPoint(maxX, maxY)
+            extPoly.addPoint(maxX, minY)
+
+        #合并多边形
+        for poly in polygons:
+            extPoly.devour(poly)
+            poly.reset()
+
+        return extPoly
         
     #将字符串里面的\u1234转换为对应的字符
     def translateUnicodeSymbol(self, txt: str):
@@ -2040,13 +2212,8 @@ class Application(Application_ui):
         return textIo
 
     #获取当前生成弧形走线方法的函数
-    def roundedTrackMethod(self):
-        method = 'tangent'
-        if (self.optRoundedTrack3Points.value()):
-            method = '3Points'
-        elif (self.optRoundedTrackBezier.value()):
-            method = 'bezier'
-        return method
+    def roundedTrackType(self):
+        return {0: 'tangent', 1: '3Points', 2: 'bezier'}.get(self.cmbRoundedTrackType.current(), 'tangent')
 
     #转换走线为弧形走线
     def cmdRoundedTrackConvert_Cmd(self, event=None):
@@ -2073,7 +2240,7 @@ class Application(Application_ui):
         bigDistance = str_to_float(self.cmbRoundedTrackBigDistance.text())
         smallDistance = str_to_float(self.cmbRoundedTrackSmallDistance.text())
         segs = str_to_int(self.cmbRoundedTrackSegs.text())
-        ret = createArcTracksInTextIo(textIo, self.roundedTrackMethod(), bigDistance, smallDistance, segs)
+        ret = createArcTracksInTextIo(textIo, self.roundedTrackType(), bigDistance, smallDistance, segs)
         if not ret:
             showinfo(_("info"), _("No suitable track found"))
             return None

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 """
-Sprint-Layout v6 2022版的插件，在电路板插入其他字体（包括中文字体）的文字
-将字体转换为Sprint-Layout的多边形填充
+Sprint-Layout v6 2022版及以上的插件，在电路板插入其他字体（包括中文字体）的文字
+原理：将字体转换为Sprint-Layout的多边形填充
 Author: cdhigh <https://github.com/cdhigh>
 """
 import os, sys
@@ -97,7 +97,7 @@ def singleWordPolygon(fontName: str, font, code: int, layerIdx: int=2, fontHeigh
         scaleX = lambda x: (((x * fontWidth) / width) + offsetX)
 
     #Y轴转换数值的同时，加一个符号，表示垂直翻转
-    scaleY = lambda y: -(((y * fontHeight) / height) + offsetY)
+    scaleY = lambda y: -(((y * fontHeight) / height) - offsetY)
 
     polygons = []  #保存所有的封闭多边形
     currPolygon = SprintPolygon(layerIdx)
@@ -182,7 +182,7 @@ def singleWordPolygon(fontName: str, font, code: int, layerIdx: int=2, fontHeigh
     #"楷体_GB2312"的制作不规范，其使用多个有部分重叠的多边形组成字体，不能将多边形进行合并
     if (fontName != "楷体_GB2312"):
         mergePolygons(polygons)
-    return {'width':fontWidth, 'height':fontHeight, 'polygons':polygons}
+    return {'width': fontWidth, 'height': fontHeight, 'polygons': polygons}
 
 #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
 def mergePolygons(polygons):

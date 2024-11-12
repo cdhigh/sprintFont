@@ -44,6 +44,10 @@ class I18n:
     "Normal": ("", "正常"),
     "Rough": ("", "稍粗糙"),
     "Super Rough": ("", "比较粗糙"),
+    "Inverted Background": ("", "反转背景"),
+    "Padding": ("", "内边距"),
+    "Cap left": ("", "左侧形状"),
+    "Cap right": ("", "右侧形状"),
     "info": ("", "信息"),
     "Text is empty": ("", "文本为空"),
     "File does not exist\n{}": ("", "文件不存在\n{}"),
@@ -160,6 +164,7 @@ class I18n:
     "rounded_track_features_tips": (
         "Apply to all tracks when deselecting all, otherwise apply to selected tracks only",
         "取消全部选择时应用到所有走线，否则仅应用到您选择的走线"),
+    "Type": ("", "类型"),
     "Tangent": ("", "切线圆弧"),
     "Three-point": ("", "三点圆弧"),
     "Bezier": ("", "贝塞尔曲线"),

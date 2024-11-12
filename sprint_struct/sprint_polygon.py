@@ -85,6 +85,11 @@ class SprintPolygon(SprintElement):
                     return False
             return True
 
+    #遍历里面的点
+    def __iter__(self):
+        for pt in self.points:
+            yield pt
+            
     #返回此多边形的面积
     def area(self):
         return ComputePolygonArea(self.points)
