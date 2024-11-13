@@ -1000,9 +1000,9 @@ class Application(Application_ui):
         self.cmbFontHeight.current(1) #字高默认2mm
         
         #字间距
-        self.cmbWordSpacingList = [-0.8, -0.5, -0.2, 0, 0.2, 0.5]
+        self.cmbWordSpacingList = [-0.5, -0.2, 0, 0.2, 0.5, 0.8, 1.0]
         self.cmbWordSpacing.configure(values=self.cmbWordSpacingList)
-        self.cmbWordSpacing.current(0) #默认-0.8，电路板空间比较宝贵，文字可以相互靠近一些
+        self.cmbWordSpacing.current(2)
         
         #字体行间距
         self.cmbLineSpacingList = [-0.5, -0.2, 0, 0.2, 0.5, 1.0, 2.0]
@@ -1124,7 +1124,7 @@ class Application(Application_ui):
         if 0 <= smooth < len(self.cmbSmoothList):
             self.cmbSmooth.current(smooth)
 
-        ws = str_to_float(cfg.get('wordSpacing', "-0.8"))
+        ws = str_to_float(cfg.get('wordSpacing', "0"))
         self.cmbWordSpacing.setText(str(ws))
         ls = str_to_float(cfg.get('lineSpacing', "0"))
         self.cmbLineSpacing.setText(str(ls))
