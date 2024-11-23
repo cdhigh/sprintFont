@@ -44,7 +44,7 @@ class SprintPad(SprintElement):
         self.clearance = None
         self.soldermask = None
         self.rotation = None
-        self.via = None
+        self.via = None #是否是双面焊盘
         self.thermal = None
         self.thermalTracksWidth = 0
         self.thermalTracksIndividual = None

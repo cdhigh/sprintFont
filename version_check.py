@@ -8,7 +8,6 @@ Author: cdhigh <https://github.com/cdhigh>
 2. 如果 checkUpdate() 返回一个字典，可以调用 openNewVersionDialog(self.top, currVersion, self.versionJson) 打开版本提示对话框
 3. 根据 openNewVersionDialog() 的返回值更新配置文件（如果是'skip'）
 """
-from packaging import version
 from comm_utils import str_to_int
 import json
 from urllib import request
@@ -222,6 +221,7 @@ def isVersionGreaterThan(newVersion: str, currVersion: str):
     if not newVersion or not currVersion:
         return False
     else:
+        from packaging import version
         try:
             return version.parse(newVersion) > version.parse(currVersion)
         except:

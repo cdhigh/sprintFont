@@ -89,7 +89,6 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
     padSize = pad.size if (pad.padType == 'PAD') else min(pad.sizeX, pad.sizeY)
     radius = padSize / 2.0 #焊盘半径
     halfWidth = track.width / 2.0 #走线宽度的一半
-    trackReversed = False
 
     if (hPercent < 10):
         hPercent = 10
@@ -101,7 +100,6 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
     #确定开始点在焊盘直径内
     if (pointDistance(start, pad.pos) > radius):
         start, end = end, start
-        trackReversed = True
 
     #找到添加泪滴的方向
     #起点和终点两个向量相减，得到一个新的向量，方向就是线段的方向
@@ -143,13 +141,13 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
         minVpercent = 100 * float(halfWidth) / float(radius)
         vPercent = vPercent * n / targetLength + minVpercent * (1 - n / targetLength)
 
-    #找到泪滴焊盘和走线的两个交点
+    #找到泪滴多边形和走线的两个交点
     pointB = (round(start[0] + vecT[0] * n + vecT[1] * halfWidth, 3), 
               round(start[1] + vecT[1] * n - vecT[0] * halfWidth, 3))
     pointA = (round(start[0] + vecT[0] * n - vecT[1] * halfWidth, 3), 
               round(start[1] + vecT[1] * n + vecT[0] * halfWidth, 3))
 
-    #如果两个点都在焊盘内，则直接返回
+    #如果两个交点在焊盘内，则直接返回
     if ((pointDistance(pointA, pad.pos) < radius) or (pointDistance(pointB, pad.pos) < radius)):
         return []
 
@@ -174,6 +172,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
     vecC = (vec[0] * math.cos(dC) + vec[1] * math.sin(dC), -vec[0] * math.sin(dC) + vec[1] * math.cos(dC))
     vecE = (vec[0] * math.cos(dE) + vec[1] * math.sin(dE), -vec[0] * math.sin(dE) + vec[1] * math.cos(dE))
 
+    #泪滴多边形和焊盘的两个交点
     pointC = (round(padPosX + (vecC[0] * radius), 3), round(padPosY + (vecC[1] * radius), 3))
     pointE = (round(padPosX + (vecE[0] * radius), 3), round(padPosY + (vecE[1] * radius), 3))
 
@@ -214,9 +213,9 @@ def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, usePth=True, useS
         if (pad.thermal or (pad.clearance == 0)):
             continue
 
-        padVia = pad.via
+        padVia = pad.via #是否是双面焊盘
         padSize = pad.size if (pad.padType == 'PAD') else min(pad.sizeX, pad.sizeY)
-        enclose = pad.enclose
+        enclose = pad.enclose #成员函数
         #看哪个走线和焊盘相交，一个线段的端点在焊盘内，另一个端点在焊盘外
         for track in tracks:
             #需要板层一致
@@ -234,25 +233,27 @@ def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, usePth=True, useS
                 pt2 = points[idx + 1]
                 in1 = enclose(pt1)
                 in2 = enclose(pt2)
-                if (in1 != in2): #一个在外面，一个在里面
-                    newTrack = SprintTrack(track.layerIdx, track.width)
-                    if in2: #确保pt1在焊盘内，然后将剩下的点依次存放
-                        newTrack.addPoint(pt2)
-                        newTrack.addAllPoints(points[:idx + 1][::-1])
+                if (in1 == in2): #需要确保一个在外面，一个在里面
+                    continue
+
+                newTrack = SprintTrack(track.layerIdx, track.width)
+                if in2: #确保pt1在焊盘内，然后将剩下的点依次存放
+                    newTrack.addPoint(pt2)
+                    newTrack.addAllPoints(points[:idx + 1][::-1])
+                else:
+                    newTrack.addAllPoints(points[idx:])
+                    
+                tPts = tdComputePoints(newTrack, pad, hPercent, vPercent, segs, followTracks, noBulge)
+                if tPts: #计算出点列表后新建一个多边形保存这些点
+                    tearD = SprintPolygon(track.layerIdx, width=0)
+                    tearD.addAllPoints(tPts)
+                    #避免重复添加，这里不能使用 not in 运算符，使用重载的 __eq__() 运算
+                    allTds = oldTeardrops + teardrops
+                    for poly in allTds:
+                        if (poly == tearD):
+                            break
                     else:
-                        newTrack.addAllPoints(points[idx:])
-                        
-                    tPts = tdComputePoints(newTrack, pad, hPercent, vPercent, segs, followTracks, noBulge)
-                    if tPts: #计算出点列表后新建一个多边形保存这些点
-                        tearD = SprintPolygon(track.layerIdx, width=0)
-                        tearD.addAllPoints(tPts)
-                        #避免重复添加，这里不能使用 not in 运算符，使用重载的 __eq__() 运算
-                        allTds = oldTeardrops + teardrops
-                        for poly in allTds:
-                            if (poly == tearD):
-                                break
-                        else:
-                            teardrops.append(tearD)
+                        teardrops.append(tearD)
 
     return teardrops
 

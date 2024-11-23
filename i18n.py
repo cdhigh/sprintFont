@@ -44,7 +44,7 @@ class I18n:
     "Normal": ("", "正常"),
     "Rough": ("", "稍粗糙"),
     "Super Rough": ("", "比较粗糙"),
-    "Inverted Background": ("", "反转背景"),
+    "Inverted Background": ("Inverted Background (slow)", "反转背景 (慢)"),
     "Padding": ("", "内边距"),
     "Cap left": ("", "左侧形状"),
     "Cap right": ("", "右侧形状"),
