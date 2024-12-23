@@ -24,7 +24,7 @@ Begin VB.Form frmMain
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
    Begin VB.Frame tabStrip__Tab1 
-      Caption         =   "Font"
+      Caption         =   "     Font     "
       Height          =   5055
       Left            =   9960
       TabIndex        =   2
@@ -302,7 +302,7 @@ Begin VB.Form frmMain
       End
    End
    Begin VB.Frame tabStrip__Tab6 
-      Caption         =   "ArcTrack"
+      Caption         =   " RoundedTrack "
       Height          =   5055
       Left            =   9840
       TabIndex        =   73
@@ -422,7 +422,7 @@ Begin VB.Form frmMain
       End
       Begin VB.Label lblRoundedTrackTips 
          Alignment       =   2  'Center
-         Caption         =   "rounded_track_features_tips"
+         Caption         =   "Apply to all tracks when deselecting all, otherwise apply to selected tracks only"
          Height          =   495
          Left            =   240
          TabIndex        =   79
@@ -431,7 +431,7 @@ Begin VB.Form frmMain
       End
    End
    Begin VB.Frame tabStrip__Tab5 
-      Caption         =   "Teardrop"
+      Caption         =   "  Teardrop    "
       Height          =   5055
       Left            =   10080
       TabIndex        =   61
@@ -514,7 +514,7 @@ Begin VB.Form frmMain
       End
       Begin VB.Label lblTeardropsTips 
          Alignment       =   2  'Center
-         Caption         =   "teardrops_features_tips"
+         Caption         =   "Apply to all pads when deselecting all, otherwise apply to selected pads AND tracks only"
          Height          =   495
          Left            =   240
          TabIndex        =   71
@@ -550,7 +550,7 @@ Begin VB.Form frmMain
       End
    End
    Begin VB.Frame tabStrip__Tab3 
-      Caption         =   "SVG"
+      Caption         =   "  SVG/Qrcode  "
       Height          =   5055
       Left            =   10440
       TabIndex        =   30
@@ -691,7 +691,7 @@ Begin VB.Form frmMain
          Width           =   975
       End
       Begin VB.Label lblSvgTips 
-         Caption         =   "svg_features_tips"
+         Caption         =   "Note:\nOnly for simple images, may fail to convert complex images"
          Height          =   975
          Left            =   1560
          TabIndex        =   35
@@ -700,7 +700,7 @@ Begin VB.Form frmMain
       End
    End
    Begin VB.Frame tabStrip__Tab4 
-      Caption         =   "AutoRouter"
+      Caption         =   "  AutoRouter  "
       Height          =   5055
       Left            =   9960
       TabIndex        =   58
@@ -834,7 +834,7 @@ Begin VB.Form frmMain
          Width           =   975
       End
       Begin VB.Label lblAutoRouterTips 
-         Caption         =   "AutoRouter_features_tips"
+         Caption         =   "Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side"
          Height          =   855
          Left            =   1560
          TabIndex        =   46
@@ -884,7 +884,7 @@ Begin VB.Form frmMain
       EndProperty
    End
    Begin VB.Frame tabStrip__Tab2 
-      Caption         =   "Footprint"
+      Caption         =   "   Footprint  "
       Height          =   5055
       Left            =   10440
       TabIndex        =   21
@@ -949,7 +949,7 @@ Begin VB.Form frmMain
          Width           =   975
       End
       Begin VB.Label lblFootprintTips 
-         Caption         =   "Footprint_features_tips"
+         Caption         =   "Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)"
          Height          =   1575
          Left            =   1560
          TabIndex        =   22

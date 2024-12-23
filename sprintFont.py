@@ -18,7 +18,7 @@ pyinstaller.exe -F -w -i app.ico sprintFont.py
 python -m nuitka --standalone --onefile --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico  sprintFont.py
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
-import os, sys, locale, json, threading, queue, datetime, pickle, math
+import os, sys, locale, json, threading, queue, datetime, pickle, math, gettext
 # Fix Tcl/Tk folder for windows xp
 os.environ["TCL_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tcl8.6")
 os.environ["TK_LIBRARY"] = os.path.join(sys.base_prefix, "tcl", "tk8.6")
@@ -33,7 +33,6 @@ from tkinter.messagebox import *
 import tkinter.filedialog as tkFileDialog
 import tkinter.simpledialog as tkSimpleDialog  #askstring()
 from fontTools.ttLib import ttFont, ttCollection
-from i18n import I18n
 from comm_utils import *
 from widget_right_click import rightClicker
 from sprint_struct.sprint_textio import SprintTextIO
@@ -57,6 +56,10 @@ else:
     MODULE_PATH = os.path.dirname(__file__)
 
 CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
+I18N_PATH = os.path.join(MODULE_PATH, 'i18n')
+
+#目前支持的语种，语种代码全部为小写
+SUPPORTED_LANGUAGES = ('en', 'zh-cn')
 
 STABAR_INFO_INPUT_FILE = 0
 STABAR_INFO_RELEASES = 1
@@ -121,8 +124,7 @@ class Statusbar(Frame):
 
 #界面使用作者自己的工具 vb6tkinter <https://github.com/cdhigh/vb6tkinter> 自动生成
 class Application_ui(Frame):
-    #这个类仅实现界面生成功能，具体事件处理代码在子类Application中。
-    def __init__(self, master=None):
+    def __init__(self, master):
         super().__init__(master)
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
@@ -164,6 +166,7 @@ class Application_ui(Frame):
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
         self.createWidgets()
+        self.retranslateUi()
 
     def createWidgets(self):
         self.top = self.winfo_toplevel()
@@ -178,9 +181,12 @@ class Application_ui(Frame):
         self.style.configure('TfrmInvertedBg.TFrame', background='#C0C0C0')
         self.frmInvertedBg = Frame(self.tabStrip__Tab1, style='TfrmInvertedBg.TFrame')
         self.frmInvertedBg.place(relx=0., rely=0.593, relwidth=1., relheight=0.264)
+        self.chkInvertedBackgroundTextVar = StringVar(value='Inverted Background')
         self.chkInvertedBackgroundVar = IntVar(value=0)
         self.style.configure('TchkInvertedBackground.TCheckbutton', foreground='#000000', background='#C0C0C0', font=('微软雅黑',10,'bold'))
-        self.chkInvertedBackground = Checkbutton(self.frmInvertedBg, text='Inverted Background', variable=self.chkInvertedBackgroundVar, command=self.chkInvertedBackground_Cmd, style='TchkInvertedBackground.TCheckbutton')
+        self.chkInvertedBackground = Checkbutton(self.frmInvertedBg, text='Inverted Background', textvariable=self.chkInvertedBackgroundTextVar, variable=self.chkInvertedBackgroundVar, command=self.chkInvertedBackground_Cmd, style='TchkInvertedBackground.TCheckbutton')
+        self.chkInvertedBackground.setText = lambda x: self.chkInvertedBackgroundTextVar.set(x)
+        self.chkInvertedBackground.text = lambda : self.chkInvertedBackgroundTextVar.get()
         self.chkInvertedBackground.setValue = lambda x: self.chkInvertedBackgroundVar.set(x)
         self.chkInvertedBackground.value = lambda : self.chkInvertedBackgroundVar.get()
         self.chkInvertedBackground.place(relx=0.162, rely=0.09, relwidth=0.352, relheight=0.281)
@@ -328,12 +334,15 @@ class Application_ui(Frame):
         self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
         self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
         self.lblFontHeight.place(relx=0.526, rely=0.261, relwidth=0.245, relheight=0.074)
-        self.tabStrip.add(self.tabStrip__Tab1, text='Font')
+        self.tabStrip.add(self.tabStrip__Tab1, text='     Font     ')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
+        self.chkImportFootprintTextTextVar = StringVar(value='Import text')
         self.chkImportFootprintTextVar = IntVar(value=1)
         self.style.configure('TchkImportFootprintText.TCheckbutton', font=('微软雅黑',10))
-        self.chkImportFootprintText = Checkbutton(self.tabStrip__Tab2, text='Import text', variable=self.chkImportFootprintTextVar, style='TchkImportFootprintText.TCheckbutton')
+        self.chkImportFootprintText = Checkbutton(self.tabStrip__Tab2, text='Import text', textvariable=self.chkImportFootprintTextTextVar, variable=self.chkImportFootprintTextVar, style='TchkImportFootprintText.TCheckbutton')
+        self.chkImportFootprintText.setText = lambda x: self.chkImportFootprintTextTextVar.set(x)
+        self.chkImportFootprintText.text = lambda : self.chkImportFootprintTextTextVar.get()
         self.chkImportFootprintText.setValue = lambda x: self.chkImportFootprintTextVar.set(x)
         self.chkImportFootprintText.value = lambda : self.chkImportFootprintTextVar.get()
         self.chkImportFootprintText.place(relx=0.175, rely=0.57, relwidth=0.339, relheight=0.074)
@@ -366,9 +375,9 @@ class Application_ui(Frame):
         self.lblFootprintFile.setText = lambda x: self.lblFootprintFileVar.set(x)
         self.lblFootprintFile.text = lambda : self.lblFootprintFileVar.get()
         self.lblFootprintFile.place(relx=0.027, rely=0.427, relwidth=0.11, relheight=0.074)
-        self.lblFootprintTipsVar = StringVar(value='Footprint_features_tips')
+        self.lblFootprintTipsVar = StringVar(value='Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)')
         self.style.configure('TlblFootprintTips.TLabel', anchor='w', font=('微软雅黑',10))
-        self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Footprint_features_tips', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
+        self.lblFootprintTips = Label(self.tabStrip__Tab2, text='Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)', textvariable=self.lblFootprintTipsVar, style='TlblFootprintTips.TLabel')
         self.lblFootprintTips.setText = lambda x: self.lblFootprintTipsVar.set(x)
         self.lblFootprintTips.text = lambda : self.lblFootprintTipsVar.get()
         self.lblFootprintTips.place(relx=0.175, rely=0.071, relwidth=0.771, relheight=0.312)
@@ -379,7 +388,7 @@ class Application_ui(Frame):
         self.lblSaveAsFootprint.text = lambda : self.lblSaveAsFootprintVar.get()
         self.lblSaveAsFootprint.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsFootprint.bind('<Button-1>', self.lblSaveAsFootprint_Button_1)
-        self.tabStrip.add(self.tabStrip__Tab2, text='Footprint')
+        self.tabStrip.add(self.tabStrip__Tab2, text='   Footprint  ')
 
         self.tabStrip__Tab3 = Frame(self.tabStrip)
         self.cmbSvgQrcodeList = ['',]
@@ -466,13 +475,13 @@ class Application_ui(Frame):
         self.lblSaveAsSvg.text = lambda : self.lblSaveAsSvgVar.get()
         self.lblSaveAsSvg.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsSvg.bind('<Button-1>', self.lblSaveAsSvg_Button_1)
-        self.lblSvgTipsVar = StringVar(value='svg_features_tips')
+        self.lblSvgTipsVar = StringVar(value='Note:\nOnly for simple images, may fail to convert complex images')
         self.style.configure('TlblSvgTips.TLabel', anchor='w', font=('微软雅黑',10))
-        self.lblSvgTips = Label(self.tabStrip__Tab3, text='svg_features_tips', textvariable=self.lblSvgTipsVar, style='TlblSvgTips.TLabel')
+        self.lblSvgTips = Label(self.tabStrip__Tab3, text='Note:\nOnly for simple images, may fail to convert complex images', textvariable=self.lblSvgTipsVar, style='TlblSvgTips.TLabel')
         self.lblSvgTips.setText = lambda x: self.lblSvgTipsVar.set(x)
         self.lblSvgTips.text = lambda : self.lblSvgTipsVar.get()
         self.lblSvgTips.place(relx=0.175, rely=0.071, relwidth=0.771, relheight=0.193)
-        self.tabStrip.add(self.tabStrip__Tab3, text='SVG')
+        self.tabStrip.add(self.tabStrip__Tab3, text='  SVG/Qrcode  ')
 
         self.tabStrip__Tab4 = Frame(self.tabStrip)
         self.VSrlRules = Scrollbar(self.tabStrip__Tab4, orient='vertical')
@@ -541,9 +550,9 @@ class Application_ui(Frame):
         self.lblSaveAsAutoRouter.text = lambda : self.lblSaveAsAutoRouterVar.get()
         self.lblSaveAsAutoRouter.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
         self.lblSaveAsAutoRouter.bind('<Button-1>', self.lblSaveAsAutoRouter_Button_1)
-        self.lblAutoRouterTipsVar = StringVar(value='AutoRouter_features_tips')
+        self.lblAutoRouterTipsVar = StringVar(value='Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side')
         self.style.configure('TlblAutoRouterTips.TLabel', anchor='w', font=('微软雅黑',10))
-        self.lblAutoRouterTips = Label(self.tabStrip__Tab4, text='AutoRouter_features_tips', textvariable=self.lblAutoRouterTipsVar, style='TlblAutoRouterTips.TLabel')
+        self.lblAutoRouterTips = Label(self.tabStrip__Tab4, text='Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side', textvariable=self.lblAutoRouterTipsVar, style='TlblAutoRouterTips.TLabel')
         self.lblAutoRouterTips.setText = lambda x: self.lblAutoRouterTipsVar.set(x)
         self.lblAutoRouterTips.text = lambda : self.lblAutoRouterTipsVar.get()
         self.lblAutoRouterTips.place(relx=0.175, rely=0.047, relwidth=0.771, relheight=0.169)
@@ -553,7 +562,7 @@ class Application_ui(Frame):
         self.lblDsnFile.setText = lambda x: self.lblDsnFileVar.set(x)
         self.lblDsnFile.text = lambda : self.lblDsnFileVar.get()
         self.lblDsnFile.place(relx=0.027, rely=0.237, relwidth=0.11, relheight=0.074)
-        self.tabStrip.add(self.tabStrip__Tab4, text='AutoRouter')
+        self.tabStrip.add(self.tabStrip__Tab4, text='  AutoRouter  ')
 
         self.tabStrip__Tab5 = Frame(self.tabStrip)
         self.cmbTeardropPadTypeList = ['',]
@@ -606,9 +615,9 @@ class Application_ui(Frame):
         self.lblTeardropPadType.setText = lambda x: self.lblTeardropPadTypeVar.set(x)
         self.lblTeardropPadType.text = lambda : self.lblTeardropPadTypeVar.get()
         self.lblTeardropPadType.place(relx=0.027, rely=0.617, relwidth=0.258, relheight=0.074)
-        self.lblTeardropsTipsVar = StringVar(value='teardrops_features_tips')
+        self.lblTeardropsTipsVar = StringVar(value='Apply to all pads when deselecting all, otherwise apply to selected pads AND tracks only')
         self.style.configure('TlblTeardropsTips.TLabel', anchor='center', font=('微软雅黑',10))
-        self.lblTeardropsTips = Label(self.tabStrip__Tab5, text='teardrops_features_tips', textvariable=self.lblTeardropsTipsVar, style='TlblTeardropsTips.TLabel')
+        self.lblTeardropsTips = Label(self.tabStrip__Tab5, text='Apply to all pads when deselecting all, otherwise apply to selected pads AND tracks only', textvariable=self.lblTeardropsTipsVar, style='TlblTeardropsTips.TLabel')
         self.lblTeardropsTips.setText = lambda x: self.lblTeardropsTipsVar.set(x)
         self.lblTeardropsTips.text = lambda : self.lblTeardropsTipsVar.get()
         self.lblTeardropsTips.place(relx=0.027, rely=0.071, relwidth=0.946, relheight=0.098)
@@ -630,7 +639,7 @@ class Application_ui(Frame):
         self.lblvPercent.setText = lambda x: self.lblvPercentVar.set(x)
         self.lblvPercent.text = lambda : self.lblvPercentVar.get()
         self.lblvPercent.place(relx=0.027, rely=0.38, relwidth=0.258, relheight=0.074)
-        self.tabStrip.add(self.tabStrip__Tab5, text='Teardrop')
+        self.tabStrip.add(self.tabStrip__Tab5, text='  Teardrop    ')
 
         self.tabStrip__Tab6 = Frame(self.tabStrip)
         self.cmbRoundedTrackTypeList = ['',]
@@ -702,20 +711,87 @@ class Application_ui(Frame):
         self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
         self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
         self.lblRoundedTrackSegs.place(relx=0.054, rely=0.641, relwidth=0.204, relheight=0.074)
-        self.lblRoundedTrackTipsVar = StringVar(value='rounded_track_features_tips')
+        self.lblRoundedTrackTipsVar = StringVar(value='Apply to all tracks when deselecting all, otherwise apply to selected tracks only')
         self.style.configure('TlblRoundedTrackTips.TLabel', anchor='center', font=('微软雅黑',10))
-        self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='rounded_track_features_tips', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
+        self.lblRoundedTrackTips = Label(self.tabStrip__Tab6, text='Apply to all tracks when deselecting all, otherwise apply to selected tracks only', textvariable=self.lblRoundedTrackTipsVar, style='TlblRoundedTrackTips.TLabel')
         self.lblRoundedTrackTips.setText = lambda x: self.lblRoundedTrackTipsVar.set(x)
         self.lblRoundedTrackTips.text = lambda : self.lblRoundedTrackTipsVar.get()
         self.lblRoundedTrackTips.place(relx=0.027, rely=0.071, relwidth=0.946, relheight=0.098)
-        self.tabStrip.add(self.tabStrip__Tab6, text='ArcTrack')
+        self.tabStrip.add(self.tabStrip__Tab6, text=' RoundedTrack ')
 
         self.staBar = Statusbar(self.top, panelwidths=(16,))
         self.staBar.pack(side=BOTTOM, fill=X)
 
+    def retranslateUi(self):
+        self.master.title(_('sprintFont'))
+        self.chkInvertedBackground.setText(_('Inverted Background'))
+        self.lblBkPadding.setText(_('Padding'))
+        self.lblCapLeft.setText(_('Cap left'))
+        self.lblCapRight.setText(_('Cap right'))
+        self.cmdOk.setText(_('Ok'))
+        self.cmdCancel.setText(_('Cancel'))
+        self.lblTxt.setText(_('Text'))
+        self.lblLayer.setText(_('Layer'))
+        self.lblSmooth.setText(_('Smooth'))
+        self.lblWordSpacing.setText(_('Word spacing (mm)'))
+        self.LblLineSpacing.setText(_('Line spacing (mm)'))
+        self.lblSaveAs.setText(_('Save as'))
+        self.lblFont.setText(_('Font'))
+        self.lblFontHeight.setText(_('Height (mm)'))
+        self.tabStrip.tab(0, text=_('     Font     '))
+        self.chkImportFootprintText.setText(_('Import text'))
+        self.cmdFootprintFile.setText(_('...'))
+        self.cmdOkFootprint.setText(_('Ok'))
+        self.cmdCancelFootprint.setText(_('Cancel'))
+        self.lblFootprintFile.setText(_('Input'))
+        self.lblFootprintTips.setText(_('Currently supports:\n1. Kicad footprint Library : *.kicad_mod\n2. EasyEDA part ID: C + number (C can be omitted)'))
+        self.lblSaveAsFootprint.setText(_('Save as'))
+        self.tabStrip.tab(1, text=_('   Footprint  '))
+        self.cmdCancelSvg.setText(_('Cancel'))
+        self.cmdOkSvg.setText(_('Ok'))
+        self.cmdSvgFile.setText(_('...'))
+        self.lblSvgHeight.setText(_('Height (mm)'))
+        self.lblSvgMode.setText(_('Mode'))
+        self.lblSvgSmooth.setText(_('Smooth'))
+        self.lblSvgLayer.setText(_('Layer'))
+        self.lblSaveAsSvg.setText(_('Save as'))
+        self.lblSvgTips.setText(_('Note:\nOnly for simple images, may fail to convert complex images'))
+        self.tabStrip.tab(2, text=_('  SVG/Qrcode  '))
+        self.cmdImportSes.setText(_('Import'))
+        self.cmdSesFile.setText(_('...'))
+        self.cmdCancelAutoRouter.setText(_('Cancel'))
+        self.cmdExportDsn.setText(_('Export'))
+        self.cmdDsnFile.setText(_('...'))
+        self.lblRules.setText(_('Rules'))
+        self.lblSesFile.setText(_('Ses file'))
+        self.lblSaveAsAutoRouter.setText(_('Save as'))
+        self.lblAutoRouterTips.setText(_('Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side'))
+        self.lblDsnFile.setText(_('Dsn file'))
+        self.tabStrip.tab(3, text=_('  AutoRouter  '))
+        self.cmdRemoveTeardrops.setText(_('Remove'))
+        self.cmdCancelTeardrops.setText(_('Cancel'))
+        self.cmdAddTeardrops.setText(_('Add'))
+        self.lblTeardropPadType.setText(_('Pad type'))
+        self.lblTeardropsTips.setText(_('Apply to all pads when deselecting all, otherwise apply to selected pads AND tracks only'))
+        self.lblhPercent.setText(_('Horizontal percent'))
+        self.lblTeardropSegs.setText(_('Number of segments'))
+        self.lblvPercent.setText(_('Vertical percent'))
+        self.tabStrip.tab(4, text=_('  Teardrop    '))
+        self.cmdRoundedTrackConvert.setText(_('Convert'))
+        self.cmdRoundedTrackCancel.setText(_('Cancel'))
+        self.lblRoundedTrackType.setText(_('Type'))
+        self.lblRoundedTrackSmallD.setText(_('small d(mm)'))
+        self.lblSaveAsRoundedTrack.setText(_('Save as'))
+        self.lblRoundedTrackBigD.setText(_('big d(mm)'))
+        self.lblRoundedTrackSegs.setText(_('segments'))
+        self.lblRoundedTrackTips.setText(_('Apply to all tracks when deselecting all, otherwise apply to selected tracks only'))
+        self.tabStrip.tab(5, text=_(' RoundedTrack '))
+
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
+        self.loadConfig()
+        self.initI18n()
         Application_ui.__init__(self, master)
         self.master.title('sprintFont v{}'.format(__VERSION__))
         #width = str_to_int(self.master.geometry().split('x')[0])
@@ -746,37 +822,14 @@ class Application(Application_ui):
         
         self.teardropImage = None
         self.roundedTrackImage = None
-
-        #初始化多语种支持
-        self.sysLanguge = locale.getdefaultlocale()[0]
-        I18n.init()
-        I18n.setLanguage(self.sysLanguge)
-        self.language = ''
-
         self.pcbRule = PcbRule()
 
-        #读取配置文件到内存
-        self.cfg = {}
-        if os.path.exists(CFG_FILENAME):
-            try:
-                with open(CFG_FILENAME, 'r', encoding='utf-8') as f:
-                    self.cfg = json.loads(f.read())
-            except:
-                pass
-
-        #支持手动选择语种，语种配置需要在填充控件前完成
-        if isinstance(self.cfg, dict):
-            lang = self.cfg.get('language', '')
-            if lang and I18n.langIsSupported(lang):
-                self.language = lang
-                I18n.setLanguage(lang)
-        
         #绑定额外的事件处理函数
         self.bindWidgetEvents()
         
         self.populateWidgets()
         self.restoreConfig()
-        self.translateWidgets()
+        #self.translateWidgets()
 
         #分析Sprint-Layout传入的参数
         self.inFileName = ''
@@ -829,6 +882,16 @@ class Application(Application_ui):
 
         self.txtMain.focus_set()
 
+    #初始化多语种支持
+    def initI18n(self):
+        self.sysLanguge = locale.getdefaultlocale()[0]
+        lang = (self.cfg.get('language') or 'en').lower()
+        if lang not in SUPPORTED_LANGUAGES:
+            lang = 'en'
+        self.language = lang
+        tr = gettext.translation('lang', localedir=I18N_PATH, languages=[lang], fallback=True)
+        tr.install()
+
     #多页控件的当前页面发现改变
     def tabStrip_NotebookTabChanged(self, event):
         try:
@@ -850,7 +913,7 @@ class Application(Application_ui):
             elif (tabNo == 5):
                 if not self.roundedTrackImage:
                     from rounded_track_image import roundedTrackImageData, roundedTrackImageDataCn
-                    imgData = roundedTrackImageDataCn if I18n.getLanguage().startswith('zh') else roundedTrackImageData
+                    imgData = roundedTrackImageDataCn if self.language.startswith('zh') else roundedTrackImageData
                     self.roundedTrackImage = PhotoImage(data=imgData)
                     self.picRoundedTrack.create_image(0, 0, image=self.roundedTrackImage, anchor=NW)
                 self.cmbRoundedTrackBigDistance.focus_set()
@@ -892,67 +955,6 @@ class Application(Application_ui):
         self.mnuImportSes.add_command(label=_("Import all (remove all ratsnests)"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='trimAll', trackOnly=False))
         self.mnuImportSes.add_command(label=_("Import all (keep all ratsnests)"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='keepAll', trackOnly=False))
         self.mnuImportSes.add_command(label=_("Import auto-routed tracks only"), command=partial(self.cmdmnuImportSes, trimRatsnestMode='trimRouted', trackOnly=True))
-
-    #翻译界面字符串，为了能方便修改界面，等界面初始化完成后再统一修改
-    def translateWidgets(self):
-        self.cmdOk.setText(_("Ok"))
-        self.cmdOkFootprint.setText(_("Ok"))
-        self.cmdOkSvg.setText(_("Ok"))
-        self.cmdCancel.setText(_("Cancel"))
-        self.cmdCancelFootprint.setText(_("Cancel"))
-        self.cmdCancelSvg.setText(_("Cancel"))
-        self.lblSaveAs.setText(_("Save as"))
-        self.lblSaveAsFootprint.setText(_("Save as"))
-        self.lblSaveAsSvg.setText(_("Save as"))
-        self.lblFont.setText(_("Font"))
-        self.lblTxt.setText(_("Text"))
-        self.lblLayer.setText(_("Layer"))
-        self.lblSmooth.setText(_("Smooth"))
-        self.lblFontHeight.setText(_("Height (mm)"))
-        self.lblWordSpacing.setText(_("Word spacing (mm)"))
-        self.LblLineSpacing.setText(_("Line spacing (mm)"))
-        self.chkInvertedBackground.configure(text=_("Inverted Background"))
-        self.lblBkPadding.setText(_("Padding"))
-        self.lblCapLeft.setText(_("Cap left"))
-        self.lblCapRight.setText(_("Cap right"))
-        self.lblFootprintFile.setText(_("Input"))
-        self.tabStrip.tab(0, text=_("TabFont"))
-        self.tabStrip.tab(1, text=_("TabFootprint"))
-        self.tabStrip.tab(2, text=_("TabSVG"))
-        self.tabStrip.tab(3, text=_("TabAutoRouter"))
-        self.tabStrip.tab(4, text=_("TabTeardrops"))
-        self.tabStrip.tab(5, text=_("TabRoundedTrack"))
-        self.lblFootprintTips.setText(_("Footprint_features_tips"))
-        self.chkImportFootprintText.configure(text=_("Import text"))
-        self.lblSvgTips.setText(_("svg_features_tips"))
-        self.lblSvgMode.setText(_("Mode"))
-        self.lblSvgHeight.setText(_("svgHeight"))
-        self.lblSvgLayer.setText(_("Layer"))
-        self.lblSvgSmooth.setText(_("Smooth"))
-        self.lblAutoRouterTips.setText(_("autorouter_features_tips"))
-        self.lblDsnFile.setText(_("DSN file"))
-        self.lblSesFile.setText(_("SES file"))
-        self.lblRules.setText(_("Rules"))
-        self.cmdExportDsn.setText(_("Export DSN"))
-        self.cmdImportSes.setText(_("Import SES"))
-        self.cmdCancelAutoRouter.setText(_("Cancel"))
-        self.lblSaveAsAutoRouter.setText(_("Save as"))
-        self.lblTeardropsTips.setText(_("teardrops_features_tips"))
-        self.lblhPercent.setText(_("Horizontal percent"))
-        self.lblvPercent.setText(_("Vertical percent"))
-        self.lblTeardropSegs.setText(_("Number of segments"))
-        self.lblTeardropPadType.setText(_("Pad type"))
-        self.cmdAddTeardrops.setText(_("Add"))
-        self.cmdRemoveTeardrops.setText(_("Remove"))
-        self.cmdCancelTeardrops.setText(_("Cancel"))
-        self.lblRoundedTrackTips.setText(_("rounded_track_features_tips"))
-        self.lblRoundedTrackType.setText(_("Type"))
-        self.lblRoundedTrackBigD.setText(_("big d(mm)"))
-        self.lblRoundedTrackSmallD.setText(_("small d(mm)"))
-        self.lblRoundedTrackSegs.setText(_("Number of segments"))
-        self.cmdRoundedTrackConvert.setText(_("Convert"))
-        self.cmdRoundedTrackCancel.setText(_("Cancel"))
-        self.lblSaveAsRoundedTrack.setText(_("Save as"))
 
     #判断是否需要检查更新，如果需要，另外开一个线程进行后台检查
     #此函数在程序启动后5s才会得到执行
@@ -1089,16 +1091,15 @@ class Application(Application_ui):
             self.cmbFontList = sorted(self.fontNameMap.keys())
             self.cmbFont.configure(value=self.cmbFontList)
             lastFont = self.cfg.get('font', '')
-            if lastFont and (lastFont in self.cmbFontList):
-                self.cmbFont.current(self.cmbFontList.index(lastFont))
+            fontNameList = self.cmbFontList or ['']
+            if lastFont and (lastFont in fontNameList):
+                self.cmbFont.current(fontNameList.index(lastFont))
+            elif (self.sysLanguge.startswith('zh')): #中文字体一般在最后，所以默认选择最后一个，保证开箱即用
+                self.cmbFont.setText(fontNameList[-1])
+            elif 'Calibri' in fontNameList: #英文或拉丁文字体也是为了保证开箱即用
+                self.cmbFont.setText('Calibri')
             else:
-                fontNameList = self.cmbFontList if self.cmbFontList else ['',]
-                if (self.sysLanguge.startswith('zh')): #中文字体一般在最后，所以默认选择最后一个，保证开箱即用
-                    self.cmbFont.setText(fontNameList[-1])
-                elif 'Calibri' in fontNameList: #英文或拉丁文字体也是为了保证开箱即用
-                    self.cmbFont.setText('Calibri')
-                else:
-                    self.cmbFont.setText(fontNameList[0])
+                self.cmbFont.setText(fontNameList[0])
         
     #从配置文件中恢复以前的配置数据
     def restoreConfig(self):
@@ -1229,6 +1230,18 @@ class Application(Application_ui):
         if segs:
             self.cmbRoundedTrackSegs.setText(segs)
 
+    #读取配置文件到内存
+    def loadConfig(self):
+        self.cfg = {}
+        if os.path.isfile(CFG_FILENAME):
+            try:
+                with open(CFG_FILENAME, 'r', encoding='utf-8') as f:
+                    self.cfg = json.load(f)
+                if not isinstance(self.cfg, dict):
+                    self.cfg = {}
+            except:
+                pass
+
     #保存当前配置数据
     def saveConfig(self):
         if self.versionJson: #如果检查到版本更新，则第二天再检查一次
@@ -1258,12 +1271,11 @@ class Application(Application_ui):
             'roundedTrackSegs': self.cmbRoundedTrackSegs.text(),
         }
         
-        if (cfg != self.cfg):  #有变化再写配置文件
+        if cfg != self.cfg:  #有变化再写配置文件
             self.cfg = cfg
-            cfgStr = json.dumps(cfg, indent=2)
             try:
                 with open(CFG_FILENAME, 'w', encoding='utf-8') as f:
-                    f.write(cfgStr)
+                    json.dump(cfg, f, indent=2)
             except:
                 pass
     
