@@ -413,7 +413,7 @@ Begin VB.Form frmMain
       End
       Begin VB.Label lblRoundedTrackSegs 
          Alignment       =   1  'Right Justify
-         Caption         =   "segments"
+         Caption         =   "Number of segments"
          Height          =   375
          Left            =   480
          TabIndex        =   80
@@ -726,7 +726,7 @@ Begin VB.Form frmMain
          Width           =   255
       End
       Begin VB.CommandButton cmdImportSes 
-         Caption         =   "Import"
+         Caption         =   "Import SES"
          Height          =   450
          Left            =   2760
          TabIndex        =   56
@@ -766,7 +766,7 @@ Begin VB.Form frmMain
          Width           =   1815
       End
       Begin VB.CommandButton cmdExportDsn 
-         Caption         =   "Export"
+         Caption         =   "Export DSN"
          Height          =   450
          Left            =   360
          TabIndex        =   55

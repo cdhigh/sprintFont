@@ -63,7 +63,7 @@ class SprintExportDsn:
         se = self.se
         textIo = self.textIo
         if not textIo:
-            return _("")
+            return ""
 
         #确认线路板外框有效
         if len([e for e in self.uElems if (e.layerIdx == LAYER_U)]) < 1:

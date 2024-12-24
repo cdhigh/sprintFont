@@ -33,7 +33,7 @@ if os.path.exists(appMain):
 
 build_exe_options = {'packages': ['tkinter'], 
                     'excludes' : ['pyQt5', 'PIL'],
-                    'include_files' : [],
+                    'include_files' : [('i18n', 'i18n')],
                     'optimize' : 2,
                     }
 

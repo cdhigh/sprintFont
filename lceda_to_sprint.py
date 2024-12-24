@@ -117,7 +117,7 @@ class LcComponent:
             return _('open failed: {}, {}'.format(fileName, str(e)))
 
         if not isinstance(data, dict):
-            return _('The content of this file is not in valid JSON format.')
+            return _('The content is not a valid json format')
 
         ins = LcComponent()
         ins.fpName, ins.packageName, ins.prefix, ins.fpShape = ins.fetchFpInfoFromLocalJson(data)
@@ -183,7 +183,7 @@ class LcComponent:
             return (str(e), '')
 
         if not isinstance(lcJsonData, dict):
-            return (_('The content is not json format'), '')
+            return (_('The content is not a valid json format'), '')
         else:
             return ('', lcJsonData)
         

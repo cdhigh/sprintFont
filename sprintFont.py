@@ -39,7 +39,7 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__VERSION__ = "1.6"
+__Version__ = "1.6"
 __DATE__ = "20241112"
 __AUTHOR__ = "cdhigh"
 
@@ -59,7 +59,7 @@ CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
 I18N_PATH = os.path.join(MODULE_PATH, 'i18n')
 
 #目前支持的语种，语种代码全部为小写
-SUPPORTED_LANGUAGES = ('en', 'zh-cn')
+SUPPORTED_LANGUAGES = ('en', 'zh_cn')
 
 STABAR_INFO_INPUT_FILE = 0
 STABAR_INFO_RELEASES = 1
@@ -166,7 +166,6 @@ class Application_ui(Frame):
         self.iconimg = PhotoImage(data=self.icondata)
         self.master.tk.call('wm', 'iconphoto', self.master._w, self.iconimg)
         self.createWidgets()
-        self.retranslateUi()
 
     def createWidgets(self):
         self.top = self.winfo_toplevel()
@@ -491,9 +490,9 @@ class Application_ui(Frame):
         self.treRules.place(relx=0.175, rely=0.427, relwidth=0.73, relheight=0.359)
         self.treRules.bind('<Double-Button-1>', self.treRules_Double_Button_1)
         self.VSrlRules['command'] = self.treRules.yview
-        self.cmdImportSesVar = StringVar(value='Import')
+        self.cmdImportSesVar = StringVar(value='Import SES')
         self.style.configure('TcmdImportSes.TButton', font=('微软雅黑',10))
-        self.cmdImportSes = Button(self.tabStrip__Tab4, text='Import', textvariable=self.cmdImportSesVar, command=self.cmdImportSes_Cmd, style='TcmdImportSes.TButton')
+        self.cmdImportSes = Button(self.tabStrip__Tab4, text='Import SES', textvariable=self.cmdImportSesVar, command=self.cmdImportSes_Cmd, style='TcmdImportSes.TButton')
         self.cmdImportSes.setText = lambda x: self.cmdImportSesVar.set(x)
         self.cmdImportSes.text = lambda : self.cmdImportSesVar.get()
         self.cmdImportSes.place(relx=0.31, rely=0.878, relwidth=0.204, relheight=0.089)
@@ -514,9 +513,9 @@ class Application_ui(Frame):
         self.cmdCancelAutoRouter.setText = lambda x: self.cmdCancelAutoRouterVar.set(x)
         self.cmdCancelAutoRouter.text = lambda : self.cmdCancelAutoRouterVar.get()
         self.cmdCancelAutoRouter.place(relx=0.58, rely=0.878, relwidth=0.204, relheight=0.089)
-        self.cmdExportDsnVar = StringVar(value='Export')
+        self.cmdExportDsnVar = StringVar(value='Export DSN')
         self.style.configure('TcmdExportDsn.TButton', font=('微软雅黑',10))
-        self.cmdExportDsn = Button(self.tabStrip__Tab4, text='Export', textvariable=self.cmdExportDsnVar, command=self.cmdExportDsn_Cmd, style='TcmdExportDsn.TButton')
+        self.cmdExportDsn = Button(self.tabStrip__Tab4, text='Export DSN', textvariable=self.cmdExportDsnVar, command=self.cmdExportDsn_Cmd, style='TcmdExportDsn.TButton')
         self.cmdExportDsn.setText = lambda x: self.cmdExportDsnVar.set(x)
         self.cmdExportDsn.text = lambda : self.cmdExportDsnVar.get()
         self.cmdExportDsn.place(relx=0.04, rely=0.878, relwidth=0.204, relheight=0.089)
@@ -705,9 +704,9 @@ class Application_ui(Frame):
         self.lblRoundedTrackBigD.setText = lambda x: self.lblRoundedTrackBigDVar.set(x)
         self.lblRoundedTrackBigD.text = lambda : self.lblRoundedTrackBigDVar.get()
         self.lblRoundedTrackBigD.place(relx=0.054, rely=0.404, relwidth=0.204, relheight=0.074)
-        self.lblRoundedTrackSegsVar = StringVar(value='segments')
+        self.lblRoundedTrackSegsVar = StringVar(value='Number of segments')
         self.style.configure('TlblRoundedTrackSegs.TLabel', anchor='e', font=('微软雅黑',10))
-        self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
+        self.lblRoundedTrackSegs = Label(self.tabStrip__Tab6, text='Number of segments', textvariable=self.lblRoundedTrackSegsVar, style='TlblRoundedTrackSegs.TLabel')
         self.lblRoundedTrackSegs.setText = lambda x: self.lblRoundedTrackSegsVar.set(x)
         self.lblRoundedTrackSegs.text = lambda : self.lblRoundedTrackSegsVar.get()
         self.lblRoundedTrackSegs.place(relx=0.054, rely=0.641, relwidth=0.204, relheight=0.074)
@@ -757,10 +756,10 @@ class Application_ui(Frame):
         self.lblSaveAsSvg.setText(_('Save as'))
         self.lblSvgTips.setText(_('Note:\nOnly for simple images, may fail to convert complex images'))
         self.tabStrip.tab(2, text=_('  SVG/Qrcode  '))
-        self.cmdImportSes.setText(_('Import'))
+        self.cmdImportSes.setText(_('Import SES'))
         self.cmdSesFile.setText(_('...'))
         self.cmdCancelAutoRouter.setText(_('Cancel'))
-        self.cmdExportDsn.setText(_('Export'))
+        self.cmdExportDsn.setText(_('Export DSN'))
         self.cmdDsnFile.setText(_('...'))
         self.lblRules.setText(_('Rules'))
         self.lblSesFile.setText(_('Ses file'))
@@ -783,17 +782,18 @@ class Application_ui(Frame):
         self.lblRoundedTrackSmallD.setText(_('small d(mm)'))
         self.lblSaveAsRoundedTrack.setText(_('Save as'))
         self.lblRoundedTrackBigD.setText(_('big d(mm)'))
-        self.lblRoundedTrackSegs.setText(_('segments'))
+        self.lblRoundedTrackSegs.setText(_('Number of segments'))
         self.lblRoundedTrackTips.setText(_('Apply to all tracks when deselecting all, otherwise apply to selected tracks only'))
         self.tabStrip.tab(5, text=_(' RoundedTrack '))
 
 class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
+        Application_ui.__init__(self, master)
         self.loadConfig()
         self.initI18n()
-        Application_ui.__init__(self, master)
-        self.master.title('sprintFont v{}'.format(__VERSION__))
+        self.master.title('sprintFont v{}'.format(__Version__))
+        self.retranslateUi()
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
         self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数
@@ -885,13 +885,25 @@ class Application(Application_ui):
     #初始化多语种支持
     def initI18n(self):
         self.sysLanguge = locale.getdefaultlocale()[0]
-        lang = (self.cfg.get('language') or 'en').lower()
-        if lang not in SUPPORTED_LANGUAGES:
+        lang = self.cfg.get('language')
+        if not lang: #自动跟随系统语言
+            lang = self.getSupportedLanguage(self.sysLanguge)
+        elif lang not in SUPPORTED_LANGUAGES:
             lang = 'en'
         self.language = lang
-        tr = gettext.translation('lang', localedir=I18N_PATH, languages=[lang], fallback=True)
+        tr = gettext.translation('messages', localedir=I18N_PATH, languages=[lang], fallback=True)
         tr.install()
 
+    #获取一个支持的语言代码
+    def getSupportedLanguage(self, lang):
+        lang = lang.lower().replace('-', '_')
+        if lang in SUPPORTED_LANGUAGES:
+            return lang
+
+        #同一语种的其他可选语言
+        baseLang = lang.split('_')[0]
+        return next((item for item in SUPPORTED_LANGUAGES if item.startswith(baseLang)), 'en')
+        
     #多页控件的当前页面发现改变
     def tabStrip_NotebookTabChanged(self, event):
         try:
@@ -1285,13 +1297,13 @@ class Application(Application_ui):
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
         ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"), "*.kicad_mod"), 
-            (_("easyEDA footprint"), "*.json"), (_("All Files"), "*.*")])
+            (_("easyEDA footprint"), "*.json"), (_("All files"), "*.*")])
         if ret:
             self.txtFootprintFile.setText(ret)
 
     #选择一个SVG文件
     def cmdSvgFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[(_("SVG files"),"*.svg"), (_("All Files"), "*.*")])
+        ret = tkFileDialog.askopenfilename(filetypes=[(_("SVG files"),"*.svg"), (_("All files"), "*.*")])
         if ret:
             self.txtSvgFile.setText(ret)
 
@@ -1306,7 +1318,7 @@ class Application(Application_ui):
 
     #选择一个SES文件
     def cmdSesFile_Cmd(self, event=None):
-        retFile = tkFileDialog.askopenfilename(filetypes=[(_("Specctra session files"),"*.ses"), (_("All Files"), "*.*")])
+        retFile = tkFileDialog.askopenfilename(filetypes=[(_("Specctra session files"),"*.ses"), (_("All files"), "*.*")])
         if retFile:
             self.txtSesFile.setText(retFile)
             
@@ -1850,7 +1862,7 @@ class Application(Application_ui):
             else:
                 textIo = str(ins)
         else:
-            msg = _("This file format is not supported")
+            msg = _("The file format is not supported")
 
         if not msg and isinstance(textIo, str):
             msg = textIo
@@ -1880,7 +1892,7 @@ class Application(Application_ui):
         import webbrowser
         if self.versionJson:
             from version_check import openNewVersionDialog
-            ret = openNewVersionDialog(self.master, __VERSION__, self.versionJson)
+            ret = openNewVersionDialog(self.master, __Version__, self.versionJson)
             if (ret == 'skip'):
                 self.skipVersion = self.versionJson.get('lastest', '')
 
@@ -1897,7 +1909,7 @@ class Application(Application_ui):
     def versionCheckThread(self, arg=None):
         #print('versionCheckThread')
         from version_check import checkUpdate
-        self.versionJson = checkUpdate(__VERSION__, self.skipVersion)
+        self.versionJson = checkUpdate(__Version__, self.skipVersion)
         #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
         if self.versionJson:
             try:
