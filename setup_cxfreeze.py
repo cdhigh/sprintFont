@@ -24,7 +24,7 @@ if os.path.exists(appMain):
     with open(appMain, 'r', encoding='utf-8') as f:
         slMain = f.read().split('\n')
     
-    PATT_VERSION = r"^__VERSION__\s*=\s*[\"\']([0123456789.-]+)[\"\'](.*)"
+    PATT_VERSION = r"^__Version__\s*=\s*[\"\']([0123456789.-]+)[\"\'](.*)"
     for line in slMain:
         mt = re.match(PATT_VERSION, line)
         if mt:

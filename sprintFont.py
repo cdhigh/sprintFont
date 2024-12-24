@@ -39,8 +39,8 @@ from sprint_struct.sprint_textio import SprintTextIO
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__Version__ = "1.6"
-__DATE__ = "20241112"
+__Version__ = "1.6.1"
+__DATE__ = "20241124"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:\1.txt'
@@ -59,7 +59,7 @@ CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
 I18N_PATH = os.path.join(MODULE_PATH, 'i18n')
 
 #目前支持的语种，语种代码全部为小写
-SUPPORTED_LANGUAGES = ('en', 'zh_cn')
+SUPPORTED_LANGUAGES = ('en', 'zh_cn', 'es', 'pt', 'fr', 'ru', 'tr')
 
 STABAR_INFO_INPUT_FILE = 0
 STABAR_INFO_RELEASES = 1
@@ -129,9 +129,9 @@ class Application_ui(Frame):
         # To center the window on the screen.
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
-        x = (ws / 2) - (625 / 2)
-        y = (hs / 2) - (409 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (625,409,x,y))
+        x = (ws / 2) - (626 / 2)
+        y = (hs / 2) - (412 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (626,412,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -173,7 +173,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.026, rely=0.039, relwidth=0.949, relheight=0.883)
+        self.tabStrip.place(relx=0.026, rely=0.039, relwidth=0.947, relheight=0.876)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -315,11 +315,11 @@ class Application_ui(Frame):
         self.LblLineSpacing.text = lambda : self.LblLineSpacingVar.get()
         self.LblLineSpacing.place(relx=0.526, rely=0.499, relwidth=0.245, relheight=0.074)
         self.lblSaveAsVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAs.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.style.configure('TlblSaveAs.TLabel', anchor='e', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAs = Label(self.tabStrip__Tab1, text='Save as', textvariable=self.lblSaveAsVar, style='TlblSaveAs.TLabel')
         self.lblSaveAs.setText = lambda x: self.lblSaveAsVar.set(x)
         self.lblSaveAs.text = lambda : self.lblSaveAsVar.get()
-        self.lblSaveAs.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
+        self.lblSaveAs.place(relx=0.782, rely=0.902, relwidth=0.204, relheight=0.074)
         self.lblSaveAs.bind('<Button-1>', self.lblSaveAs_Button_1)
         self.lblFontVar = StringVar(value='Font')
         self.style.configure('TlblFont.TLabel', anchor='e', font=('微软雅黑',10))
@@ -381,11 +381,11 @@ class Application_ui(Frame):
         self.lblFootprintTips.text = lambda : self.lblFootprintTipsVar.get()
         self.lblFootprintTips.place(relx=0.175, rely=0.071, relwidth=0.771, relheight=0.312)
         self.lblSaveAsFootprintVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAsFootprint.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.style.configure('TlblSaveAsFootprint.TLabel', anchor='e', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsFootprint = Label(self.tabStrip__Tab2, text='Save as', textvariable=self.lblSaveAsFootprintVar, style='TlblSaveAsFootprint.TLabel')
         self.lblSaveAsFootprint.setText = lambda x: self.lblSaveAsFootprintVar.set(x)
         self.lblSaveAsFootprint.text = lambda : self.lblSaveAsFootprintVar.get()
-        self.lblSaveAsFootprint.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
+        self.lblSaveAsFootprint.place(relx=0.782, rely=0.902, relwidth=0.191, relheight=0.074)
         self.lblSaveAsFootprint.bind('<Button-1>', self.lblSaveAsFootprint_Button_1)
         self.tabStrip.add(self.tabStrip__Tab2, text='   Footprint  ')
 
@@ -468,11 +468,11 @@ class Application_ui(Frame):
         self.lblSvgLayer.text = lambda : self.lblSvgLayerVar.get()
         self.lblSvgLayer.place(relx=0.04, rely=0.57, relwidth=0.11, relheight=0.074)
         self.lblSaveAsSvgVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAsSvg.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.style.configure('TlblSaveAsSvg.TLabel', anchor='e', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsSvg = Label(self.tabStrip__Tab3, text='Save as', textvariable=self.lblSaveAsSvgVar, style='TlblSaveAsSvg.TLabel')
         self.lblSaveAsSvg.setText = lambda x: self.lblSaveAsSvgVar.set(x)
         self.lblSaveAsSvg.text = lambda : self.lblSaveAsSvgVar.get()
-        self.lblSaveAsSvg.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
+        self.lblSaveAsSvg.place(relx=0.782, rely=0.902, relwidth=0.191, relheight=0.074)
         self.lblSaveAsSvg.bind('<Button-1>', self.lblSaveAsSvg_Button_1)
         self.lblSvgTipsVar = StringVar(value='Note:\nOnly for simple images, may fail to convert complex images')
         self.style.configure('TlblSvgTips.TLabel', anchor='w', font=('微软雅黑',10))
@@ -543,11 +543,11 @@ class Application_ui(Frame):
         self.lblSesFile.text = lambda : self.lblSesFileVar.get()
         self.lblSesFile.place(relx=0.027, rely=0.332, relwidth=0.11, relheight=0.074)
         self.lblSaveAsAutoRouterVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAsAutoRouter.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.style.configure('TlblSaveAsAutoRouter.TLabel', anchor='e', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsAutoRouter = Label(self.tabStrip__Tab4, text='Save as', textvariable=self.lblSaveAsAutoRouterVar, style='TlblSaveAsAutoRouter.TLabel')
         self.lblSaveAsAutoRouter.setText = lambda x: self.lblSaveAsAutoRouterVar.set(x)
         self.lblSaveAsAutoRouter.text = lambda : self.lblSaveAsAutoRouterVar.get()
-        self.lblSaveAsAutoRouter.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
+        self.lblSaveAsAutoRouter.place(relx=0.809, rely=0.902, relwidth=0.164, relheight=0.074)
         self.lblSaveAsAutoRouter.bind('<Button-1>', self.lblSaveAsAutoRouter_Button_1)
         self.lblAutoRouterTipsVar = StringVar(value='Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side')
         self.style.configure('TlblAutoRouterTips.TLabel', anchor='w', font=('微软雅黑',10))
@@ -692,11 +692,11 @@ class Application_ui(Frame):
         self.lblRoundedTrackSmallD.text = lambda : self.lblRoundedTrackSmallDVar.get()
         self.lblRoundedTrackSmallD.place(relx=0.054, rely=0.522, relwidth=0.204, relheight=0.074)
         self.lblSaveAsRoundedTrackVar = StringVar(value='Save as')
-        self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='w', foreground='#0000FF', font=('微软雅黑',10,'underline'))
+        self.style.configure('TlblSaveAsRoundedTrack.TLabel', anchor='e', foreground='#0000FF', font=('微软雅黑',10,'underline'))
         self.lblSaveAsRoundedTrack = Label(self.tabStrip__Tab6, text='Save as', textvariable=self.lblSaveAsRoundedTrackVar, style='TlblSaveAsRoundedTrack.TLabel')
         self.lblSaveAsRoundedTrack.setText = lambda x: self.lblSaveAsRoundedTrackVar.set(x)
         self.lblSaveAsRoundedTrack.text = lambda : self.lblSaveAsRoundedTrackVar.get()
-        self.lblSaveAsRoundedTrack.place(relx=0.877, rely=0.902, relwidth=0.11, relheight=0.074)
+        self.lblSaveAsRoundedTrack.place(relx=0.782, rely=0.902, relwidth=0.191, relheight=0.074)
         self.lblSaveAsRoundedTrack.bind('<Button-1>', self.lblSaveAsRoundedTrack_Button_1)
         self.lblRoundedTrackBigDVar = StringVar(value='big d(mm)')
         self.style.configure('TlblRoundedTrackBigD.TLabel', anchor='e', font=('微软雅黑',10))
@@ -792,8 +792,8 @@ class Application(Application_ui):
         Application_ui.__init__(self, master)
         self.loadConfig()
         self.initI18n()
-        self.master.title('sprintFont v{}'.format(__Version__))
         self.retranslateUi()
+        self.master.title('sprintFont v{}'.format(__Version__))
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
         self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数

@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 config.json
 
+tests/pobackup/*.po
+
 # C extensions
 *.so
 
