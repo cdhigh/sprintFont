@@ -14,7 +14,7 @@ refLang = 'zh_cn'
 startTime = datetime.datetime.now()
 agent = createAiAgent()
 excluded = ['sprintFont', 'PTH/SMD', 'PTH pad', 'SMD pad']
-for lang in ['es', 'pt', 'fr', 'ru', 'tr']:
+for lang in ['de', 'es', 'pt', 'fr', 'ru', 'tr']:
     fileName = os.path.join(thisDir, 'i18n', lang, 'LC_MESSAGES', 'messages.po')
     shutil.copy(fileName, os.path.join(bakDir, f'{lang}.po')) #先备份
     translateFile(fileName=fileName, agent=agent, dstLang=lang, srcLang='en',

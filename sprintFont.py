@@ -59,7 +59,7 @@ CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
 I18N_PATH = os.path.join(MODULE_PATH, 'i18n')
 
 #目前支持的语种，语种代码全部为小写
-SUPPORTED_LANGUAGES = ('en', 'zh_cn', 'es', 'pt', 'fr', 'ru', 'tr')
+SUPPORTED_LANGUAGES = ('en', 'zh_cn', 'de', 'es', 'pt', 'fr', 'ru', 'tr')
 
 STABAR_INFO_INPUT_FILE = 0
 STABAR_INFO_RELEASES = 1
