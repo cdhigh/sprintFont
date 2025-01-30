@@ -19,26 +19,19 @@ from comm_utils import *
 #height: 绘制高度，单位为毫米
 #smooth: 曲线平滑系数，参见 SMOOTH_MAP
 #usePolygon: 绘制模式，0-使用线条，1-使用多边形
-#返回SprintTextIO实例
+#返回SprintTextIO实例或抛出异常
 #字体坐标原点在屏幕左下角，但Sprint-Layout坐标原点在左上角，所以字形需要垂直翻转
 def svgToPolygon(svgFile: str, layerIdx: int=2, height: float=10, smooth: int=2, usePolygon: bool=True):
+    #这几个语句可能抛出异常，给上层处理
     if svgFile.lstrip().startswith('<svg'): #从字符串创建
-        try:
-            svg = SVGPath.fromstring(svgFile)
-            pen = SVGPathPen(None)
-            svg.draw(pen)
-        except Exception as e:
-            print(str(e))
-            return None
+        svg = SVGPath.fromstring(svgFile)
+        pen = SVGPathPen(None)
+        svg.draw(pen)
     else:
-        try:
-            svg = SVGPath(svgFile)
-            pen = SVGPathPen(None)
-            svg.draw(pen)
-        except Exception as e:
-            print(str(e))
-            return None
-
+        svg = SVGPath(svgFile)
+        pen = SVGPathPen(None)
+        svg.draw(pen)
+    
     svgCmds = pen._commands  #提取绘制语句
     xMin, yMin, xMax, yMax = getSvgBoundingBox(svgCmds)
     svgWidth = xMax - xMin
@@ -138,6 +131,9 @@ def svgToPolygon(svgFile: str, layerIdx: int=2, height: float=10, smooth: int=2,
             prevX = scaleX(str_to_float(vert[0]))
             prevY = scaleY(str_to_float(vert[1]))
             currElem.addPoint(prevX, prevY)
+
+    if not drawElements:
+        raise ValueError(_('The svg contains no valid paths'))
 
     #分析里面的多边形，看是否有相互包含关系，如果有相互包含关系，则将相互包含的多边形合并
     if usePolygon:

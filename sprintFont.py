@@ -885,12 +885,8 @@ class Application(Application_ui):
     #初始化多语种支持
     def initI18n(self):
         self.sysLanguge = locale.getdefaultlocale()[0]
-        lang = self.cfg.get('language')
-        if not lang: #自动跟随系统语言
-            lang = self.getSupportedLanguage(self.sysLanguge)
-        elif lang not in SUPPORTED_LANGUAGES:
-            lang = 'en'
-        self.language = lang
+        self.language = lang = self.cfg.get('language', '')
+        lang = self.getSupportedLanguage(lang or self.sysLanguge)
         tr = gettext.translation('messages', localedir=I18N_PATH, languages=[lang], fallback=True)
         tr.install()
 
@@ -925,7 +921,7 @@ class Application(Application_ui):
             elif (tabNo == 5):
                 if not self.roundedTrackImage:
                     from rounded_track_image import roundedTrackImageData, roundedTrackImageDataCn
-                    imgData = roundedTrackImageDataCn if self.language.startswith('zh') else roundedTrackImageData
+                    imgData = roundedTrackImageDataCn if self.sysLanguge.startswith('zh') else roundedTrackImageData
                     self.roundedTrackImage = PhotoImage(data=imgData)
                     self.picRoundedTrack.create_image(0, 0, image=self.roundedTrackImage, anchor=NW)
                 self.cmbRoundedTrackBigDistance.focus_set()
@@ -1363,47 +1359,18 @@ class Application(Application_ui):
             self.cmbCapLeft.configure(state='disabled')
             self.cmbCapRight.configure(state='disabled')
 
-    #保存为单独一个文本文件
+    #保存字体结果为单独一个文本文件
     def lblSaveAs_Button_1(self, event):
-        self.saveConfig()
-        txt = self.txtMain.get('1.0', END).strip()
-        if not txt:
-            showwarning(_('info'), _('Text is empty'))
-            return
-
-        textIo = self.generatePolygons(txt)
-        if not textIo:
-            showwarning(_('info'), _('Failed to generate text'))
-        elif isinstance(textIo, str):
-            showwarning(_('info'), textIo)
-        else:
-            self.saveTextFile(str(textIo))
+        self.cmdOk_Cmd(saveas=True)
         
     #转换封装结果保存为单独一个文本文件
     def lblSaveAsFootprint_Button_1(self, event):
-        self.saveConfig()
-        fileName = self.txtFootprintFile.text().strip()
-        #TODO, for test
-        #fileName = self.autoAddKicadPath(fileName)
-
-        if (not self.verifyFileName(fileName, LcComponent.isLcedaComponent)):
-            return
+        self.cmdOkFootprint_Cmd(saveas=True)
         
-        errStr, retStr = self.generateFootprint(fileName)
-        if (errStr):
-            showwarning(_('info'), errStr)
-        elif not retStr:
-            if LcComponent.isLcedaComponent(fileName):
-                showwarning(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
-            else:
-                showwarning(_('info'), _('Failed to parse file content'))
-        else:
-            self.saveTextFile(retStr)
-
     #开始转换文本为多边形
-    def cmdOk_Cmd(self, event=None):
+    #saveas: 是否保存到其他文件
+    def cmdOk_Cmd(self, event=None, saveas=False):
         self.saveConfig()
-
         txt = self.txtMain.get('1.0', END).strip()
         if not txt:
             showwarning(_('info'), _('Text is empty'))
@@ -1412,15 +1379,14 @@ class Application(Application_ui):
         textIo = self.generatePolygons(txt)
         if not textIo:
             showwarning(_('info'), _('Failed to generate text'))
-            return
-        elif isinstance(textIo, str):
+        elif isinstance(textIo, str): #出错，返回的是错误提示文本
             showwarning(_('info'), textIo)
-            return
+        elif saveas:
+            self.saveTextFile(str(textIo))
         else: #写输出文件
             self.saveOutputFile(str(textIo))
-            
-        self.destroy()
-        sys.exit(RETURN_CODE_INSERT_STICKY)
+            self.destroy()
+            sys.exit(RETURN_CODE_INSERT_STICKY)
 
     #在封装文件文本框中回车，根据情况自动执行响应的命令
     def txtFootprintFile_Return(self, event=None):
@@ -1430,7 +1396,8 @@ class Application(Application_ui):
         self.cmdOkFootprint_Cmd()
 
     #点击了将封装文件转换为Sprint-Layout的按钮
-    def cmdOkFootprint_Cmd(self, event=None):
+    #saveas: 是否需要保存到其他文件
+    def cmdOkFootprint_Cmd(self, event=None, saveas=False):
         self.saveConfig()
         fileName = self.txtFootprintFile.text().strip()
         #TODO, for test
@@ -1440,44 +1407,25 @@ class Application(Application_ui):
             return
         
         errStr, retStr = self.generateFootprint(fileName)
-        if (errStr):
+        if errStr:
             showwarning(_('info'), errStr)
         elif not retStr:
             if LcComponent.isLcedaComponent(fileName):
                 showwarning(_('info'), _('Failed to parse content\nMaybe Id error or Internet disconnected?'))
             else:
                 showwarning(_('info'), _('Failed to parse file content'))
+        elif saveas:
+            self.saveTextFile(retStr)
         else:
             self.saveOutputFile(retStr)
-            
             self.destroy()
             sys.exit(RETURN_CODE_INSERT_STICKY)
     
     #转换SVG结果保存为单独一个文本文件
     def lblSaveAsSvg_Button_1(self, event):
-        self.saveConfig()
-        fileName = self.txtSvgFile.text().strip()
-        isQrcode = self.cmbSvgQrcode.current()
+        self.cmdOkSvg_Cmd(saveas=True)
         
-        #如果是SVG模式，校验文件，否则直接使用文本
-        if (not self.verifyFileName(fileName, (lambda x: isQrcode) if isQrcode else None)):
-            return
-
-        #生成二维码
-        if isQrcode:
-            retStr = self.generateSvg(self.textToQrcodeStr(fileName), 1)
-        elif fileName.lower().endswith('.svg'):
-            retStr = self.generateSvg(fileName, 0)
-        else:
-            showwarning(_('info'), _('The file format is not supported'))
-            return
-
-        if not retStr:
-            showwarning(_('info'), _('Convert svg image failed'))
-        else:
-            self.saveTextFile(retStr)
-    
-    #将输入的文本转换为二维码文本
+    #将输入的文本转换为一系列的二维码SVG绘图指令
     def textToQrcodeStr(self, txt: str):
         from qrcode import QRCode
         from qrcode.image.svg import SvgPathImage
@@ -1495,32 +1443,40 @@ class Application(Application_ui):
         self.cmdOkSvg_Cmd()
 
     #点击了将SVG文件转换为Sprint-Layout的按钮
-    def cmdOkSvg_Cmd(self, event=None):
+    #saveas: 是保存到sprint-layout的输出文件还是另存为
+    def cmdOkSvg_Cmd(self, event=None, saveas=False):
         self.saveConfig()
         fileName = self.txtSvgFile.text().strip()
         isQrcode = self.cmbSvgQrcode.current()
-        
-        #如果是SVG模式，校验文件，否则直接使用文本
-        if (not self.verifyFileName(fileName, (lambda x: isQrcode) if isQrcode else None)):
+        if not fileName:
+            showwarning(_('info'), _('Input is empty'))
             return
 
-        #生成二维码
+        #如果是SVG模式，校验文件，否则直接使用文本
         if isQrcode:
-            retStr = self.generateSvg(self.textToQrcodeStr(fileName), 1)
-        elif fileName.lower().endswith('.svg'):
-            retStr = self.generateSvg(fileName, 0)
-        else:
+            fileName = self.textToQrcodeStr(fileName)
+        elif not self.verifyFileName(fileName):
+            return
+        elif not fileName.lower().endswith('.svg'):
             showwarning(_('info'), _('The file format is not supported'))
+            return
+        
+        #生成二维码
+        try:
+            retStr = self.generateFromSvg(fileName, isQrcode)
+        except Exception as e:
+            showwarning(_('info'), str(e))
             return
 
         if not retStr:
             showwarning(_('info'), _('Convert svg image failed'))
+        elif saveas:
+            self.saveTextFile(retStr)
         else:
             self.saveOutputFile(retStr)
-            
             self.destroy()
             sys.exit(RETURN_CODE_INSERT_STICKY)
-
+        
     #校验文件是否存在或是否合法，不合法则做出提示
     #fileName: 文件名
     #extraVeriFunc: 额外的校验函数，接受一个字符串参数
@@ -1532,7 +1488,7 @@ class Application(Application_ui):
         if (extraVeriFunc and extraVeriFunc(fileName)):
             return True
 
-        if (not os.path.isfile(fileName)) or (not os.path.exists(fileName)):
+        if not os.path.isfile(fileName):
             showwarning(_('info'), _("File does not exist\n{}").format(fileName))
             return False
         
@@ -1873,7 +1829,7 @@ class Application(Application_ui):
     #fileName: SVG文件名或二维码文本
     #isQrcode: True则为生成二维码
     #返回：生成的textIo字符串
-    def generateSvg(self, fileName: str, isQrcode: bool):
+    def generateFromSvg(self, fileName: str, isQrcode: bool):
         from svg_to_polygon import svgToPolygon
 
         usePolygon = 1 if isQrcode else self.cmbSvgMode.current()  #0-线条, 1-多边形，二维码固定为多边形
