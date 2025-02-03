@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-02-03 18:11-0300\n"
+"POT-Creation-Date: 2025-02-03 19:51-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language: zh_CN\n"
@@ -192,7 +192,7 @@ msgstr "自动布线session文件"
 #: sprintFont.py:1437 sprintFont.py:1442 sprintFont.py:1453 sprintFont.py:1477
 #: sprintFont.py:1485 sprintFont.py:1501 sprintFont.py:1505 sprintFont.py:1512
 #: sprintFont.py:1516 sprintFont.py:1553 sprintFont.py:1586 sprintFont.py:1601
-#: sprint_struct/wire_pair_tuner.py:92
+#: sprintFont.py:1616 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "信息"
 
@@ -398,6 +398,10 @@ msgstr "没有找到符合条件的走线"
 #: sprintFont.py:1586 sprintFont.py:1601
 msgid "Please click the Adjust button first to match the trace length"
 msgstr "请先点击调整按钮进行导线长度匹配"
+
+#: sprintFont.py:1616
+msgid "At least two traces must be selected"
+msgstr "至少要选择两根导线"
 
 #: svg_to_polygon.py:136
 msgid "The svg contains no valid paths"

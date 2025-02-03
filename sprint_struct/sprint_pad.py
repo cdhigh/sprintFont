@@ -4,6 +4,7 @@
 焊盘定义
 Author: cdhigh <https://github.com/cdhigh>
 """
+import math
 from .sprint_element import *
 
 #Pad的形状

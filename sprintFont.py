@@ -32,7 +32,7 @@ __Version__ = "1.7"
 __DATE__ = "20250203"
 __AUTHOR__ = "cdhigh"
 
-#DEBUG_IN_FILE = r'd:\1.txt'
+#DEBUG_IN_FILE = r'd:/1.txt'
 DEBUG_IN_FILE = ""
 
 #在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
@@ -160,6 +160,7 @@ class Application(Application_ui):
             self.cmdRemoveTeardrops.configure(state='disabled')
             self.cmdRoundedTrackConvert.configure(state='disabled')
             self.lblSaveAsRoundedTrack.configure(state='disabled')
+            self.cmdOpenWirePairTuner.configure(state='disabled')
             self.cmdOkWirePair.configure(state='disabled')
             self.lblSaveAsWirePair.configure(state='disabled')
             
@@ -1613,6 +1614,7 @@ class Application(Application_ui):
             self.wirePairTuner = WirePairTuner(self, self.wirePairTextIo, self.getWirePairParams())
         else:
             self.wirePairTextIo = None
+            showinfo(_("info"), _("At least two traces must be selected"))
 
     #切换导线对调整的类型
     def cmbWirePairType_ComboboxSelected(self, event):
