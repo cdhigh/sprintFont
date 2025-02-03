@@ -6,7 +6,7 @@ Begin VB.Form frmMain
    ClientHeight    =   6120
    ClientLeft      =   45
    ClientTop       =   375
-   ClientWidth     =   10440
+   ClientWidth     =   10365
    BeginProperty Font 
       Name            =   "Î¢ÈíÑÅºÚ"
       Size            =   10.5
@@ -20,9 +20,162 @@ Begin VB.Form frmMain
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   6120
-   ScaleWidth      =   10440
+   ScaleWidth      =   10365
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab4 
+      Caption         =   "  AutoRouter  "
+      Height          =   5055
+      Left            =   9120
+      TabIndex        =   58
+      Top             =   3240
+      Width           =   9895
+      Begin MSComctlLib.TreeView treRules 
+         Height          =   1815
+         Left            =   1800
+         TabIndex        =   60
+         Top             =   2160
+         Width           =   7575
+         _ExtentX        =   13361
+         _ExtentY        =   3201
+         _Version        =   393217
+         Style           =   7
+         Appearance      =   1
+      End
+      Begin VB.VScrollBar VSrlRules 
+         Height          =   1815
+         Left            =   9360
+         TabIndex        =   54
+         Top             =   2160
+         Width           =   255
+      End
+      Begin VB.CommandButton cmdImportSes 
+         Caption         =   "Import SES"
+         Height          =   450
+         Left            =   2760
+         TabIndex        =   56
+         Top             =   4440
+         Width           =   1815
+      End
+      Begin VB.TextBox txtSesFile 
+         Height          =   420
+         Left            =   1800
+         TabIndex        =   51
+         Top             =   1680
+         Width           =   7215
+      End
+      Begin VB.CommandButton cmdSesFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   9120
+         TabIndex        =   52
+         Top             =   1680
+         Width           =   495
+      End
+      Begin VB.CommandButton cmdCancelAutoRouter 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   5160
+         TabIndex        =   57
+         Top             =   4440
+         Width           =   1815
+      End
+      Begin VB.CommandButton cmdExportDsn 
+         Caption         =   "Export DSN"
+         Height          =   450
+         Left            =   360
+         TabIndex        =   55
+         Top             =   4440
+         Width           =   1815
+      End
+      Begin VB.TextBox txtDsnFile 
+         Height          =   420
+         Left            =   1800
+         TabIndex        =   48
+         Top             =   1200
+         Width           =   7215
+      End
+      Begin VB.CommandButton cmdDsnFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   9120
+         TabIndex        =   49
+         Top             =   1200
+         Width           =   495
+      End
+      Begin VB.Label lblRules 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Rules"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   53
+         Top             =   2400
+         Width           =   1455
+      End
+      Begin VB.Label lblSesFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Ses file"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   50
+         Top             =   1680
+         Width           =   1455
+      End
+      Begin VB.Label lblSaveAsAutoRouter 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Save as"
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   10.5
+            Charset         =   134
+            Weight          =   400
+            Underline       =   -1  'True
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00FF0000&
+         Height          =   375
+         Left            =   7200
+         TabIndex        =   59
+         Top             =   4560
+         Width           =   1455
+      End
+      Begin VB.Label lblAutoRouterTips 
+         Caption         =   "Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side"
+         Height          =   855
+         Left            =   1560
+         TabIndex        =   46
+         Top             =   240
+         Width           =   7935
+      End
+      Begin VB.Label lblDsnFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Dsn file"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   47
+         Top             =   1200
+         Width           =   1455
+      End
+   End
    Begin VB.Frame tabStrip__Tab7 
       Caption         =   " WirePair "
       Height          =   5055
@@ -39,7 +192,7 @@ Begin VB.Form frmMain
          Width           =   1935
       End
       Begin VB.CommandButton cmdOpenWirePairTuner 
-         Caption         =   "Tuner"
+         Caption         =   "Adjust"
          Height          =   450
          Left            =   120
          TabIndex        =   111
@@ -104,7 +257,7 @@ Begin VB.Form frmMain
          Top             =   1440
          Width           =   1935
       End
-      Begin VB.Label Label5 
+      Begin VB.Label lblTargetSkew 
          Alignment       =   1  'Right Justify
          Caption         =   "Target skew"
          Height          =   375
@@ -113,7 +266,7 @@ Begin VB.Form frmMain
          Top             =   3360
          Width           =   3015
       End
-      Begin VB.Label Label3 
+      Begin VB.Label lblSpacing 
          Alignment       =   1  'Right Justify
          Caption         =   "Spacing (s)"
          Height          =   375
@@ -122,16 +275,16 @@ Begin VB.Form frmMain
          Top             =   2880
          Width           =   3015
       End
-      Begin VB.Label Label6 
+      Begin VB.Label lblWirePairTips 
          Alignment       =   2  'Center
-         Caption         =   "Select the wires on the same layer that need to be adjusted in length."
+         Caption         =   "Select the differential wire pair that needs to be adjusted in length"
          Height          =   495
          Left            =   240
          TabIndex        =   106
          Top             =   360
          Width           =   9255
       End
-      Begin VB.Label Label4 
+      Begin VB.Label lblMinAmplitude 
          Alignment       =   1  'Right Justify
          Caption         =   "Min amplitude (Amin)"
          Height          =   375
@@ -159,7 +312,7 @@ Begin VB.Form frmMain
          Top             =   4560
          Width           =   1695
       End
-      Begin VB.Label Label2 
+      Begin VB.Label lblMaxAmplitude 
          Alignment       =   1  'Right Justify
          Caption         =   "Max amplitude (Amax)"
          Height          =   375
@@ -168,7 +321,7 @@ Begin VB.Form frmMain
          Top             =   2400
          Width           =   3015
       End
-      Begin VB.Label Label1 
+      Begin VB.Label lblType 
          Alignment       =   1  'Right Justify
          Caption         =   "Type"
          Height          =   375
@@ -425,159 +578,6 @@ Begin VB.Form frmMain
          TabIndex        =   67
          Top             =   1920
          Width           =   2655
-      End
-   End
-   Begin VB.Frame tabStrip__Tab4 
-      Caption         =   "  AutoRouter  "
-      Height          =   5055
-      Left            =   9120
-      TabIndex        =   58
-      Top             =   3240
-      Width           =   9895
-      Begin MSComctlLib.TreeView treRules 
-         Height          =   1815
-         Left            =   1560
-         TabIndex        =   60
-         Top             =   2160
-         Width           =   7815
-         _ExtentX        =   13785
-         _ExtentY        =   3201
-         _Version        =   393217
-         Style           =   7
-         Appearance      =   1
-      End
-      Begin VB.VScrollBar VSrlRules 
-         Height          =   1815
-         Left            =   9360
-         TabIndex        =   54
-         Top             =   2160
-         Width           =   255
-      End
-      Begin VB.CommandButton cmdImportSes 
-         Caption         =   "Import SES"
-         Height          =   450
-         Left            =   2760
-         TabIndex        =   56
-         Top             =   4440
-         Width           =   1815
-      End
-      Begin VB.TextBox txtSesFile 
-         Height          =   420
-         Left            =   1560
-         TabIndex        =   51
-         Top             =   1680
-         Width           =   7455
-      End
-      Begin VB.CommandButton cmdSesFile 
-         Caption         =   "..."
-         BeginProperty Font 
-            Name            =   "Arial"
-            Size            =   9
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   375
-         Left            =   9120
-         TabIndex        =   52
-         Top             =   1680
-         Width           =   495
-      End
-      Begin VB.CommandButton cmdCancelAutoRouter 
-         Caption         =   "Cancel"
-         Height          =   450
-         Left            =   5160
-         TabIndex        =   57
-         Top             =   4440
-         Width           =   1815
-      End
-      Begin VB.CommandButton cmdExportDsn 
-         Caption         =   "Export DSN"
-         Height          =   450
-         Left            =   360
-         TabIndex        =   55
-         Top             =   4440
-         Width           =   1815
-      End
-      Begin VB.TextBox txtDsnFile 
-         Height          =   420
-         Left            =   1560
-         TabIndex        =   48
-         Top             =   1200
-         Width           =   7455
-      End
-      Begin VB.CommandButton cmdDsnFile 
-         Caption         =   "..."
-         BeginProperty Font 
-            Name            =   "Arial"
-            Size            =   9
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   375
-         Left            =   9120
-         TabIndex        =   49
-         Top             =   1200
-         Width           =   495
-      End
-      Begin VB.Label lblRules 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Rules"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   53
-         Top             =   2400
-         Width           =   975
-      End
-      Begin VB.Label lblSesFile 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Ses file"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   50
-         Top             =   1680
-         Width           =   975
-      End
-      Begin VB.Label lblSaveAsAutoRouter 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Save as"
-         BeginProperty Font 
-            Name            =   "Î¢ÈíÑÅºÚ"
-            Size            =   10.5
-            Charset         =   134
-            Weight          =   400
-            Underline       =   -1  'True
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H00FF0000&
-         Height          =   375
-         Left            =   7200
-         TabIndex        =   59
-         Top             =   4560
-         Width           =   1455
-      End
-      Begin VB.Label lblAutoRouterTips 
-         Caption         =   "Open the exported DSN file with Freerouting for autorouting\nCurrently only supports all components placed on the front side"
-         Height          =   855
-         Left            =   1560
-         TabIndex        =   46
-         Top             =   240
-         Width           =   7935
-      End
-      Begin VB.Label lblDsnFile 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Dsn file"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   47
-         Top             =   1200
-         Width           =   975
       End
    End
    Begin VB.Frame tabStrip__Tab3 
@@ -1125,8 +1125,8 @@ Begin VB.Form frmMain
       Left            =   0
       TabIndex        =   0
       Top             =   5775
-      Width           =   10440
-      _ExtentX        =   18415
+      Width           =   10365
+      _ExtentX        =   18283
       _ExtentY        =   609
       _Version        =   393216
       BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 

@@ -6,13 +6,15 @@ import os, sys, datetime, shutil
 sys.path.insert(0, 'D:/Programer/Project/autopo')
 from autopo import createAiAgent, translateFile
 
+cfgFile = 'D:/Programer/Project/autopo/google.json'
+
 thisDir = os.path.dirname(os.path.abspath(__file__))
 bakDir = os.path.join(thisDir, 'tests', 'pobackup')
 refPoFile = os.path.join(thisDir, 'i18n', 'zh_cn', 'LC_MESSAGES', 'messages.po')
 refLang = 'zh_cn'
 
 startTime = datetime.datetime.now()
-agent = createAiAgent()
+agent = createAiAgent(cfgFile)
 excluded = ['sprintFont', 'PTH/SMD', 'PTH pad', 'SMD pad']
 for lang in ['de', 'es', 'pt', 'fr', 'ru', 'tr']:
     fileName = os.path.join(thisDir, 'i18n', lang, 'LC_MESSAGES', 'messages.po')

@@ -28,12 +28,12 @@ import sprint_struct.sprint_textio as sprint_textio
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__Version__ = "1.6.1"
-__DATE__ = "20241124"
+__Version__ = "1.7"
+__DATE__ = "20250203"
 __AUTHOR__ = "cdhigh"
 
-DEBUG_IN_FILE = r'd:\1.txt'
-#DEBUG_IN_FILE = ""
+#DEBUG_IN_FILE = r'd:\1.txt'
+DEBUG_IN_FILE = ""
 
 #在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
 WIN_DIR = os.getenv('WINDIR')
@@ -218,10 +218,11 @@ class Application(Application_ui):
             elif tabNo == TAB_ROUNDEDTRACK:
                 if not self.roundedTrackImage:
                     from ui.rounded_track_image import roundedTrackImageData, roundedTrackImageDataCn
-                    imgData = roundedTrackImageDataCn if self.sysLanguge.startswith('zh') else roundedTrackImageData
+                    lang = self.language or self.sysLanguge
+                    imgData = roundedTrackImageDataCn if lang.startswith('zh') else roundedTrackImageData
                     self.roundedTrackImage = PhotoImage(data=imgData)
                     self.picRoundedTrack.create_image(0, 0, image=self.roundedTrackImage, anchor=NW)
-                self.cmbRoundedTrackBigDistance.focus_set()
+                self.cmbRoundedTrackType.focus_set()
             elif tabNo == TAB_WIREPAIR:
                 self.initWirePair()
                 self.cmbWirePairType.focus_set()
@@ -1343,6 +1344,8 @@ class Application(Application_ui):
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
+        if str(self.lblSaveAsAutoRouter.cget('state')) == 'disabled':
+            return
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -1528,6 +1531,8 @@ class Application(Application_ui):
 
     #将弧形走线的转换结果保存为文本文件
     def lblSaveAsRoundedTrack_Button_1(self, event=None):
+        if str(self.lblSaveAsRoundedTrack.cget('state')) == 'disabled':
+            return
         textIo = self.convertRounedTrack()
         if textIo:
             self.saveTextFile(str(textIo))
@@ -1573,9 +1578,12 @@ class Application(Application_ui):
     #导线对调整长度，确认
     def cmdOkWirePair_Cmd(self, event=None):
         if self.wirePairTextIo:
+            self.saveConfig()
             self.saveOutputFile(str(self.wirePairTextIo))
             self.destroy()
             sys.exit(RETURN_CODE_REPLACE_ALL)
+        else:
+            showinfo(_("info"), _("Please click the Adjust button first to match the trace length"))
 
     #导线对调整长度，取消
     def cmdCancelWirePair_Cmd(self, event=None):
@@ -1584,11 +1592,14 @@ class Application(Application_ui):
 
     #导线对调整长度，另存为
     def lblSaveAsWirePair_Button_1(self, event):
+        if str(self.lblSaveAsWirePair.cget('state')) == 'disabled':
+            return
         if self.wirePairTextIo:
+            self.saveConfig()
             self.saveTextFile(str(self.wirePairTextIo))
-            self.destroy()
-            sys.exit(RETURN_CODE_REPLACE_ALL)
-
+        else:
+            showinfo(_("info"), _("Please click the Adjust button first to match the trace length"))
+            
     #在一个新窗口打开导线对长度调整器
     def cmdOpenWirePairTuner_Cmd(self, event=None):
         from sprint_struct.wire_pair_tuner import WirePairTuner
@@ -1597,10 +1608,9 @@ class Application(Application_ui):
         if not self.wirePairTextIo:
             return
 
-        tracks = (self.wirePairTextIo.getTracks(sprint_textio.LAYER_C2) 
-            or self.wirePairTextIo.getTracks(sprint_textio.LAYER_C1))
+        tracks = self.wirePairTextIo.getTracks()
         if len(tracks) > 1:
-            self.wirePairTuner = WirePairTuner(self.master, self.wirePairTextIo, self.getWirePairParams())
+            self.wirePairTuner = WirePairTuner(self, self.wirePairTextIo, self.getWirePairParams())
         else:
             self.wirePairTextIo = None
 

@@ -84,15 +84,15 @@ class SprintTextIO(SprintElement):
         else:
             return [elem for elem in self.baseDrawElements() if (isinstance(elem, SprintPad) and (elem.padType == padType))]
 
-    #获取所有导线，参数为空则仅返回上下层的导线
+    #获取所有导线，参数为空则仅返回导电导线
     def getTracks(self, layerIdx: int=None):
-        layers = (LAYER_C1, LAYER_C2) if layerIdx is None else (layerIdx,)
+        layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2) if layerIdx is None else (layerIdx,)
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintTrack) and (elem.layerIdx in layers))]
 
     #获取所有导电的多边形
     def getConductivePolygons(self, layerIdx: int=None):
-        layers = (LAYER_C1, LAYER_C2) if layerIdx is None else (layerIdx,)
+        layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2) if layerIdx is None else (layerIdx,)
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintPolygon) and (elem.layerIdx in layers))]
             

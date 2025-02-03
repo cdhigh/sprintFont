@@ -3,8 +3,9 @@
 """匹配 导线对 的长度
 """
 import math, itertools, copy
+from tkinter import *
+from tkinter.ttk import *
 import tkinter as tk
-from tkinter import Toplevel, Canvas
 from tkinter.messagebox import *
 from comm_utils import *
 import sprint_struct.sprint_textio as sprint_textio
@@ -18,12 +19,14 @@ class WirePairTuner(Toplevel):
     #注意：调用前请保证参数合法
     #textIo: SprintTextIO 实例，至少要有两根同层的导线
     #params: 界面上的配置参数
-    def __init__(self, root, textIo, params):
+    def __init__(self, parent, textIo, params):
+        root = parent.master
         super().__init__(root)
-        self.title(_("Wire Pair Length Tuner"))
+        self.title(_("Differential Wire Pair Length Tuning"))
         ws = root.winfo_screenwidth()
         hs = root.winfo_screenheight()
         self.geometry("{}x{}+0+0".format(ws - 20, hs - 100))
+        self.iconphoto(False, parent.iconimg)
         self.transient(root)
         self.grab_set()
         self.createWidgets()
@@ -35,19 +38,19 @@ class WirePairTuner(Toplevel):
         self.skew = params.get('skew') or 0
         
         self.textIo = textIo
-        tracks = textIo.getTracks(sprint_textio.LAYER_C2) or textIo.getTracks(sprint_textio.LAYER_C1)
+        tracks = textIo.getTracks()
         assert(len(tracks) > 1)
         tracks.sort(key=lambda x: x.length, reverse=True) #最长的一根导线排在开头
         self.orgTracks = tracks
         self.tracks = [] #之后的导线长度调整在这个列表上修改
-        self.layerIdx = tracks[0].layerIdx
-        self.margin = 20 #绘图边缘
+        self.margin = 30 #绘图边缘
         self.cavOrgPoints = None
         self.cavPoints = None
         self.trackIndex = 0
         self.segIndex = 0
         self.projPt = None
         self.mousePt = None
+        self.deviation = 0.0 #最新创建的蛇形线和最长线的偏差
         self.spacingDelta = 0 #手动调整间隔，每次步进0.1mm，可正可负
         self.ridgeDelta = 0 #手动调整隆起个数，相当于调整振幅
         self.tagsMap = {}
@@ -55,11 +58,13 @@ class WirePairTuner(Toplevel):
 
     #创建窗口控件
     def createWidgets(self):
-        buttonFrame = tk.Frame(self)
+        self.style = Style()
+        buttonFrame = Frame(self)
         buttonFrame.pack(fill=tk.X, padx=5, pady=5)
 
         # 按钮列表
         buttons = [
+            (_("Deviation-"), self.subDeviation),
             (_("Spacing+"), self.addSpacing),
             (_("Spacing-"), self.subSpacing),
             (_("Amplitude+"), self.addAmplitude),
@@ -68,10 +73,11 @@ class WirePairTuner(Toplevel):
             (_("Cancel"), lambda event=None: self.destroy())
         ]
         for text, cmd in buttons:
-            btn = tk.Button(buttonFrame, text=text)
+            btn = Button(buttonFrame, text=text)
             btn.bind("<Button-1>", cmd)
             btn.pack(side=tk.LEFT, padx=5)
-        self.lblTips = tk.Label(self, text=_("Click the short trace at the desired location to add serpentine curves for length matching"), bg="#FFF5CC", anchor="w")
+        self.style.configure('TlblTips.TLabel', anchor='w', foreground='#000000', background='#FFF5CC')
+        self.lblTips = Label(self, text=_("Click the short track at the desired location to add a serpentine trace for length matching"), style='TlblTips.TLabel')
         self.lblTips.pack(fill=tk.X, padx=5, pady=2)
         self.canvas = Canvas(self, bg="black")
         self.canvas.pack(fill=tk.BOTH, expand=True)
@@ -81,6 +87,53 @@ class WirePairTuner(Toplevel):
         self.canvas.bind("<Motion>", self.canvasMouseMove)
         self.bind("<Configure>", self.refreshDraw)
 
+    #因为这个窗口是另一个事件循环，在按钮事件中处理showinfo会出现按钮无法弹出的情况，需要使用此函数弹出提示
+    def showInfo(self, msg):
+        self.after(10, lambda: showinfo(_("info"), msg))
+        
+    #减小长度偏差
+    def subDeviation(self, event):
+        if self.trackIndex == 0:
+            self.showInfo(_("Please click on a track first to add a serpentine trace"))
+            return
+        if -0.01 <= self.deviation <= 0.01:
+            self.showInfo(_("The deviation is already small enough"))
+            return
+
+        self.lblTips.configure(text='')
+        if self.deviation < 0:
+            values = [x / 10 for x in range(-1, int((self.deviation - 5.0) * 10) - 1, -1)]
+        else:
+            values = [x / 10 for x in range(1, int((self.deviation + 5.0) * 10) + 1)]
+
+        #遍历这些数值，找到一个偏差最小的
+        prevDeviation = self.deviation
+        minDeviation = 99999999999
+        minValue = 0
+        for idx, value in enumerate(values):
+            if self.wpType == 0:
+                self.adjustSingleSidedLen(value, draw=False)
+            else:
+                self.adjustDoubleSidedLen(value, draw=False)
+            if abs(self.deviation) <= 0.01: #偏差足够小了，提前退出
+                minDeviation = self.deviation
+                minValue = value
+                break
+            elif abs(self.deviation) < abs(minDeviation):
+                minDeviation = self.deviation
+                minValue = value
+        
+        if abs(minDeviation) < abs(prevDeviation):
+            if self.wpType == 0:
+                self.adjustSingleSidedLen(minValue)
+            else:
+                self.adjustDoubleSidedLen(minValue)
+        else:
+            if self.wpType == 0:
+                self.adjustSingleSidedLen()
+            else:
+                self.adjustDoubleSidedLen()
+        
     #增加宽度/间隔
     def addSpacing(self, event):
         if event.state & MODIFIER_SHIFT:
@@ -89,7 +142,7 @@ class WirePairTuner(Toplevel):
             self.changeSpacingDelta(1)
         else:
             self.changeSpacingDelta(0.2)
-
+        
     #减小宽度/间隔
     def subSpacing(self, event):
         if event.state & MODIFIER_SHIFT:
@@ -98,7 +151,7 @@ class WirePairTuner(Toplevel):
             self.changeSpacingDelta(-1)
         else:
             self.changeSpacingDelta(-0.2)
-
+        
     #实际增加减小宽度/间隔
     def changeSpacingDelta(self, delta):
         self.lblTips.configure(text='')
@@ -112,11 +165,11 @@ class WirePairTuner(Toplevel):
     #增加幅度
     def addAmplitude(self, event):
         self.changeRidgeDelta(-1)
-
+        
     #减小幅度
     def subAmplitude(self, event):
         self.changeRidgeDelta(1)
-
+        
     #实际调整幅度
     def changeRidgeDelta(self, delta):
         self.lblTips.configure(text='')
@@ -130,7 +183,7 @@ class WirePairTuner(Toplevel):
     #确认返回
     def confirm(self, event=None):
         if not self.tracks:
-            showinfo(_("info"), _("No wire length has been adjusted"))
+            self.showInfo(_("The length of trace has not been adjusted yet"))
             return
 
         self.textIo.removeList(self.orgTracks)
@@ -204,11 +257,11 @@ class WirePairTuner(Toplevel):
             if idx == 0:
                 fullText = _('The longest trace. length: {} mm').format(length)
             else:
-                fullText = _('Approximate trace length: {} mm, deviation: {} mm'.format(length, round(length - maxLength, 2)))
+                fullText = _('The trace length: {} mm, deviation: {} mm').format(length, round(length - maxLength, 3))
             self.tagsMap[tag] = fullText
             self.canvas.create_line(*pts, fill=color, width=2, tags=tag)
             if color == 'red':
-                color = '#00BA00' if self.layerIdx == sprint_textio.LAYER_C2 else '#1E6AF9'
+                color = '#00BA00' # '#1E6AF9'
 
     #给定一个点，寻找和这个点最接近的导线，
     #返回 (导线索引，导线内线段索引, 点到线段投影点PCB坐标)
@@ -250,7 +303,7 @@ class WirePairTuner(Toplevel):
         self.lblTips.configure(text='')
         self.spacingDelta = 0
         self.ridgeDelta = 0
-
+        
         #鼠标点击点对应到PCB坐标系，用于确定绘制的相对方位
         self.mousePt = self.pcbCoordinate((self.canvas.canvasx(event.x), self.canvas.canvasy(event.y)))
         trackIndex, segIndex, projPt = self.trackUnderPoint(event.x, event.y)
@@ -269,7 +322,7 @@ class WirePairTuner(Toplevel):
             self.adjustDoubleSidedLen()
 
     #使用单侧隆起方式调整导线对的长度
-    def adjustSingleSidedLen(self):
+    def adjustSingleSidedLen(self, deviation=0, draw=True):
         tIndex = self.trackIndex #导线索引
         segIndex = self.segIndex #投影线段索引
         projPt = self.projPt #投影点坐标
@@ -279,7 +332,7 @@ class WirePairTuner(Toplevel):
             return
 
         #计算需要添加的长度
-        delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew
+        delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew + deviation
 
         spacing = self.spacing + self.spacingDelta
         if spacing < 0.1:
@@ -295,7 +348,8 @@ class WirePairTuner(Toplevel):
         
         #计算需要多少个隆起
         if delta < minRidgeLen:
-            showinfo(_("info"), _("The difference is smaller than the minimum length of a ridge"))
+            if draw:
+                self.showInfo(_("The difference is smaller than the minimum length of a ridge"))
             return
         
         maxRidgeNum = int(delta // minRidgeLen)
@@ -384,15 +438,13 @@ class WirePairTuner(Toplevel):
         #print(track.points)
         points[segIndex + 1:segIndex + 1] = ridgePts
         track.removeDuplicatePoints()
+        self.deviation = self.tracks[0].length - self.tracks[tIndex].length + self.skew
         #print(track.points)
-        self.refreshDraw()
+        if draw:
+            self.refreshDraw()
 
     #调整双侧蛇形线，保持和第一根导线一样长
-    #trackIndex: 导线索引
-    #segIndex: 投影线段索引
-    #proj: 投影点坐标
-    #mousePt: 鼠标点击点，已经转化为PCB坐标
-    def adjustDoubleSidedLen(self):
+    def adjustDoubleSidedLen(self, deviation=0, draw=True):
         tIndex = self.trackIndex #导线索引
         segIndex = self.segIndex #投影线段索引
         projPt = self.projPt #投影点坐标
@@ -402,7 +454,7 @@ class WirePairTuner(Toplevel):
             return
 
         #计算需要添加的长度
-        delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew
+        delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew + deviation
 
         spacing = self.spacing + self.spacingDelta
         if spacing < 0.1:
@@ -424,7 +476,8 @@ class WirePairTuner(Toplevel):
 
         #计算需要多少个隆起
         if delta < (minEndLen * 2):
-            showinfo(_("info"), _("The difference is smaller than the minimum length of a ridge"))
+            if draw:
+                self.showInfo(_("The difference is smaller than the minimum length of a ridge"))
             return
         
         #每个蛇形线需要两个端点隆起和零或若干个中间隆起
@@ -512,10 +565,10 @@ class WirePairTuner(Toplevel):
                 stop2 = start2 + 90
                 clockWise2 = False
             else:
-                start1 = angle + 270
+                start1 = -angle - 90
                 stop1 = start1 + 90
                 clockWise1 = True
-                start2 = angle
+                start2 = -angle
                 stop2 = start2 + 90
                 clockWise2 = True
 
@@ -567,6 +620,8 @@ class WirePairTuner(Toplevel):
         #print(track.points)
         points[segIndex + 1:segIndex + 1] = snakePts
         track.removeDuplicatePoints()
+        self.deviation = self.tracks[0].length - self.tracks[tIndex].length + self.skew
         #print(track.points)
-        self.refreshDraw()
+        if draw:
+            self.refreshDraw()
         

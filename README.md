@@ -14,6 +14,7 @@ Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelea
 * 支持自动布线
 * 插入泪滴焊盘
 * 生成圆弧走线
+* 差分线长度匹配
 
 
 
@@ -294,6 +295,24 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 
+### 2.8 差分线长度匹配
+对于高频电路，希望差分线的长度尽量的一致，使用此功能可以在差分线较短的一根添加一些蛇形线来达到长度匹配的目的。
+
+![wire_pair_trace](docs/pic/wire_pair_trace.png)
+
+
+#### 2.8.1 基本操作
+1. 需要在Sprint-Layout中预先选择两根需要匹配的差分线再启动此插件
+2. 在差分线页面设置好参数后，点击“调整”打开一个差分线长度匹配窗口
+3. 在差分线长度匹配窗口中显示出您选择的导线，红线为最长的一根，点击绿线会在点击位置添加蛇形线，单侧线会自动添加在最靠近鼠标点击的一侧，双侧线则自动选择
+4. 添加完蛇形线后，因为圆弧使用若干线段模拟，所以最终长度还是会有偏差，可以通过“偏差-”按钮来自动最小化偏差
+5. 点击“确认”退出此窗口，在主界面再点击“确定”返回Sprint-Layout
+
+![wire_pair_main](docs/pic/wire_pair_main.png)
+
+![wire_pair_adjusting](docs/pic/wire_pair_adjusting.png)
+
+
 
 
 ## 3. 您可能希望了解的其他内容
@@ -307,8 +326,14 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 5. 关于防病毒软件误报，因为这个程序是使用Python开发然后打包而成，这个打包机制容易导致部分特别敏感的防病毒软件产生误报，如果你有疑虑的话，可以将文件上传到 [VirusTotal](https://www.virustotal.com/) 或类似网站上查毒确认，或自己安装Python然后直接执行源码。    
 
 
+<a href="https://www.buymeacoffee.com/cdhigh" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
+
 
 ## 4. 版本更新日志
+### v1.7
+* 1. 新特性：差分线长度匹配（蛇形走线）
+
 ### v1.6.1
 * 使用AI自动翻译，添加德语，法语，西班牙语，葡萄牙语，俄语，土耳其语翻译
 
@@ -363,3 +388,6 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 ### v1.0
 * 初始版本，支持汉字和其他自定义字体的文本插入
+
+
+<a href="https://www.buymeacoffee.com/cdhigh" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
