@@ -8,7 +8,6 @@ getTeardrops() - 获取可能的泪滴焊盘多边形列表
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
-from comm_utils import pointDistance
 from .sprint_textio import *
 
 #将向量变成标准单位
@@ -54,8 +53,8 @@ def tdComputeCurved(vPercent: float, width: float, vecT: tuple, pad: SprintPad, 
     minVpercent = width / padSize
     weaken = (vPercent / 100.0 - minVpercent) / (1 - minVpercent) / radius
 
-    biasBC = 0.5 * pointDistance(ptB, ptC)
-    biasAE = 0.5 * pointDistance(ptE, ptA)
+    biasBC = 0.5 * math.dist(ptB, ptC)
+    biasAE = 0.5 * math.dist(ptE, ptA)
 
     vecC = (ptC[0] - pad.pos[0], ptC[1] - pad.pos[1])
     tangentC = (ptC[0] - vecC[1] * biasBC * weaken, ptC[1] + vecC[0] * biasBC * weaken)
@@ -98,7 +97,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
         vPercent = 10
 
     #确定开始点在焊盘直径内
-    if (pointDistance(start, pad.pos) > radius):
+    if (math.dist(start, pad.pos) > radius):
         start, end = end, start
 
     #找到添加泪滴的方向
@@ -110,7 +109,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
     while (backoff < radius):
         newX = start[0] + vecT[0] * backoff
         newY = start[1] + vecT[1] * backoff
-        if (pointDistance(newX, newY, padPosX, padPosY) >= radius):
+        if (math.dist((newX, newY), (padPosX, padPosY)) >= radius):
             break
         backoff += 0.01 #每次步进0.01mm
     start = (newX, newY) #交点做为新的起点
@@ -120,7 +119,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
 
     #确定泪滴长度
     targetLength = padSize * (hPercent / 100.0)
-    n = min(targetLength, pointDistance(start, end)) #避免泪滴焊盘超过走线
+    n = min(targetLength, math.dist(start, end)) #避免泪滴焊盘超过走线
     consumed = 0
 
     #如果第一段走线不够泪滴焊盘的长度，则尝试再找一段
@@ -131,7 +130,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
             trIdx += 1
             backoff = 0
             consumed += n
-            n = min(targetLength - consumed, pointDistance(pt, end))
+            n = min(targetLength - consumed, math.dist(pt, end))
             start, end = end, pt
             
         vecT = tdNormalizeVector((end[0] - start[0], end[1] - start[1]))
@@ -148,7 +147,7 @@ def tdComputePoints(track, pad, hPercent, vPercent, segs, followTracks, noBulge)
               round(start[1] + vecT[1] * n + vecT[0] * halfWidth, 3))
 
     #如果两个交点在焊盘内，则直接返回
-    if ((pointDistance(pointA, pad.pos) < radius) or (pointDistance(pointB, pad.pos) < radius)):
+    if ((math.dist(pointA, pad.pos) < radius) or (math.dist(pointB, pad.pos) < radius)):
         return []
 
     #焊盘和泪滴焊盘交点的角度位置
@@ -199,7 +198,7 @@ def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, usePth=True, useS
         pads.extend(textIo.getPads('SMDPAD'))
     
     #搜集走线
-    tracks = textIo.getConductiveTracks()
+    tracks = textIo.getTracks()
 
     if not pads or not tracks:
         return []

@@ -4,7 +4,6 @@
 焊盘定义
 Author: cdhigh <https://github.com/cdhigh>
 """
-from comm_utils import pointDistance
 from .sprint_element import *
 
 #Pad的形状
@@ -194,7 +193,7 @@ class SprintPad(SprintElement):
         if (y is None):
             x, y = x
 
-        dist = pointDistance(x, y, self.pos[0], self.pos[1])
+        dist = math.dist((x, y), self.pos)
         size = (self.size / 2) if (self.padType == 'PAD') else (min(self.sizeX, self.sizeY) / 2)
         return True if (dist < size) else False
 

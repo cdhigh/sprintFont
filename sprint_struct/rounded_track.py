@@ -6,7 +6,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math, os, sys
-from comm_utils import (pointDistance, calPointFromLineWithDistance, getCrossPoint, 
+from comm_utils import (pointInLineWithDistance, getCrossPoint, 
     isPointListClockwise, pointAtCircle, calCenterByThreePoints)
 from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
@@ -25,7 +25,7 @@ from sprint_struct.sprint_textio import *
 #如果有走线被转换为弧形走线，则返回True
 def createArcTracksInTextIo(textIo, method: str, bigDistance: float, smallDistance: float, segNum: int=10):
     hasTracksReplaced = False
-    tracks = textIo.getConductiveTracks()
+    tracks = textIo.getTracks()
     pads = textIo.getPads()
     polys = textIo.getConductivePolygons()
 
@@ -69,8 +69,8 @@ def createArcTracksInTextIo(textIo, method: str, bigDistance: float, smallDistan
             newPoints.append(pt1)
 
             #如果第二个线段太短，则忽略前面两个线段，并且往后取两个点
-            distance23 = pointDistance(pt2, pt3)
-            distance12 = pointDistance(pt1, pt2)
+            distance23 = math.dist(pt2, pt3)
+            distance12 = math.dist(pt1, pt2)
             if (distance23 <= smallDistance):
                 newPoints.append(pt2)
                 idx += 2
@@ -124,8 +124,8 @@ def arcByTangentLine(pt1: tuple, pt2: tuple, pt3: tuple, distance: float, segNum
     x3, y3 = pt3
 
     #求出圆弧和两个线段的交点
-    intersectPt1 = calPointFromLineWithDistance(pt2, pt1, distance)
-    intersectPt2 = calPointFromLineWithDistance(pt2, pt3, distance)
+    intersectPt1 = pointInLineWithDistance(pt2, pt1, distance)
+    intersectPt2 = pointInLineWithDistance(pt2, pt3, distance)
 
     #https://www.geek-share.com/detail/2645683357.html
     k1 = ((y2 - y1) / (x2 - x1)) if (x2 != x1) else None #线段1的斜率
@@ -166,7 +166,7 @@ def arcByTangentLine(pt1: tuple, pt2: tuple, pt3: tuple, distance: float, segNum
     #求两个垂线的交点，就是圆心位置
     center = getCrossPoint(intersectPt1, line1VertPt2, intersectPt2, line2VertPt2)
     if center is not None:
-        radius = pointDistance(center, intersectPt1)
+        radius = math.dist(center, intersectPt1)
 
         if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
             return None
@@ -195,7 +195,7 @@ def pointListByStartEndRadius(pt1, pt2, center, radius, clockwise, segNum):
     ptList = [pointAtCircle(center[0], center[1], radius, angle / 100) for angle in range(angle1, angle2, gap)]
 
     #计算完成后看是不是需要倒序
-    if (pointDistance(pt1, ptList[0]) > pointDistance(pt1, ptList[-1])):
+    if (math.dist(pt1, ptList[0]) > math.dist(pt1, ptList[-1])):
         ptList = ptList[::-1]
 
     if (pt1 != ptList[0]):
@@ -228,7 +228,7 @@ def arcBy3Points(pt1: tuple, pt2: tuple, pt3: tuple, segNum: int):
     x3, y3 = pt3
 
     center = calCenterByThreePoints(pt1, pt2, pt3)
-    radius = pointDistance(pt1, center)
+    radius = math.dist(pt1, center)
     if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
         return None
 

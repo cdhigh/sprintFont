@@ -10,7 +10,7 @@ import os, sys, pickle
 if __name__ == '__main__':
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from comm_utils import pointAfterRotated, cutCircle, ComputePolygonArea, str_to_float, str_to_int
+from comm_utils import pointAfterRotated, ComputePolygonArea, str_to_float, str_to_int
 from kicad_pcb import sexpr
 from sprint_struct.sprint_textio import *
 from sprint_struct.sprint_export_dsn import SprintExportDsn, mm2um, PcbRule

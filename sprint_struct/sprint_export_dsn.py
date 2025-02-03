@@ -199,7 +199,7 @@ class SprintExportDsn:
                     bbPath.append(mm2um(x))
                     bbPath.append(self.umY(y))
             elif isinstance(elem, SprintCircle):
-                points = cutCircle(elem.center[0], elem.center[1], elem.radius, 36) #将圆切分为36分
+                points = cutCircle(elem.center, elem.radius, 36) #将圆切分为36分
                 for (x, y) in points:
                     bbPath.append(mm2um(x))
                     bbPath.append(self.umY(y))
@@ -281,7 +281,7 @@ class SprintExportDsn:
                             mm2um(elem.center[0]), -mm2um(elem.center[1])]}}, indent=outlineFirstIndent)
                         outlineFirstIndent = False
                     if 0:  #圆弧
-                        pts = cutCircle(elem.center[0], elem.center[1], elem.radius, 10, elem.stop, elem.start)
+                        pts = cutCircle(elem.center, elem.radius, 10, elem.stop, elem.start)
                         #为避免freerouting将Track封闭，这里两两组成线条
                         for idx in range(len(pts) - 1):
                             x1, y1 = pts[idx]

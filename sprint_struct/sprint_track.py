@@ -4,7 +4,7 @@
 Track定义
 Author: cdhigh <https://github.com/cdhigh>
 """
-
+import math
 from .sprint_element import *
 
 #里面的长度单位都是mm
@@ -94,3 +94,22 @@ class SprintTrack(SprintElement):
         for idx in range(len(self.points)):
             self.points[idx] = (round(self.points[idx][0] - offsetX, 4), round(self.points[idx][1] - offsetY, 4))
         self.updateSelfBbox()
+
+    #计算导线的总长度
+    @property
+    def length(self):
+        points = self.points
+        return round(sum(math.dist(points[i], points[i + 1]) for i in range(len(points) - 1)), 3)
+
+    #删除相邻的相同坐标点
+    def removeDuplicatePoints(self):
+        points = self.points
+        if len(points) < 2:
+            return
+        
+        ret = [points[0]]  # 先保留第一个元素
+        for item in points[1:]:
+            if item != ret[-1]:
+                ret.append(item)
+        self.points = ret
+        

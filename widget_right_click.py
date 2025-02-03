@@ -5,7 +5,7 @@
 ==========================
 用法：
 1. 绑定单个控件
-self.entry.bind('<Button-3>', rightClicker, add='')
+self.entry.bind('<Button-3>', rightClicker, add=False)
 
 2. 绑定所有控件
 bindAllWidgetRightClick(self.master)

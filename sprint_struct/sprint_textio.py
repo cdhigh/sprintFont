@@ -47,14 +47,18 @@ class SprintTextIO(SprintElement):
                 self.updateSelfBbox()
                 return True
 
-        for elem in self.elements:
+        for elem in self.elements: #子容器递归搜索删除
             if isinstance(elem, (SprintComponent, SprintGroup)):
                 if elem.remove(obj):
                     self.updateSelfBbox()
                     return True
-
         return False
 
+    #删除列表中所有元素
+    def removeList(self, objList: list):
+        for obj in objList:
+            self.remove(obj)
+            
     #更新元件所占的外框
     def updateSelfBbox(self):
         for elem in self.elements:
@@ -80,8 +84,8 @@ class SprintTextIO(SprintElement):
         else:
             return [elem for elem in self.baseDrawElements() if (isinstance(elem, SprintPad) and (elem.padType == padType))]
 
-    #获取所有导电的走线
-    def getConductiveTracks(self, layerIdx: int=None):
+    #获取所有导线，参数为空则仅返回上下层的导线
+    def getTracks(self, layerIdx: int=None):
         layers = (LAYER_C1, LAYER_C2) if layerIdx is None else (layerIdx,)
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintTrack) and (elem.layerIdx in layers))]

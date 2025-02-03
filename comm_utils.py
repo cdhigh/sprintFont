@@ -15,7 +15,7 @@ def str_to_int(txt: str, defaultValue: int=0):
         return defaultValue
 
 #字符串转浮点数，出错则返回defaultValue
-def str_to_float(txt: str, defaultValue: int=0.0):
+def str_to_float(txt: str, defaultValue: float=0.0):
     try:
         return float(str(txt).strip())
     except:
@@ -37,21 +37,22 @@ def radiansToDegrees(ra):
 def degreesToRadians(angle):
     return math.pi / 180 * angle
 
-#计算二维空间两点之间的距离
-#如果仅传入两个参数，则使用tuple(x,y)表示一个点
-def pointDistance(x1, y1, x2: float=None, y2: float=None):
-    if (x2 is None) and (y2 is None):
-        pt2 = y1
-        x1, y1 = x1
-        x2, y2 = pt2
-    return math.sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)))
+#线段和X轴夹角，返回单位为角度
+def angleWithXAxis(pt1: tuple, pt2: tuple):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    return math.degrees(math.atan2(y2 - y1, x2 - x1))
 
 #计算一条线段上离起点pt1一定距离d的点坐标
-def calPointFromLineWithDistance(pt1: tuple, pt2: tuple, d: float):
+def pointInLineWithDistance(pt1: tuple, pt2: tuple, d: float):
     startPt = Vector2d(pt1[0], pt1[1])
     endPt = Vector2d(pt2[0], pt2[1])
     newVect = endPt - startPt
-    t = d / newVect.Mod()
+    length = newVect.Mod()
+    if length == 0:
+        return round(pt1[0], 4), round(pt1[1], 4)  # 避免除零错误，返回起点
+
+    t = d / length
     ret = startPt + newVect.Scalar(t)
     return round(ret.x, 4), round(ret.y, 4)
 
@@ -123,7 +124,7 @@ def calCenterByThreePoints(pt1: tuple, pt2: tuple, pt3: tuple):
 #dirCC: 方向，1-顺时针，0-逆时针
 #返回：(cx, cy)
 def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radius: float, bigArc: bool, dirCC: bool):
-    lineLen = pointDistance(x1, y1, x2, y2)
+    lineLen = math.dist((x1, y1), (x2, y2))
     x3 = (x1 + x2) / 2
     y3 = (y1 + y2) / 2
 
@@ -155,7 +156,6 @@ def calCenterByPointsAndRadius(x1: float, y1: float, x2: float, y2: float, radiu
 #计算一个线段和X轴的角度
 def lineAngleToXaxis(pt1: tuple, pt2: tuple):
     return math.degrees(math.atan2(pt2[1] - pt1[1], pt2[0] - pt1[0]))
-
 
 #通过SVG语法的圆弧参数计算圆心/开始角度/结束角度
 #https://blog.csdn.net/cuixiping/article/details/7958298
@@ -279,27 +279,41 @@ def radian(ux, uy, vx, vy):
 #radius: 半径
 #angle: X向右为0度，逆时针为正
 def pointAtCircle(cx: float, cy: float, radius: float, angle: float):
-    x1 = round(cx + radius * math.cos(degreesToRadians(-angle)), 4)
-    y1 = round(cy + radius * math.sin(degreesToRadians(-angle)), 4)
+    x1 = round(cx + radius * math.cos(math.radians(-angle)), 4)
+    y1 = round(cy + radius * math.sin(math.radians(-angle)), 4)
     return (x1, y1)
 
+#判断一个点在线段的左侧还是右侧
+def pointPosition(pt1: tuple, pt2: tuple, px: tuple):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    x, y = px
+    crossProduct = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1)
+    if crossProduct < 0:
+        return "L"
+    elif crossProduct > 0:
+        return "R"
+    else: #在线上
+        return "0"
+
 #获得圆心坐标为center 半径为r的圆cutNum等分后的圆上坐标
-#cx/cy: 圆心坐标
+#center: 圆心坐标
 #radius: 半径
 #cutNum: 需要多少等分
-#start/end: 圆弧的开始角度和结束角度，如果提供的话
+#start/end: 圆弧的开始角度和结束角度，如果提供的话，Y轴正方向为0度，逆时针增加
+#clockWise: 逆时针还是顺时针
 #返回一个列表 [(x,y),...]
-def cutCircle(cx: float, cy: float, radius: float, cutNum: int, start: int=None, stop: int=None):
+def cutCircle(center: tuple, radius: float, cutNum: int, start=0, stop=360, clockWise=True):
+    cutNum = cutNum or 10
+    angleStep = abs(stop - start) / cutNum
+    #startAngle = min(start, stop)
+    cx, cy = center
     points = []
-    if ((start is None) or (stop is None)):
-        angle = 360 / cutNum
-        startAngle = 0
-    else:
-        angle = abs(start - stop) / cutNum
-        startAngle = min(start, stop)
-
-    for idx in range(cutNum):
-        radians = (math.pi / 180) * ((idx + 1) * angle + startAngle)
+    for idx in range(cutNum + 1):
+        if clockWise:
+            radians = math.radians(idx * angleStep + start)
+        else:
+            radians = math.radians(stop - (idx * angleStep))
         points.append((round(cx + math.sin(radians) * radius, 4), round(cy + math.cos(radians) * radius, 4)))
     
     return points
@@ -307,7 +321,7 @@ def cutCircle(cx: float, cy: float, radius: float, cutNum: int, start: int=None,
 #以(cx, cy)为旋转中心点，
 #已经知道旋转前点的位置(x1,y1)和旋转的角度a，求旋转后点的新位置(x2,y2)
 def pointAfterRotated(x1: float, y1: float, cx: float, cy: float, angle: float, clockwise: int=0):
-    angle = degreesToRadians(angle)
+    angle = math.radians(angle)
     if clockwise: #顺时针旋转
         x2 = (x1 - cx) * math.cos(angle) + (y1 - cy) * math.sin(angle) + cx
         y2 = (y1 - cy) * math.cos(angle) - (x1 - cx) * math.sin(angle) + cy
@@ -349,3 +363,39 @@ def ComputePolygonArea(points: list):
     return abs(area / 2.0)
 
 #print(ComputePolygonArea([(-10, -10), (10, -10), (10, 10), (-10, 10),]))
+
+#计算点(x, y) 到线段 (x1, y1) - (x2, y2) 的垂直距离
+#返回：(距离，投影点)
+def pointToLineDistance(x, y, x1, y1, x2, y2):
+    dx = x2 - x1
+    dy = y2 - y1
+    if (-0.00001 <= dx <= 0.00001) and (-0.00001 <= dy <= 0.00001): #线段退化为一个点
+        return math.dist((x, y), (x1, y1)), (x1, y1)
+    
+    #计算投影参数 t
+    t = ((x - x1) * dx + (y - y1) * dy) / (dx ** 2 + dy ** 2)
+    t = max(0, min(1, t))  #限制 t 在 [0,1] 范围内，确保投影点在线段上
+
+    #计算投影点
+    projX = round(x1 + t * dx, 4)
+    projY = round(y1 + t * dy, 4)
+    return math.dist((x, y), (projX, projY)), (projX, projY)
+
+#计算与线段 AB 垂直的长度为 r 的线段的终点坐标
+#返回：一个包含两个终点坐标的列表，每个坐标为 (x, y) 的元组
+def perpendicularLineEndPoints(pt1: tuple, pt2: tuple, r: float):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    if x1 == x2: #垂直线
+        return [(round(x2 + r, 4), y2), (round(x2 - r, 4), y2)]
+    elif y1 == y2: #水平线
+        return [(x2, round(y2 + r, 4)), (x2, round(y2 - r, 4))]
+
+    k = (y2 - y1) / (x2 - x1) #斜率
+    kPerp = -1 / k
+    points = []
+    for sign in [-1, 1]:
+        x = x2 + sign * r / math.sqrt(1 + kPerp ** 2)
+        y = y2 + kPerp * (x - x2)
+        points.append((round(x, 4), round(y, 4)))
+    return points
