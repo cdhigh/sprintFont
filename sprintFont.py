@@ -28,8 +28,8 @@ import sprint_struct.sprint_textio as sprint_textio
 from lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__Version__ = "1.7"
-__DATE__ = "20250203"
+__Version__ = "1.7.1"
+__DATE__ = "20251109"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'd:/1.txt'
@@ -42,9 +42,9 @@ FONT_DIR = os.path.join(WIN_DIR if WIN_DIR else "c:/windows", "fonts")
 if getattr(sys, 'frozen', False): #在cxFreeze打包后
     MODULE_PATH = os.path.dirname(sys.executable)
 else:
-    MODULE_PATH = os.path.dirname(__file__)
+    MODULE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-CFG_FILENAME = os.path.join(MODULE_PATH, "config.json")
+CFG_FILENAME = "config.json"
 I18N_PATH = os.path.join(MODULE_PATH, 'i18n')
 
 #目前支持的语种，语种代码全部为小写
@@ -74,6 +74,7 @@ class Application(Application_ui):
     #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
+        self.appDataDir = self.getAppDataDir()
         self.loadConfig()
         self.initI18n()
         self.retranslateUi()
@@ -559,13 +560,14 @@ class Application(Application_ui):
         if s > 0:
             self.txtWirePairSpacing.setText('{:.1f}'.format(s))
         self.txtWirePairSkew.setText('{:.1f}'.format(str_to_float(cfg.get('wirePairSkew', ''))))
-        
+    
     #读取配置文件到内存
     def loadConfig(self):
         self.cfg = {}
-        if os.path.isfile(CFG_FILENAME):
+        cfgFile = os.path.join(self.appDataDir, CFG_FILENAME)
+        if os.path.isfile(cfgFile):
             try:
-                with open(CFG_FILENAME, 'r', encoding='utf-8') as f:
+                with open(cfgFile, 'r', encoding='utf-8') as f:
                     self.cfg = json.load(f)
                 if not isinstance(self.cfg, dict):
                     self.cfg = {}
@@ -606,12 +608,29 @@ class Application(Application_ui):
         
         if cfg != self.cfg:  #有变化再写配置文件
             self.cfg = cfg
+            cfgFile = os.path.join(self.appDataDir, CFG_FILENAME)
             try:
-                with open(CFG_FILENAME, 'w', encoding='utf-8') as f:
+                with open(cfgFile, 'w', encoding='utf-8') as f:
                     json.dump(cfg, f, indent=2)
             except:
                 pass
     
+    #获取用户配置数据目录
+    def getAppDataDir(self, appName="sprintFont", useRoaming=True):
+        if useRoaming:
+            baseDir = os.getenv('APPDATA')  # C:\Users\<user>\AppData\Roaming
+        else:
+            baseDir = os.getenv('LOCALAPPDATA')  # C:\Users\<user>\AppData\Local
+
+        if not baseDir:
+            baseDir = os.path.expanduser('~\\AppData\\Roaming' if useRoaming else '~\\AppData\\Local')
+        if baseDir:
+            appDir = os.path.join(baseDir, appName)
+            os.makedirs(appDir, exist_ok=True)
+            return appDir
+        else:
+            return MODULE_PATH
+            
     def cmbFont_ComboboxSelected(self, event=None):
         self.txtMain.configure(font=Font(family=self.cmbFont.text(), size=self.txtFontSize))
         
