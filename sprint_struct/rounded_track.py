@@ -6,7 +6,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math, os, sys
-from comm_utils import (pointInLineWithDistance, getCrossPoint, 
+from utils.comm_utils import (pointInLineWithDistance, getCrossPoint, 
     isPointListClockwise, pointAtCircle, calCenterByThreePoints)
 from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
@@ -27,7 +27,7 @@ def createArcTracksInTextIo(textIo, method: str, bigDistance: float, smallDistan
     hasTracksReplaced = False
     tracks = textIo.getTracks()
     pads = textIo.getPads()
-    polys = textIo.getConductivePolygons()
+    polys = textIo.getPolygons() #仅返回导电多边形
 
     #内嵌函数，判断一个点是否在导电区域（焊盘或多边形）内
     def isPointInsideConductiveArea(pt, layerIdx):

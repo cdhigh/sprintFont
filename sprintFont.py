@@ -22,17 +22,17 @@ import os, sys, locale, json, threading, queue, datetime, pickle, math, gettext,
 from functools import partial
 from fontTools.ttLib import ttFont, ttCollection
 from ui.sprint_font_ui import *
-from comm_utils import *
-from widget_right_click import rightClicker
+from utils.comm_utils import *
+from utils.widget_right_click import rightClicker
 import sprint_struct.sprint_textio as sprint_textio
-from lceda_to_sprint import LcComponent
+from conversion.lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
 
-__Version__ = "1.7.1"
-__DATE__ = "20251109"
+__Version__ = "1.8"
+__DATE__ = "20251204"
 __AUTHOR__ = "cdhigh"
 
-#DEBUG_IN_FILE = r'd:/1.txt'
+#DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
 DEBUG_IN_FILE = ""
 
 #在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
@@ -139,6 +139,10 @@ class Application(Application_ui):
                 self.pcbHeight = str_to_int(h[0][3:]) / 10000
                 
             self.pcbAll = True if a else False
+
+        #TODO
+        if DEBUG_IN_FILE and not self.inFileName:
+            self.inFileName = DEBUG_IN_FILE
         
         #输出文件名为输入文件名加一个 "_out"
         if self.inFileName:
@@ -150,9 +154,10 @@ class Application(Application_ui):
                 self.lblAutoRouterTips.setText(_("Please deselect all items before launching the plugin"))
                 self.lblAutoRouterTips.configure(foreground='red')
                 #self.cmdRemoveTeardrops.configure(state='disabled')
-        else: #单独执行
+        else: #单独执行, 禁止一些功能
             self.cmdOk.configure(state='disabled')
             self.cmdOkFootprint.configure(state='disabled')
+            self.cmdExport.configure(state='disabled')
             self.cmdOkSvg.configure(state='disabled')
             self.cmdImportSes.configure(state='disabled')
             self.cmdExportDsn.configure(state='disabled')
@@ -343,6 +348,12 @@ class Application(Application_ui):
         self.cmbCapRight.current(0)
         self.cmbCapRight.configure(state='disabled')
 
+        #导出板层设置
+        self.cmbExportLayerList = [_("All layers"), _("C1 (Front copper)"), _("S1 (Front silkscreen)"), _("C2 (Back copper)"), 
+            _("S2 (Back silkscreen)"), _("I1 (Inner copper1)"), _("I2 (Inner copper2)"), _("U (Edge.cuts)"), ]
+        self.cmbExportLayer.configure(values=self.cmbExportLayerList)
+        self.cmbExportLayer.current(0)
+
         #SVG/QRCODE选择
         self.cmbSvgQrcodeList = [_("SVG"), _("Qrcode")]
         self.cmbSvgQrcode.configure(values=self.cmbSvgQrcodeList)
@@ -465,6 +476,11 @@ class Application(Application_ui):
         if (str_to_int(cfg.get('importFootprintText', '0'))):
             self.chkImportFootprintText.setValue(1)
 
+        #导出页面
+        lastExportLayer = str_to_int(cfg.get('exportLayer', '0'), 100)
+        if 0 <= lastExportLayer < len(self.cmbExportLayerList):
+            self.cmbExportLayer.current(lastExportLayer)
+        
         #SVG页面
         svgQrcode = str_to_int(cfg.get('svgQrcode', '0'), 100)
         if 0 <= svgQrcode < len(self.cmbSvgQrcodeList):
@@ -571,8 +587,8 @@ class Application(Application_ui):
                     self.cfg = json.load(f)
                 if not isinstance(self.cfg, dict):
                     self.cfg = {}
-            except:
-                pass
+            except Exception as e:
+                print(str(e))
 
     #保存当前配置数据
     def saveConfig(self):
@@ -586,6 +602,7 @@ class Application(Application_ui):
             'invertBackground': str(self.chkInvertedBackground.value()), 'padding': self.cmbPadding.text(),
             'capLeft': str(self.cmbCapLeft.current()), 'capRight': str(self.cmbCapRight.current()),
             'importFootprintText': str(self.chkImportFootprintText.value()),
+            'exportLayer': str(self.cmbExportLayer.current()),
             'svgQrcode': str(self.cmbSvgQrcode.current()),
             'svgMode': str(self.cmbSvgMode.current()), 'svgLayer': str(self.cmbSvgLayer.current()),
             'svgHeight': self.cmbSvgHeight.text(), 'svgSmooth': str(self.cmbSvgSmooth.current()),
@@ -630,26 +647,33 @@ class Application(Application_ui):
             return appDir
         else:
             return MODULE_PATH
-            
+
     def cmbFont_ComboboxSelected(self, event=None):
         self.txtMain.configure(font=Font(family=self.cmbFont.text(), size=self.txtFontSize))
         
     #选择一个封装文件
     def cmdFootprintFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[(_("Kicad footprint"), "*.kicad_mod"), 
+        ret = filedialog.askopenfilename(filetypes=[(_("Kicad footprint"), "*.kicad_mod"), 
             (_("easyEDA footprint"), "*.json"), (_("All files"), "*.*")])
         if ret:
             self.txtFootprintFile.setText(ret)
 
+    #选择一个导出文件
+    def cmdChooseExportFile_Cmd(self, event=None):
+        ret = filedialog.asksaveasfilename(filetypes=[(_("Kicad and OpenSCAD files"), "*.kicad_pcb"), 
+            (_("Kicad and OpenSCAD files"), "*.scad"), (_("All files"), "*.*")])
+        if ret:
+            self.txtExportFile.setText(ret)
+
     #选择一个SVG文件
     def cmdSvgFile_Cmd(self, event=None):
-        ret = tkFileDialog.askopenfilename(filetypes=[(_("SVG files"),"*.svg"), (_("All files"), "*.*")])
+        ret = filedialog.askopenfilename(filetypes=[(_("SVG files"),"*.svg"), (_("All files"), "*.*")])
         if ret:
             self.txtSvgFile.setText(ret)
 
     #选择一个DSN文件
     def cmdDsnFile_Cmd(self, event=None):
-        retFile = tkFileDialog.asksaveasfilename(filetypes=[(_("Specctra DSN files"), '*.dsn'), (_("All files"), '*.*')])
+        retFile = filedialog.asksaveasfilename(filetypes=[(_("Specctra DSN files"), '*.dsn'), (_("All files"), '*.*')])
         if retFile:
             if not retFile.lower().endswith('.dsn'):
                 retFile = retFile + '.dsn'
@@ -658,7 +682,7 @@ class Application(Application_ui):
 
     #选择一个SES文件
     def cmdSesFile_Cmd(self, event=None):
-        retFile = tkFileDialog.askopenfilename(filetypes=[(_("Specctra session files"),"*.ses"), (_("All files"), "*.*")])
+        retFile = filedialog.askopenfilename(filetypes=[(_("Specctra session files"),"*.ses"), (_("All files"), "*.*")])
         if retFile:
             self.txtSesFile.setText(retFile)
             
@@ -669,6 +693,11 @@ class Application(Application_ui):
 
     #取消退出
     def cmdCancelFootprint_Cmd(self, event=None):
+        self.destroy()
+        sys.exit(RETURN_CODE_NONE)
+
+    #取消退出
+    def cmdCancelExport_Cmd(self, event=None):
         self.destroy()
         sys.exit(RETURN_CODE_NONE)
 
@@ -764,6 +793,34 @@ class Application(Application_ui):
             self.saveOutputFile(retStr)
             self.destroy()
             sys.exit(RETURN_CODE_INSERT_STICKY)
+
+    #点击了导出按钮
+    def cmdExport_Cmd(self, event=None):
+        from conversion.sprint_to_kicad import KicadGenerator
+        from conversion.sprint_to_openscad import OpenSCADGenerator
+        outFileName = self.txtExportFile.text().strip()
+        if not outFileName:
+            showwarning(_('info'), _('Input is empty'))
+            return
+        elif not outFileName.lower().endswith(('.kicad_pcb', '.scad')):
+            showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
+            return
+
+        self.saveConfig()
+        
+        textIo = self.createTextIoFromInFile()
+        if not textIo:
+            return False
+        if outFileName.lower().endswith('.kicad_pcb'):
+            generator = KicadGenerator(textIo)
+        else:
+            layer = self.cmbExportLayer.current()
+            generator = OpenSCADGenerator(textIo, layers=layer)
+        errStr = generator.generate(outFileName)
+        if errStr:
+            showwarning(_('info'), errStr)
+        else:
+            showinfo(_("info"), _("Export file successfully"))
     
     #转换SVG结果保存为单独一个文本文件
     def lblSaveAsSvg_Button_1(self, event):
@@ -851,7 +908,7 @@ class Application(Application_ui):
         if not txt:
             return
 
-        retFile = tkFileDialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
+        retFile = filedialog.asksaveasfilename(title=_("Save to a text file"), filetypes=[(_('Text files'), '*.txt'), (_("All files"), '*.*')])
         if retFile:
             if ('.' not in retFile): #自动添加后缀
                 retFile += '.txt'
@@ -943,7 +1000,7 @@ class Application(Application_ui):
 
         font.close()
 
-        textIo = sprint_textio.SprintTextIO()
+        textIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
         if invert: #生成负像
             textIo.add(self.invertFontBackground(polygons, padding, capLeft, capRight))
         else:
@@ -1146,7 +1203,7 @@ class Application(Application_ui):
         textIo = None
         fileName = fileName.lower()
         if (fileName.endswith('.kicad_mod')):  #Kicad封装文件
-            from kicad_to_sprint import kicadModToTextIo
+            from conversion.kicad_to_sprint import kicadModToTextIo
             textIo = kicadModToTextIo(fileName, importText)
         elif (fileName.endswith('.json')):  #立创EDA离线封装文件
             ins = LcComponent.fromFile(fileName)
@@ -1174,7 +1231,7 @@ class Application(Application_ui):
     #isQrcode: True则为生成二维码
     #返回：生成的textIo字符串
     def generateFromSvg(self, fileName: str, isQrcode: bool):
-        from svg_to_polygon import svgToPolygon
+        from conversion.svg_to_polygon import svgToPolygon
 
         usePolygon = 1 if isQrcode else self.cmbSvgMode.current()  #0-线条, 1-多边形，二维码固定为多边形
         layerIdx = self.cmbSvgLayer.current() + 1 #Sprint-Layout的板层定义从1开始
@@ -1191,7 +1248,7 @@ class Application(Application_ui):
     def staBar_Double_Button_1(self, event=None):
         import webbrowser
         if self.versionJson:
-            from version_check import openNewVersionDialog
+            from utils.version_check import openNewVersionDialog
             ret = openNewVersionDialog(self.master, __Version__, self.versionJson)
             if (ret == 'skip'):
                 self.skipVersion = self.versionJson.get('lastest', '')
@@ -1208,7 +1265,7 @@ class Application(Application_ui):
     #联网检查更新线程
     def versionCheckThread(self, arg=None):
         #print('versionCheckThread')
-        from version_check import checkUpdate
+        from utils.version_check import checkUpdate
         self.versionJson = checkUpdate(__Version__, self.skipVersion)
         #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
         if self.versionJson:
@@ -1244,7 +1301,7 @@ class Application(Application_ui):
         itemName = record[0]
         msg = _("\nPlease enter a new value for the parameter '{}'\nThe unit is mm\n").format(itemName)
 
-        ret = tkSimpleDialog.askfloat(_("Edit parameter"), msg, initialvalue=str_to_float(record[1]))
+        ret = simpledialog.askfloat(_("Edit parameter"), msg, initialvalue=str_to_float(record[1]))
         if ret and ret > 0.1:
             if (itemName == _("Track width")):
                 self.pcbRule.trackWidth = ret
@@ -1271,8 +1328,6 @@ class Application(Application_ui):
 
     #导出布线到DSN文件，成功返回True
     def exportDsn(self, dsnFile: str):
-        from sprint_struct.sprint_textio_parser import SprintTextIoParser
-        
         self.saveConfig()
         
         if not dsnFile.lower().endswith('.dsn'):
@@ -1452,7 +1507,7 @@ class Application(Application_ui):
         polys = createTeardrops(textIo, hPercent=hPercent, vPercent=vPercent, segs=segs, 
             usePth=usePth, useSmd=useSmd)
         if polys:
-            newTextIo = sprint_textio.SprintTextIO()
+            newTextIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
             newTextIo.addAll(polys)
             showinfo(_("info"), _("Successfully added [{}] teardrop pads").format(len(polys)))
 
@@ -1508,15 +1563,9 @@ class Application(Application_ui):
     def createTextIoFromInFile(self):
         from sprint_struct.sprint_textio_parser import SprintTextIoParser
 
-        #TODO
-        if DEBUG_IN_FILE and not self.inFileName:
-            inFile = DEBUG_IN_FILE
-        else:
-            inFile = self.inFileName
-        
         inFileSize = 0
         try:
-            inFileSize = os.path.getsize(inFile)
+            inFileSize = os.path.getsize(self.inFileName)
         except Exception as e:
             showwarning(_("info"), str(e))
             return None
@@ -1525,9 +1574,9 @@ class Application(Application_ui):
             showwarning(_("info"), _("No components on the board"))
             return None
 
-        parser = SprintTextIoParser()
+        parser = SprintTextIoParser(self.pcbWidth, self.pcbHeight)
         try:
-            textIo = parser.parse(inFile)
+            textIo = parser.parse(self.inFileName)
         except Exception as e:
             showwarning(_("info"), _("Error parsing input file:\n{}").format(str(e)))
             return None

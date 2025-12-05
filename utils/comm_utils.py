@@ -5,7 +5,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
-from vector2d import Vector2d
+from .vector2d import Vector2d
 
 #字符串转整数，出错则返回defaultValue
 def str_to_int(txt: str, defaultValue: int=0):

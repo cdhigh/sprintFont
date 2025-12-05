@@ -7,7 +7,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import locale
 from operator import itemgetter
-from comm_utils import *
+from utils.comm_utils import *
 from .sprint_element import *
 from .sprint_track import SprintTrack
 from .sprint_polygon import SprintPolygon
@@ -19,7 +19,9 @@ from .sprint_group import SprintGroup
 from .sprint_textio import *
 
 class SprintTextIoParser:
-    def __init__(self):
+    def __init__(self, pcbWidth=0, pcbHeight=0):
+        self.pcbWidth = pcbWidth
+        self.pcbHeight = pcbHeight
         self.fileName = ''
         self.textIo = None
         self.containers = [] #这是一个栈结构
@@ -55,7 +57,7 @@ class SprintTextIoParser:
                     return None
 
         self.fileName = fileName
-        self.textIo = SprintTextIO()
+        self.textIo = SprintTextIO(self.pcbWidth, self.pcbHeight)
         self.containers = [self.textIo] #这是一个栈结构
 
         for line in lines:
@@ -159,6 +161,8 @@ class SprintTextIoParser:
                 component.compName = value.replace('|', '')
             elif (key == 'NAME'):
                 component.name = value.replace('|', '')
+            elif (key == 'ROTATION'): #文本的旋转单位是0.001度
+                component.nameRotation = int(str_to_int(value) / 1000)
             #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
             #    pass
 
@@ -186,6 +190,8 @@ class SprintTextIoParser:
                 component.value = value.replace('|', '')
             elif (key == 'NAME'):
                 component.name = value.replace('|', '')
+            elif (key == 'ROTATION'): #文本的旋转单位是0.001度
+                component.valueRotation = int(str_to_int(value) / 1000)
             #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
             #    pass
 
@@ -244,8 +250,8 @@ class SprintTextIoParser:
                 pad.clearance = str_to_int(value) / 10000
             elif (key == 'SOLDERMASK'):
                 pad.soldermask = self.parseBooleanStr(value)
-            elif (key == 'ROTATION'):
-                pad.rotation = str_to_int(value) / 100
+            elif (key == 'ROTATION'): #焊盘的旋转单位是0.01度
+                pad.rotation = int(str_to_int(value) / 100)
             elif (key == 'VIA'):
                 pad.via = self.parseBooleanStr(value)
             elif (key == 'THERMAL'):
@@ -322,8 +328,9 @@ class SprintTextIoParser:
                 text.style = str_to_int(value)
             elif (key == 'THICKNESS'):
                 text.thickness = str_to_int(value)
-            elif (key == 'ROTATION'):
-                text.rotation = str_to_int(value)  #手册上是错的，文本实际的角度单位为度，而不是0.01度
+            elif (key == 'ROTATION'): #文本的旋转好像很奇怪, 不同版本单位不同
+                rotation = int(str_to_int(value) / 100)
+                text.rotation = int(rotation / 10) if rotation > 359 else rotation
             elif (key == 'MIRROR_HORZ'):
                 text.mirrorH = self.parseBooleanStr(value)
             elif (key == 'MIRROR_VERT'):

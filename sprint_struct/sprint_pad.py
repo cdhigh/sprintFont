@@ -41,9 +41,9 @@ class SprintPad(SprintElement):
         self.sizeY = 0
         self.drill = 0  #钻孔直径
         self.form = PAD_FORM_ROUND
-        self.clearance = None
+        self.clearance = 0
         self.soldermask = None
-        self.rotation = None
+        self.rotation = 0
         self.via = None #是否是双面焊盘
         self.thermal = None
         self.thermalTracksWidth = 0
@@ -76,11 +76,11 @@ class SprintPad(SprintElement):
     def toStrPad(self, overwritePadId=None):
         outStr = ['PAD,LAYER={},POS={}/{},SIZE={},DRILL={},FORM={}'.format(self.layerIdx, self.mm2um01(self.pos[0]), 
             self.mm2um01(self.pos[1]), self.mm2um01(self.size), self.mm2um01(self.drill), self.form)]
-        if self.clearance is not None:
+        if self.clearance:
             outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
-        if (self.form != PAD_FORM_ROUND) and (self.rotation is not None):
+        if (self.form != PAD_FORM_ROUND) and self.rotation:
             outStr.append('ROTATION={:0.0f}'.format(self.rotation * 100)) #焊盘的旋转单位为0.01度
         if self.via is not None:
             outStr.append('VIA={}'.format(self.booleanStr(self.via)))
@@ -112,7 +112,7 @@ class SprintPad(SprintElement):
             outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
-        if self.rotation is not None:
+        if self.rotation:
             outStr.append('ROTATION={:0.0f}'.format(self.rotation * 100))
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))

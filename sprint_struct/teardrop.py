@@ -260,7 +260,7 @@ def createTeardrops(textIo, hPercent=50, vPercent=90, segs=10, usePth=True, useS
 #返回一个列表
 def getTeardrops(textIo, pads, tracks):
     teardrops = []
-    polys = textIo.getConductivePolygons()
+    polys = textIo.getPolygons() #仅返回导电多边形
 
     for poly in polys:
         polyLayer = poly.layerIdx

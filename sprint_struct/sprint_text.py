@@ -13,12 +13,12 @@ class SprintText(SprintElement):
         self.pos = (0, 0)
         self.text = ''
         self.height = 0
-        self.clearance = None
+        self.clearance = 0
         self.cutout = None
         self.soldermask = None
         self.style = None
         self.thickness = None
-        self.rotation = None
+        self.rotation = 0
         self.mirrorH = None
         self.mirrorV = None
 
@@ -47,7 +47,7 @@ class SprintText(SprintElement):
         if self.thickness is not None:
             outStr.append('THICKNESS={}'.format(self.thickness))
         if self.rotation:
-            outStr.append('ROTATION={:0.0f}'.format(self.rotation)) #文本的旋转单位就是度，手册上是错的
+            outStr.append('ROTATION={:0.0f}'.format(self.rotation * 1000))
         if self.mirrorH is not None:
             outStr.append('MIRROR_HORZ={}'.format(self.booleanStr(self.mirrorH)))
         if self.mirrorV is not None:

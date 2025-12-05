@@ -26,6 +26,8 @@ class SprintComponent(SprintElement):
         self.valueLayer = LAYER_S1
         self.nameVisible = True
         self.valueVisible = True
+        self.nameRotation = 0
+        self.valueRotation = 0
         self.pickRotation = None #仅适用于贴片机的旋转，不是真实元件的旋转，单位为度
         self.elements = [] #各种绘图元素，都是SprintElement的子类
 
@@ -45,6 +47,13 @@ class SprintComponent(SprintElement):
             return LAYER_C1 if (self.nameLayer == LAYER_S1) else LAYER_C2
         else: #如果是单面插件焊盘，则使用焊盘所在层对面的板层做为元件面
             return LAYER_C2 if (padLayer == LAYER_S1) else LAYER_C1
+
+    #返回此元件的安装类型, 是SMD还是通孔, 返回"through_hole"/"smd"
+    def getMountingType(self):
+        for pad in self.getPads(): #有任何一个单面或双面插件焊盘就是插件元件
+            if (pad.via or (pad.padType == 'PAD')):
+                return 'through_hole'
+        return 'smd'
         
     def isValid(self):
         return (len(self.elements) > 0)
@@ -185,7 +194,11 @@ class SprintComponent(SprintElement):
         for elem in self.elements:
             elem.updateSelfBbox()
             self.updateBbox(elem)
-    
+
+    #返回此元件的几何中心 (x, y)
+    def centroid(self):
+        return (self.xMin + self.xMax) / 2, (self.yMin + self.yMax) / 2
+        
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):
         return [elem for elem in self.elements if elem.layerIdx == layerIdx]

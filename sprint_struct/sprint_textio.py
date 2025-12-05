@@ -16,8 +16,10 @@ from .sprint_group import SprintGroup
 from .sprint_component import SprintComponent
 
 class SprintTextIO(SprintElement):
-    def __init__(self):
+    def __init__(self, pcbWidth=0, pcbHeight=0):
         super().__init__(self)
+        self.pcbWidth = pcbWidth
+        self.pcbHeight = pcbHeight
         self.elements = [] #各种绘图元素，都是SprintElement的子类
         
     def isValid(self):
@@ -78,23 +80,53 @@ class SprintTextIO(SprintElement):
 
     #获取所有焊盘
     #padType: 'PAD'/'SMDPAD'/none
-    def getPads(self, padType: str=None):
-        if not padType:
-            return [elem for elem in self.baseDrawElements() if isinstance(elem, SprintPad)]
+    #layerIdx: 为空则仅返回导电焊盘, 输入参数可以是整数或一个列表
+    def getPads(self, padType: str=None, layerIdx=None):
+        if not layerIdx:
+            layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2)
+        elif isinstance(layerIdx, (list, tuple)):
+            layers = layerIdx
         else:
-            return [elem for elem in self.baseDrawElements() if (isinstance(elem, SprintPad) and (elem.padType == padType))]
+            layers = (layerIdx,)
+        if not padType:
+            return [elem for elem in self.baseDrawElements() 
+                if (isinstance(elem, SprintPad) and (elem.layerIdx in layers))]
+        else:
+            return [elem for elem in self.baseDrawElements() 
+                if (isinstance(elem, SprintPad) and (elem.layerIdx in layers) and (elem.padType == padType))]
 
-    #获取所有导线，参数为空则仅返回导电导线
-    def getTracks(self, layerIdx: int=None):
-        layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2) if layerIdx is None else (layerIdx,)
+    #获取所有导线，参数为空则仅返回导电导线, 输入参数可以是整数或一个列表
+    def getTracks(self, layerIdx=None):
+        if not layerIdx:
+            layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2)
+        elif isinstance(layerIdx, (list, tuple)):
+            layers = layerIdx
+        else:
+            layers = (layerIdx,)
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintTrack) and (elem.layerIdx in layers))]
 
-    #获取所有导电的多边形
-    def getConductivePolygons(self, layerIdx: int=None):
-        layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2) if layerIdx is None else (layerIdx,)
+    #获取所有多边形, 参数为空则仅返回导电多边形, 输入参数可以是整数或一个列表
+    def getPolygons(self, layerIdx=None):
+        if not layerIdx:
+            layers = (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2)
+        elif isinstance(layerIdx, (list, tuple)):
+            layers = layerIdx
+        else:
+            layers = (layerIdx,)
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintPolygon) and (elem.layerIdx in layers))]
+
+    #获取所有圆形或圆环, 参数为空则仅返回所有板层, 输入参数可以是整数或一个列表
+    def getCircles(self, layerIdx=None):
+        if not layerIdx:
+            layers = list(range(1, 8))
+        elif isinstance(layerIdx, (list, tuple)):
+            layers = layerIdx
+        else:
+            layers = (layerIdx,)
+        return [elem for elem in self.baseDrawElements() 
+            if (isinstance(elem, SprintCircle) and (elem.layerIdx in layers))]
             
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):

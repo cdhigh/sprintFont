@@ -13,7 +13,7 @@ class SprintTrack(SprintElement):
         super().__init__(layerIdx)
         self.width = width
         self.points = [] #元素为(x,y)元祖
-        self.clearance = None
+        self.clearance = 0
         self.cutout = None
         self.soldermask = None
         self.flatstart = None

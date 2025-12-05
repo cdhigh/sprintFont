@@ -11,42 +11,11 @@ from fontTools.misc import bezierTools
 from sprint_struct.sprint_textio import *
 from kicad_pcb.kicad_mod import KicadMod, FootPrint8NotSupported
 from kicad_pcb8.kicad_mod import KicadMod as KicadMod8
-from comm_utils import str_to_int
+from utils.comm_utils import str_to_int
+from .kicad_definitions import *
 
 #sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'mylib'))
 #TEST_FILE = os.path.join(os.path.dirname(__file__), 'ttt.kicad_mod')
-
-#kicad板层和Sprint-Layout板层的对应关系
-kicadLayerMap = {
-    "*.Cu":    LAYER_C1,
-    "F.Cu":    LAYER_C1,
-    "F.SilkS": LAYER_S1,
-    "B.Cu":    LAYER_C2,
-    "B.SilkS": LAYER_S2,
-    "F.Fab":   LAYER_U,
-    "B.Fab":   LAYER_U,
-    "F.CrtYd": LAYER_S1,
-    "B.CrtYd": LAYER_S2,
-    "F.Paste": LAYER_S1,
-    "B.Paste": LAYER_S2,
-    "F.Mask":  LAYER_S1,
-    "B.Mask":  LAYER_S2,
-    "Edge.Cuts": LAYER_U,
-    "Margin":  LAYER_U,
-    "In1.Cu": LAYER_I1,
-    "In2.Cu": LAYER_I2,
-}
-
-#kicad焊盘形状和Sprint-Layout的对应关系
-kicadPadShapeMap = {
-    'circle': PAD_FORM_ROUND,
-    'rect': PAD_FORM_SQUARE,
-    'oval': PAD_FORM_ROUND,
-    'trapezoid': PAD_FORM_SQUARE,
-    'roundrect': PAD_FORM_OCTAGON,
-    'custom': PAD_FORM_OCTAGON,
-}
-
 
 #输入一个Kicad的封装文件(*.kicad_mod)，返回Sprint-Layout定义的Text-IO或错误字符串
 #kicadFile: kicad_mod文件名

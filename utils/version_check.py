@@ -8,17 +8,8 @@ Author: cdhigh <https://github.com/cdhigh>
 2. 如果 checkUpdate() 返回一个字典，可以调用 openNewVersionDialog(self.top, currVersion, self.versionJson) 打开版本提示对话框
 3. 根据 openNewVersionDialog() 的返回值更新配置文件（如果是'skip'）
 """
-from comm_utils import str_to_int
-import json
+import os, sys, json
 from urllib import request
-from widget_right_click import rightClicker
-
-VERSION_JSON_URI = 'https://raw.githubusercontent.com/cdhigh/sprintFontRelease/main/version.json'
-
-#!/usr/bin/env python
-#-*- coding:utf-8 -*-
-
-import os, sys
 from tkinter import *
 from tkinter.font import Font
 from tkinter.ttk import *
@@ -27,6 +18,10 @@ from tkinter.messagebox import *
 #Usage:f=tkFileDialog.askopenfilename(initialdir='E:/Python')
 #import tkinter.filedialog as tkFileDialog
 #import tkinter.simpledialog as tkSimpleDialog  #askstring()
+from .comm_utils import str_to_int
+from .widget_right_click import rightClicker
+
+VERSION_JSON_URI = 'https://raw.githubusercontent.com/cdhigh/sprintFontRelease/main/version.json'
 
 #查询是否有新版本，如果有新版本，返回新版本信息
 def checkUpdate(currVersion: str, skipVersion: str):

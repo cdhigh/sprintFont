@@ -9,7 +9,7 @@ import os, sys
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.misc import bezierTools
 from .sprint_textio import *
-from comm_utils import *
+from utils.comm_utils import *
 
 SMOOTH_MAP = {
     0: [(i / 50) for i in range(1, 50)], #超精细，一个曲线分成50份

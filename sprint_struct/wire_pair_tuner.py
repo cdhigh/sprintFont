@@ -7,7 +7,7 @@ from tkinter import *
 from tkinter.ttk import *
 import tkinter as tk
 from tkinter.messagebox import *
-from comm_utils import *
+from utils.comm_utils import *
 import sprint_struct.sprint_textio as sprint_textio
 
 #点击按钮时的修饰键掩码

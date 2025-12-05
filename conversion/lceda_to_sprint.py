@@ -7,7 +7,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import json
 from urllib import request
-from comm_utils import *
+from utils.comm_utils import *
 from sprint_struct.sprint_textio import *
 
 #全球节点

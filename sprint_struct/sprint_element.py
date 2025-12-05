@@ -14,7 +14,7 @@ LAYER_I1 = 5
 LAYER_I2 = 6
 LAYER_U  = 7
 
-#对应索引的板层名字，主要用于DSN导出
+#对应索引的板层名字，主要用于Kicad/DSN导出
 sprintLayerMap = {
     LAYER_C1: 'F.Cu',
     LAYER_S1: 'F.SilkS',
@@ -22,7 +22,7 @@ sprintLayerMap = {
     LAYER_S2: 'B.SilkS',
     LAYER_I1: 'In1.Cu',
     LAYER_I2: 'In2.Cu',
-    LAYER_U: 'Edge.cuts',
+    LAYER_U: 'Edge.Cuts',
 }
 
 #DSN/SES里面的板层对应到Sprint-Layout的板层索引
@@ -33,7 +33,7 @@ sprintLayerMapSes = {
     'B.SilkS': LAYER_S2,
     'In1.Cu': LAYER_I1,
     'In2.Cu': LAYER_I2,
-    'Edge.cuts': LAYER_U,
+    'Edge.Cuts': LAYER_U,
 }
 
 class SprintElement:

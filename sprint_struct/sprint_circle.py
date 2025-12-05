@@ -6,7 +6,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import math
 from .sprint_element import *
-from comm_utils import svgArcToCenterParam
+from utils.comm_utils import svgArcToCenterParam
 
 #里面的长度单位都是mm
 class SprintCircle(SprintElement):
@@ -15,11 +15,11 @@ class SprintCircle(SprintElement):
         self.center = (0, 0)
         self.width = 0
         self.radius = 0
-        self.clearance = None
+        self.clearance = 0
         self.cutout = None  #是否为开孔区域
         self.soldermask = None
-        self.start = None  #起始角度，0为3点钟方向，逆时针计算，单位为角度
-        self.stop = None   #结束角度，0为3点钟方向，逆时针计算，单位为角度
+        self.start = 0  #起始角度，0为3点钟方向，逆时针计算，单位为角度
+        self.stop = 0   #结束角度，0为3点钟方向，逆时针计算，单位为角度
         self.fill = None
     
     def isValid(self):
@@ -127,3 +127,21 @@ class SprintCircle(SprintElement):
     def moveByOffset(self, offsetX: float, offsetY: float):
         self.center = (round(self.center[0] - offsetX, 4), round(self.center[1] - offsetY, 4))
         self.updateSelfBbox()
+
+    #返回一个三元组, 分别对应起点坐标,圆弧中心坐标,终点坐标
+    #要求start!=stop
+    def calcStartEndMidPoint(self):
+        cx, cy = self.center
+        sweepAngle = (self.stop - self.start) % 360
+        if sweepAngle == 0 and self.start != self.stop:
+            sweepAngle = 360
+            
+        midAngle = (self.start + (sweepAngle / 2.0)) % 360
+        
+        def getXy(angle):
+            angleRad = math.radians(angle)
+            x = cx + self.radius * math.cos(angleRad)
+            y = cy - self.radius * math.sin(angleRad)
+            return round(x, 2), round(y, 2)
+
+        return  getXy(self.start), getXy(midAngle), getXy(self.stop)

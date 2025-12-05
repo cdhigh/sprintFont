@@ -11,7 +11,7 @@ from fontTools.svgLib.path import SVGPath
 from fontTools.misc import bezierTools
 from sprint_struct.font_to_polygon import mergePolygons, SMOOTH_MAP
 from sprint_struct.sprint_textio import *
-from comm_utils import *
+from utils.comm_utils import *
 
 #SVG转换为spring-layout的多边形
 #svgFile: svg文件或SVG字符串

@@ -4,7 +4,7 @@
 多边形数据结构和算法
 Author: cdhigh <https://github.com/cdhigh>
 """
-from comm_utils import ComputePolygonArea
+from utils.comm_utils import ComputePolygonArea
 from .sprint_element import *
 
 #里面的长度单位都是mm
@@ -21,7 +21,7 @@ class SprintPolygon(SprintElement):
         self._segIdx = 0
         self.layerIdx = layerIdx
         self.width = width if width else 0 #线宽
-        self.clearance = None
+        self.clearance = 0
         self.cutout = None  #是否为禁止布线区
         self.soldermask = None  #是否为阻焊区
         self.soldermaskCutout = None #是否为单独的阻焊开窗

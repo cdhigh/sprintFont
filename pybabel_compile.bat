@@ -1,4 +1,3 @@
-D:
-cd "D:\Electronic\Soft\Sprint-Layout6.0\sprintFont"
+cd /d "%~dp0"
 pybabel compile -d i18n
 pause
