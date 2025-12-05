@@ -219,8 +219,18 @@ class KicadGenerator:
             drillDef = f'(drill {r2(pad.drill)})'
             if pad.form == PAD_FORM_SQUARE:
                 shape = "rect"
-            elif pad.form in (PAD_FORM_RECT_ROUND_H, PAD_FORM_RECT_ROUND_V):
+            elif pad.form == PAD_FORM_RECT_H:
+                shape = "rect"
+                sizeX = r2(sizeX * 2)
+            elif pad.form == PAD_FORM_RECT_V:
+                shape = "rect"
+                sizeY = r2(sizeY * 2)
+            elif pad.form in (PAD_FORM_RECT_ROUND_H, PAD_FORM_RECT_OCTAGON_H):
                 shape = "oval"
+                sizeX = r2(sizeX * 2)
+            elif pad.form in (PAD_FORM_RECT_ROUND_V, PAD_FORM_RECT_OCTAGON_V):
+                shape = "oval"
+                sizeY = r2(sizeY * 2)
             else:
                 shape = "circle"
         else: #贴片焊盘

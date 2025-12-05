@@ -202,7 +202,7 @@ class VersionDialog(VersionDialog_ui):
 def fetchVersionJson():
     versionJsonData = None
     try:
-        data = request.urlopen(VERSION_JSON_URI).read().decode('utf-8')
+        data = request.urlopen(VERSION_JSON_URI, timeout=5).read().decode('utf-8')
         versionJsonData = json.loads(data)
     except Exception as e:
         return None
