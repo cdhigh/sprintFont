@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-04 19:11-0300\n"
+"POT-Creation-Date: 2025-12-15 16:56-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language: ru\n"
@@ -18,178 +18,188 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: sprintFont.py:154
+#: sprintFont.py:176
 msgid "Please deselect all items before launching the plugin"
 msgstr "Пожалуйста, отмените выбор всех элементов перед запуском плагина"
 
-#: sprintFont.py:270
+#: sprintFont.py:268
 msgid "Import all (remove routed ratsnests)"
 msgstr "Импортировать все (удалить уже проложенные соединения)"
 
-#: sprintFont.py:271
+#: sprintFont.py:269
 msgid "Import all (remove all ratsnests)"
 msgstr "Импортировать все (удалить все соединения)"
 
-#: sprintFont.py:272
+#: sprintFont.py:270
 msgid "Import all (keep all ratsnests)"
 msgstr "Импортировать все (сохранить все соединения)"
 
-#: sprintFont.py:273
+#: sprintFont.py:271
 msgid "Import auto-routed tracks only"
 msgstr "Импортировать только автоматически проложенные дорожки"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "C1 (Front copper)"
 msgstr "C1 (Передняя медь)"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "S1 (Front silkscreen)"
 msgstr "S1 (Передний шелк)"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "C2 (Back copper)"
 msgstr "C2 (Задняя медь)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "S2 (Back silkscreen)"
 msgstr "S2 (Задний шелк)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "I1 (Inner copper1)"
 msgstr "I1 (Внутренняя медь 1)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "I2 (Inner copper2)"
 msgstr "I2 (Внутренняя медь 2)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "U (Edge.cuts)"
 msgstr "U (Обрезка краев)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Super fine (super slow)"
 msgstr "Супер точный (супер медленный)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Fine (slow)"
 msgstr "Тонкий (медленный)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Normal"
 msgstr "Нормальный"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Rough"
 msgstr "Грубый"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Super Rough"
 msgstr "Очень грубый"
 
-#: sprintFont.py:352
+#: sprintFont.py:353
 msgid "All layers"
 msgstr "Все слои"
 
-#: sprintFont.py:358
+#: sprintFont.py:359
 msgid "SVG"
 msgstr "SVG"
 
-#: sprintFont.py:358
+#: sprintFont.py:359
 msgid "Qrcode"
 msgstr "QR-код"
 
-#: sprintFont.py:363
+#: sprintFont.py:364
 msgid "Track"
 msgstr "Дорожка"
 
-#: sprintFont.py:363
+#: sprintFont.py:364
 msgid "Polygon"
 msgstr "Многоугольник"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "PTH pad"
 msgstr "PTH pad"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "SMD pad"
 msgstr "SMD pad"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "PTH/SMD"
 msgstr "PTH/SMD"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Tangent"
 msgstr "Тангенциальная дуга"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Three-point"
 msgstr "Трехточечная дуга"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Bezier"
 msgstr "Кривая Безье"
 
-#: sprintFont.py:401
+#: sprintFont.py:407
 msgid "Single-sided"
 msgstr "Односторонняя"
 
-#: sprintFont.py:401
+#: sprintFont.py:407
 msgid "Double-sided"
 msgstr "Двусторонняя"
 
-#: sprintFont.py:656
+#: sprintFont.py:430
 msgid "Kicad footprint"
 msgstr "Шаблон Kicad"
 
-#: sprintFont.py:657
+#: sprintFont.py:431
 msgid "easyEDA footprint"
 msgstr "Шаблон easyEDA"
 
-#: sprintFont.py:657 sprintFont.py:664 sprintFont.py:670 sprintFont.py:676
-#: sprintFont.py:685 sprintFont.py:911
+#: sprintFont.py:431 sprintFont.py:448 sprintFont.py:461 sprintFont.py:467
+#: sprintFont.py:476 sprintFont.py:711
 msgid "All files"
 msgstr "Все файлы"
 
-#: sprintFont.py:663 sprintFont.py:664
-msgid "Kicad and OpenSCAD files"
-msgstr "Файлы Kicad и OpenSCAD"
+#: sprintFont.py:439 sprintFont.py:445
+msgid "KiCad PCB files"
+msgstr "Файлы печатных плат KiCad"
 
-#: sprintFont.py:670
+#: sprintFont.py:440 sprintFont.py:446
+msgid "OpenSCAD files"
+msgstr "Файлы OpenSCAD"
+
+#: sprintFont.py:441 sprintFont.py:447 sprintFont.py:461
 msgid "SVG files"
-msgstr "Файлы SVG векторных изображений"
+msgstr "Файлы SVG"
 
-#: sprintFont.py:676
+#: sprintFont.py:444
+msgid "All supported files"
+msgstr "Все поддерживаемые файлы"
+
+#: sprintFont.py:467
 msgid "Specctra DSN files"
 msgstr "Файлы DSN для автоматической разводки"
 
-#: sprintFont.py:685
+#: sprintFont.py:476
 msgid "Specctra session files"
 msgstr "Файлы сеанса Specctra"
 
-#: sprintFont.py:749 sprintFont.py:754 sprintFont.py:756 sprintFont.py:784
-#: sprintFont.py:787 sprintFont.py:789 sprintFont.py:803 sprintFont.py:806
-#: sprintFont.py:821 sprintFont.py:823 sprintFont.py:853 sprintFont.py:862
-#: sprintFont.py:869 sprintFont.py:873 sprintFont.py:886 sprintFont.py:893
-#: sprintFont.py:919 sprintFont.py:1324 sprintFont.py:1336 sprintFont.py:1348
-#: sprintFont.py:1357 sprintFont.py:1359 sprintFont.py:1396 sprintFont.py:1407
-#: sprintFont.py:1415 sprintFont.py:1434 sprintFont.py:1441 sprintFont.py:1504
-#: sprintFont.py:1514 sprintFont.py:1519 sprintFont.py:1530 sprintFont.py:1554
-#: sprintFont.py:1562 sprintFont.py:1572 sprintFont.py:1576 sprintFont.py:1583
-#: sprintFont.py:1587 sprintFont.py:1624 sprintFont.py:1657 sprintFont.py:1672
-#: sprintFont.py:1687 sprint_struct/wire_pair_tuner.py:92
+#: app/autorouter_handler.py:26 app/autorouter_handler.py:34
+#: app/autorouter_handler.py:43 app/autorouter_handler.py:45
+#: app/autorouter_handler.py:58 app/autorouter_handler.py:65
+#: app/pcb_enhancements.py:46 app/pcb_enhancements.py:49
+#: app/pcb_enhancements.py:61 app/pcb_enhancements.py:79
+#: app/pcb_enhancements.py:82 app/pcb_enhancements.py:106 sprintFont.py:531
+#: sprintFont.py:550 sprintFont.py:552 sprintFont.py:583 sprintFont.py:586
+#: sprintFont.py:588 sprintFont.py:605 sprintFont.py:608 sprintFont.py:625
+#: sprintFont.py:627 sprintFont.py:647 sprintFont.py:656 sprintFont.py:669
+#: sprintFont.py:673 sprintFont.py:686 sprintFont.py:693 sprintFont.py:719
+#: sprintFont.py:798 sprintFont.py:855 sprintFont.py:863 sprintFont.py:929
+#: sprintFont.py:933 sprintFont.py:940 sprintFont.py:944 sprintFont.py:983
+#: sprintFont.py:994 sprintFont.py:1016 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "Информация"
 
-#: sprintFont.py:749
+#: sprintFont.py:531
 msgid "Text is empty"
 msgstr "Текст пуст"
 
-#: sprintFont.py:754
+#: sprintFont.py:550
 msgid "Failed to generate text"
 msgstr "Не удалось создать текст"
 
-#: sprintFont.py:787
+#: sprintFont.py:586
 msgid ""
 "Failed to parse content\n"
 "Maybe Id error or Internet disconnected?"
@@ -197,32 +207,32 @@ msgstr ""
 "Ошибка анализа содержимого:\n"
 "Возможно, ошибка ID или нет подключения к Интернету?"
 
-#: sprintFont.py:789
+#: sprintFont.py:588
 msgid "Failed to parse file content"
 msgstr "Ошибка анализа содержимого файла"
 
-#: sprintFont.py:803 sprintFont.py:853 sprintFont.py:886
+#: sprintFont.py:605 sprintFont.py:647 sprintFont.py:686
 msgid "Input is empty"
 msgstr "Ввод пуст"
 
-#: sprintFont.py:806
+#: sprintFont.py:608
 msgid "Cannot detect export type. Please add a file extension"
 msgstr "Не удалось определить тип экспорта. Пожалуйста, добавьте расширение файла"
 
-#: sprintFont.py:823
+#: sprintFont.py:627
 msgid "Export file successfully"
 msgstr "Файл успешно экспортирован"
 
-#: sprintFont.py:862 sprintFont.py:1222 sprintFont.py:1336 sprintFont.py:1396
-#: sprintFont.py:1434
+#: app/autorouter_handler.py:26 app/autorouter_handler.py:58
+#: app/footprint_svg_handler.py:51 sprintFont.py:656 sprintFont.py:855
 msgid "The file format is not supported"
 msgstr "Этот формат файла не поддерживается"
 
-#: sprintFont.py:873
+#: sprintFont.py:673
 msgid "Convert svg image failed"
 msgstr "Не удалось преобразовать изображение SVG"
 
-#: sprintFont.py:893
+#: sprintFont.py:693
 #, python-brace-format
 msgid ""
 "File does not exist\n"
@@ -231,15 +241,15 @@ msgstr ""
 "Файл не существует\n"
 "{}"
 
-#: sprintFont.py:911
+#: sprintFont.py:711
 msgid "Save to a text file"
 msgstr "Сохранить в текстовый файл"
 
-#: sprintFont.py:911
+#: sprintFont.py:711
 msgid "Text files"
 msgstr "Текстовые файлы"
 
-#: sprintFont.py:919
+#: sprintFont.py:719
 #, python-brace-format
 msgid ""
 "Failed to save file.\n"
@@ -248,39 +258,39 @@ msgstr ""
 "Не удалось сохранить файл.\n"
 "{}"
 
-#: sprintFont.py:1273
+#: sprintFont.py:747
 msgid "  New version found, double-click to show details"
 msgstr "  Найдена новая версия, дважды щелкните, чтобы показать детали"
 
-#: sprintFont.py:1281
+#: sprintFont.py:755
 msgid "Item"
 msgstr "Элемент"
 
-#: sprintFont.py:1282
+#: sprintFont.py:756
 msgid "Value"
 msgstr "Значение"
 
-#: sprintFont.py:1284 sprintFont.py:1306
+#: sprintFont.py:758 sprintFont.py:780
 msgid "Track width"
 msgstr "Ширина трассы"
 
-#: sprintFont.py:1285 sprintFont.py:1308
+#: sprintFont.py:759 sprintFont.py:782
 msgid "Via diameter"
 msgstr "Диаметр vias"
 
-#: sprintFont.py:1286 sprintFont.py:1310
+#: sprintFont.py:760 sprintFont.py:784
 msgid "Via drill"
 msgstr "Диаметр сверления vias"
 
-#: sprintFont.py:1287 sprintFont.py:1312
+#: sprintFont.py:761 sprintFont.py:786
 msgid "Clearance"
 msgstr "Минимальный зазор между трассами"
 
-#: sprintFont.py:1288 sprintFont.py:1314
+#: sprintFont.py:762 sprintFont.py:788
 msgid "Smd-Smd Clearance"
 msgstr "Минимальный зазор между SMD-компонентами"
 
-#: sprintFont.py:1302
+#: sprintFont.py:776
 #, python-brace-format
 msgid ""
 "\n"
@@ -291,96 +301,44 @@ msgstr ""
 "Пожалуйста, введите новое значение для параметра '{}'\n"
 "Единица измерения - мм\n"
 
-#: sprintFont.py:1304
+#: sprintFont.py:778
 msgid "Edit parameter"
 msgstr "Изменить параметр"
 
-#: sprintFont.py:1324
+#: sprintFont.py:798
 msgid "DSN file is empty"
 msgstr "Файл DSN пуст"
 
-#: sprintFont.py:1348
-msgid "Unknown error"
-msgstr "Неизвестная ошибка"
-
-#: sprintFont.py:1357
-msgid "Export Specctra DSN file successfully"
-msgstr "Успешный экспорт файла DSN для Specctra"
-
-#: sprintFont.py:1407
-msgid ""
-"This operation will completely replace the existing components and wiring"
-" on the board.\n"
-"Do you want to continue?"
-msgstr ""
-"Эта операция полностью заменит существующие компоненты и разводку на "
-"плате.\n"
-"Вы хотите продолжить?"
-
-#: sprintFont.py:1465
+#: sprintFont.py:871
 msgid "whole board"
 msgstr "вся плата"
 
-#: sprintFont.py:1465
+#: sprintFont.py:871
 msgid "partial"
 msgstr "часть"
 
-#: sprintFont.py:1466
+#: sprintFont.py:872
 #, python-brace-format
 msgid "  In [{}] : {}"
 msgstr "  В [{}] : {}"
 
-#: sprintFont.py:1468
+#: sprintFont.py:874
 msgid "  Standalone mode"
 msgstr "  Режим автономной работы"
 
-#: sprintFont.py:1483
+#: sprintFont.py:886
 msgid "  Releases: "
 msgstr "  Выпуски: "
 
-#: sprintFont.py:1485
+#: sprintFont.py:888
 msgid "  Report bugs: "
 msgstr "  Сообщить об ошибках: "
 
-#: sprintFont.py:1504
-msgid "Wrong parameter value"
-msgstr "Неверное значение параметра"
-
-#: sprintFont.py:1514
-#, python-brace-format
-msgid "Successfully added [{}] teardrop pads"
-msgstr "Успешно добавлено [{}] падов в виде капли"
-
-#: sprintFont.py:1519
-msgid "No teardrop pads are generated"
-msgstr "Не сгенерированы падов в виде капли"
-
-#: sprintFont.py:1530
-msgid ""
-"Dangerous operation:\n"
-"This operation may delete some small polygons by mistake or not delete "
-"the desired polygons\n"
-"Do you want to continue?"
-msgstr ""
-"Опасная операция:\n"
-"Эта операция может ошибочно удалить некоторые маленькие многоугольники "
-"или не удалить нужные многоугольники.\n"
-"Вы хотите продолжить?"
-
-#: sprintFont.py:1554
-#, python-brace-format
-msgid "Successfully removed [{}] teardrop pads"
-msgstr "Успешно удалено [{}] падов в виде капли"
-
-#: sprintFont.py:1562
-msgid "No teardrop pads found"
-msgstr "Не найдено падов в виде капли"
-
-#: sprintFont.py:1576
+#: sprintFont.py:933
 msgid "No components on the board"
 msgstr "На плате нет компонентов"
 
-#: sprintFont.py:1583
+#: sprintFont.py:940
 #, python-brace-format
 msgid ""
 "Error parsing input file:\n"
@@ -389,21 +347,57 @@ msgstr ""
 "Ошибка при анализе входного файла:\n"
 "{}"
 
-#: sprintFont.py:1587
+#: sprintFont.py:944
 msgid "Failed to parse input file"
 msgstr "Не удалось проанализировать входной файл"
 
-#: sprintFont.py:1624
-msgid "No suitable track found"
-msgstr "Не найдена подходящая трасса"
-
-#: sprintFont.py:1657 sprintFont.py:1672
+#: sprintFont.py:983 sprintFont.py:994
 msgid "Please click the Adjust button first to match the trace length"
 msgstr "Сначала нажмите кнопку «Настроить», чтобы сопоставить длину трассы"
 
-#: sprintFont.py:1687
+#: sprintFont.py:1016
 msgid "At least two traces must be selected"
 msgstr "Должно быть выбрано не менее двух трасс"
+
+#: app/autorouter_handler.py:34
+msgid "Unknown error"
+msgstr "Неизвестная ошибка"
+
+#: app/autorouter_handler.py:43
+msgid "Export Specctra DSN file successfully"
+msgstr "Успешный экспорт файла DSN для Specctra"
+
+#: app/pcb_enhancements.py:46
+#, python-brace-format
+msgid "Successfully added [{}] teardrop pads"
+msgstr "Успешно добавлено [{}] падов в виде капли"
+
+#: app/pcb_enhancements.py:49
+msgid "No teardrop pads are generated"
+msgstr "Не сгенерированы падов в виде капли"
+
+#: app/pcb_enhancements.py:61
+msgid ""
+"Dangerous operation:\\nThis operation may delete some small polygons by "
+"mistake or not delete the desired polygons\\nDo you want to continue?"
+msgstr ""
+"Опасная операция:\n"
+"Эта операция может по ошибке удалить некоторые мелкие полигоны или не "
+"удалить нужные полигоны\n"
+"Вы хотите продолжить?"
+
+#: app/pcb_enhancements.py:79
+#, python-brace-format
+msgid "Successfully removed [{}] teardrop pads"
+msgstr "Успешно удалено [{}] падов в виде капли"
+
+#: app/pcb_enhancements.py:82
+msgid "No teardrop pads found"
+msgstr "Не найдено падов в виде капли"
+
+#: app/pcb_enhancements.py:106
+msgid "No suitable track found"
+msgstr "Не найдена подходящая трасса"
 
 #: conversion/kicad_to_sprint.py:200
 msgid "The file contains no components."
@@ -659,12 +653,17 @@ msgstr "Вывод"
 msgid ""
 "Currently supports:\n"
 "1. Kicad PCB file : *.kicad_pcb\n"
-"2. OpenSCAD file : *.scad"
-msgstr "В настоящее время поддерживается:\n1. Файл Kicad PCB: *.kicad_pcb\n2. Файл OpenSCAD: *.scad"
+"2. OpenSCAD file : *.scad\n"
+"3. SVG file : *.svg"
+msgstr ""
+"В настоящее время поддерживается:\n"
+"1. Файл Kicad PCB: *.kicad_pcb\n"
+"2. Файл OpenSCAD: *.scad\n"
+"3. Файл SVG: *.svg"
 
 #: ui/sprint_font_ui.py:840
-msgid "Only for OpenSCAD"
-msgstr "Только для OpenSCAD"
+msgid "Only for OpenSCAD and SVG"
+msgstr "Только для OpenSCAD и SVG"
 
 #: ui/sprint_font_ui.py:841
 msgid "   Export  "

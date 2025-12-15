@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-04 19:11-0300\n"
+"POT-Creation-Date: 2025-12-15 16:56-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language: tr\n"
@@ -18,178 +18,188 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: sprintFont.py:154
+#: sprintFont.py:176
 msgid "Please deselect all items before launching the plugin"
 msgstr "Lütfen eklentiyi başlatmadan önce tüm öğeleri seçiminizden çıkarın"
 
-#: sprintFont.py:270
+#: sprintFont.py:268
 msgid "Import all (remove routed ratsnests)"
 msgstr "Tümünü içe aktar (yönlendirilmiş ratsnest'leri kaldır)"
 
-#: sprintFont.py:271
+#: sprintFont.py:269
 msgid "Import all (remove all ratsnests)"
 msgstr "Tümünü içe aktar (tüm ratsnest'leri kaldır)"
 
-#: sprintFont.py:272
+#: sprintFont.py:270
 msgid "Import all (keep all ratsnests)"
 msgstr "Tümünü içe aktar (tüm ratsnest'leri koru)"
 
-#: sprintFont.py:273
+#: sprintFont.py:271
 msgid "Import auto-routed tracks only"
 msgstr "Yalnızca otomatik yönlendirilmiş hatları içe aktar"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "C1 (Front copper)"
 msgstr "C1 (Ön bakır)"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "S1 (Front silkscreen)"
 msgstr "S1 (Ön baskı katmanı)"
 
-#: sprintFont.py:308 sprintFont.py:352
+#: sprintFont.py:311 sprintFont.py:353
 msgid "C2 (Back copper)"
 msgstr "C2 (Arka bakır)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "S2 (Back silkscreen)"
 msgstr "S2 (Arka baskı katmanı)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "I1 (Inner copper1)"
 msgstr "I1 (İç bakır1)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "I2 (Inner copper2)"
 msgstr "I2 (İç bakır2)"
 
-#: sprintFont.py:309 sprintFont.py:353
+#: sprintFont.py:312 sprintFont.py:354
 msgid "U (Edge.cuts)"
 msgstr "U (Kenar kesimleri)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Super fine (super slow)"
 msgstr "Süper ince (süper yavaş)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Fine (slow)"
 msgstr "İnce (yavaş)"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Normal"
 msgstr "Normal"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Rough"
 msgstr "Hafif pürüzlü"
 
-#: sprintFont.py:331
+#: sprintFont.py:332
 msgid "Super Rough"
 msgstr "Oldukça pürüzlü"
 
-#: sprintFont.py:352
+#: sprintFont.py:353
 msgid "All layers"
 msgstr "Tüm katmanlar"
 
-#: sprintFont.py:358
+#: sprintFont.py:359
 msgid "SVG"
 msgstr "SVG"
 
-#: sprintFont.py:358
+#: sprintFont.py:359
 msgid "Qrcode"
 msgstr "Qrcode"
 
-#: sprintFont.py:363
+#: sprintFont.py:364
 msgid "Track"
 msgstr "Hat"
 
-#: sprintFont.py:363
+#: sprintFont.py:364
 msgid "Polygon"
 msgstr "Poligon"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "PTH pad"
 msgstr "PTH pad"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "SMD pad"
 msgstr "SMD pad"
 
-#: sprintFont.py:382
+#: sprintFont.py:388
 msgid "PTH/SMD"
 msgstr "PTH/SMD"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Tangent"
 msgstr "Tanjant Yayı"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Three-point"
 msgstr "Üç Nokta Yay"
 
-#: sprintFont.py:387
+#: sprintFont.py:393
 msgid "Bezier"
 msgstr "Bezier Eğrisi"
 
-#: sprintFont.py:401
+#: sprintFont.py:407
 msgid "Single-sided"
 msgstr "Tek taraflı"
 
-#: sprintFont.py:401
+#: sprintFont.py:407
 msgid "Double-sided"
 msgstr "Çift taraflı"
 
-#: sprintFont.py:656
+#: sprintFont.py:430
 msgid "Kicad footprint"
 msgstr "Kicad Yüzey Yapısı"
 
-#: sprintFont.py:657
+#: sprintFont.py:431
 msgid "easyEDA footprint"
 msgstr "EasyEDA Yüzey Yapısı"
 
-#: sprintFont.py:657 sprintFont.py:664 sprintFont.py:670 sprintFont.py:676
-#: sprintFont.py:685 sprintFont.py:911
+#: sprintFont.py:431 sprintFont.py:448 sprintFont.py:461 sprintFont.py:467
+#: sprintFont.py:476 sprintFont.py:711
 msgid "All files"
 msgstr "Tüm Dosyalar"
 
-#: sprintFont.py:663 sprintFont.py:664
-msgid "Kicad and OpenSCAD files"
-msgstr "Kicad ve OpenSCAD dosyaları"
+#: sprintFont.py:439 sprintFont.py:445
+msgid "KiCad PCB files"
+msgstr "KiCad PCB dosyaları"
 
-#: sprintFont.py:670
+#: sprintFont.py:440 sprintFont.py:446
+msgid "OpenSCAD files"
+msgstr "OpenSCAD dosyaları"
+
+#: sprintFont.py:441 sprintFont.py:447 sprintFont.py:461
 msgid "SVG files"
-msgstr "SVG Vektör Görüntü Dosyaları"
+msgstr "SVG dosyaları"
 
-#: sprintFont.py:676
+#: sprintFont.py:444
+msgid "All supported files"
+msgstr "Tüm desteklenen dosyalar"
+
+#: sprintFont.py:467
 msgid "Specctra DSN files"
 msgstr "Specctra DSN Dosyaları"
 
-#: sprintFont.py:685
+#: sprintFont.py:476
 msgid "Specctra session files"
 msgstr "Specctra Oturum Dosyaları"
 
-#: sprintFont.py:749 sprintFont.py:754 sprintFont.py:756 sprintFont.py:784
-#: sprintFont.py:787 sprintFont.py:789 sprintFont.py:803 sprintFont.py:806
-#: sprintFont.py:821 sprintFont.py:823 sprintFont.py:853 sprintFont.py:862
-#: sprintFont.py:869 sprintFont.py:873 sprintFont.py:886 sprintFont.py:893
-#: sprintFont.py:919 sprintFont.py:1324 sprintFont.py:1336 sprintFont.py:1348
-#: sprintFont.py:1357 sprintFont.py:1359 sprintFont.py:1396 sprintFont.py:1407
-#: sprintFont.py:1415 sprintFont.py:1434 sprintFont.py:1441 sprintFont.py:1504
-#: sprintFont.py:1514 sprintFont.py:1519 sprintFont.py:1530 sprintFont.py:1554
-#: sprintFont.py:1562 sprintFont.py:1572 sprintFont.py:1576 sprintFont.py:1583
-#: sprintFont.py:1587 sprintFont.py:1624 sprintFont.py:1657 sprintFont.py:1672
-#: sprintFont.py:1687 sprint_struct/wire_pair_tuner.py:92
+#: app/autorouter_handler.py:26 app/autorouter_handler.py:34
+#: app/autorouter_handler.py:43 app/autorouter_handler.py:45
+#: app/autorouter_handler.py:58 app/autorouter_handler.py:65
+#: app/pcb_enhancements.py:46 app/pcb_enhancements.py:49
+#: app/pcb_enhancements.py:61 app/pcb_enhancements.py:79
+#: app/pcb_enhancements.py:82 app/pcb_enhancements.py:106 sprintFont.py:531
+#: sprintFont.py:550 sprintFont.py:552 sprintFont.py:583 sprintFont.py:586
+#: sprintFont.py:588 sprintFont.py:605 sprintFont.py:608 sprintFont.py:625
+#: sprintFont.py:627 sprintFont.py:647 sprintFont.py:656 sprintFont.py:669
+#: sprintFont.py:673 sprintFont.py:686 sprintFont.py:693 sprintFont.py:719
+#: sprintFont.py:798 sprintFont.py:855 sprintFont.py:863 sprintFont.py:929
+#: sprintFont.py:933 sprintFont.py:940 sprintFont.py:944 sprintFont.py:983
+#: sprintFont.py:994 sprintFont.py:1016 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "Bilgi"
 
-#: sprintFont.py:749
+#: sprintFont.py:531
 msgid "Text is empty"
 msgstr "Metin Boş"
 
-#: sprintFont.py:754
+#: sprintFont.py:550
 msgid "Failed to generate text"
 msgstr "Metin Üretilemedi"
 
-#: sprintFont.py:787
+#: sprintFont.py:586
 msgid ""
 "Failed to parse content\n"
 "Maybe Id error or Internet disconnected?"
@@ -197,32 +207,32 @@ msgstr ""
 "İçerik Ayrıştırma Hatası:\n"
 "Belki ID hatası veya internet bağlantısı yok?"
 
-#: sprintFont.py:789
+#: sprintFont.py:588
 msgid "Failed to parse file content"
 msgstr "Dosya İçeriği Ayrıştırılamadı"
 
-#: sprintFont.py:803 sprintFont.py:853 sprintFont.py:886
+#: sprintFont.py:605 sprintFont.py:647 sprintFont.py:686
 msgid "Input is empty"
 msgstr "Girdi Boş"
 
-#: sprintFont.py:806
+#: sprintFont.py:608
 msgid "Cannot detect export type. Please add a file extension"
 msgstr "Dışa aktarma türü belirlenemedi. Lütfen bir dosya uzantısı ekleyin"
 
-#: sprintFont.py:823
+#: sprintFont.py:627
 msgid "Export file successfully"
 msgstr "Dosya başarıyla dışa aktarıldı"
 
-#: sprintFont.py:862 sprintFont.py:1222 sprintFont.py:1336 sprintFont.py:1396
-#: sprintFont.py:1434
+#: app/autorouter_handler.py:26 app/autorouter_handler.py:58
+#: app/footprint_svg_handler.py:51 sprintFont.py:656 sprintFont.py:855
 msgid "The file format is not supported"
 msgstr "Dosya Formatı Desteklenmiyor"
 
-#: sprintFont.py:873
+#: sprintFont.py:673
 msgid "Convert svg image failed"
 msgstr "SVG Görüntü Dönüştürme Başarısız"
 
-#: sprintFont.py:893
+#: sprintFont.py:693
 #, python-brace-format
 msgid ""
 "File does not exist\n"
@@ -231,15 +241,15 @@ msgstr ""
 "Dosya Bulunamıyor\n"
 "{}"
 
-#: sprintFont.py:911
+#: sprintFont.py:711
 msgid "Save to a text file"
 msgstr "Metin Dosyasına Kaydet"
 
-#: sprintFont.py:911
+#: sprintFont.py:711
 msgid "Text files"
 msgstr "Metin Dosyaları"
 
-#: sprintFont.py:919
+#: sprintFont.py:719
 #, python-brace-format
 msgid ""
 "Failed to save file.\n"
@@ -248,39 +258,39 @@ msgstr ""
 "Dosya Kaydedilemedi.\n"
 "{}"
 
-#: sprintFont.py:1273
+#: sprintFont.py:747
 msgid "  New version found, double-click to show details"
 msgstr "  Yeni sürüm bulundu, detayları göstermek için çift tıklayın"
 
-#: sprintFont.py:1281
+#: sprintFont.py:755
 msgid "Item"
 msgstr "Öğe"
 
-#: sprintFont.py:1282
+#: sprintFont.py:756
 msgid "Value"
 msgstr "Değer"
 
-#: sprintFont.py:1284 sprintFont.py:1306
+#: sprintFont.py:758 sprintFont.py:780
 msgid "Track width"
 msgstr "Yol Genişliği"
 
-#: sprintFont.py:1285 sprintFont.py:1308
+#: sprintFont.py:759 sprintFont.py:782
 msgid "Via diameter"
 msgstr "Via Çapı"
 
-#: sprintFont.py:1286 sprintFont.py:1310
+#: sprintFont.py:760 sprintFont.py:784
 msgid "Via drill"
 msgstr "Via Delik Çapı"
 
-#: sprintFont.py:1287 sprintFont.py:1312
+#: sprintFont.py:761 sprintFont.py:786
 msgid "Clearance"
 msgstr "Temizleme"
 
-#: sprintFont.py:1288 sprintFont.py:1314
+#: sprintFont.py:762 sprintFont.py:788
 msgid "Smd-Smd Clearance"
 msgstr "SMD-SMD Temizleme"
 
-#: sprintFont.py:1302
+#: sprintFont.py:776
 #, python-brace-format
 msgid ""
 "\n"
@@ -291,96 +301,44 @@ msgstr ""
 "Lütfen '{}' parametresi için yeni bir değer girin\n"
 "Birim mm'dir\n"
 
-#: sprintFont.py:1304
+#: sprintFont.py:778
 msgid "Edit parameter"
 msgstr "Parametreyi Düzenle"
 
-#: sprintFont.py:1324
+#: sprintFont.py:798
 msgid "DSN file is empty"
 msgstr "DSN Dosyası Boş"
 
-#: sprintFont.py:1348
-msgid "Unknown error"
-msgstr "Bilinmeyen Hata"
-
-#: sprintFont.py:1357
-msgid "Export Specctra DSN file successfully"
-msgstr "Specctra DSN Dosyası Başarıyla Dışa Aktarıldı"
-
-#: sprintFont.py:1407
-msgid ""
-"This operation will completely replace the existing components and wiring"
-" on the board.\n"
-"Do you want to continue?"
-msgstr ""
-"Bu işlem, karttaki mevcut bileşenleri ve bağlantıları tamamen "
-"değiştirecektir.\n"
-"Devam etmek istiyor musunuz?"
-
-#: sprintFont.py:1465
+#: sprintFont.py:871
 msgid "whole board"
 msgstr "Tüm Kart"
 
-#: sprintFont.py:1465
+#: sprintFont.py:871
 msgid "partial"
 msgstr "Kısmi"
 
-#: sprintFont.py:1466
+#: sprintFont.py:872
 #, python-brace-format
 msgid "  In [{}] : {}"
 msgstr "  [{}] içinde : {}"
 
-#: sprintFont.py:1468
+#: sprintFont.py:874
 msgid "  Standalone mode"
 msgstr "  Bağımsız Mod"
 
-#: sprintFont.py:1483
+#: sprintFont.py:886
 msgid "  Releases: "
 msgstr "  Sürümler: "
 
-#: sprintFont.py:1485
+#: sprintFont.py:888
 msgid "  Report bugs: "
 msgstr "  Hata Raporları: "
 
-#: sprintFont.py:1504
-msgid "Wrong parameter value"
-msgstr "Yanlış Parametre Değeri"
-
-#: sprintFont.py:1514
-#, python-brace-format
-msgid "Successfully added [{}] teardrop pads"
-msgstr "Başarıyla [{}] Damla Pad Eklendi"
-
-#: sprintFont.py:1519
-msgid "No teardrop pads are generated"
-msgstr "Hiç Damla Pad Oluşturulmadı"
-
-#: sprintFont.py:1530
-msgid ""
-"Dangerous operation:\n"
-"This operation may delete some small polygons by mistake or not delete "
-"the desired polygons\n"
-"Do you want to continue?"
-msgstr ""
-"Tehlikeli İşlem:\n"
-"Bu işlem, bazı küçük çokgenleri yanlışlıkla silebilir veya istenilen "
-"çokgenleri silmeyebilir.\n"
-"Devam etmek istiyor musunuz?"
-
-#: sprintFont.py:1554
-#, python-brace-format
-msgid "Successfully removed [{}] teardrop pads"
-msgstr "Başarıyla [{}] Damla Pad Silindi"
-
-#: sprintFont.py:1562
-msgid "No teardrop pads found"
-msgstr "Hiç Damla Pad Bulunamadı"
-
-#: sprintFont.py:1576
+#: sprintFont.py:933
 msgid "No components on the board"
 msgstr "Kartta Bileşen Yok"
 
-#: sprintFont.py:1583
+#: sprintFont.py:940
 #, python-brace-format
 msgid ""
 "Error parsing input file:\n"
@@ -389,21 +347,57 @@ msgstr ""
 "Girdi Dosyasını Ayrıştırma Hatası:\n"
 "{}"
 
-#: sprintFont.py:1587
+#: sprintFont.py:944
 msgid "Failed to parse input file"
 msgstr "Girdi Dosyası Ayrıştırılamadı"
 
-#: sprintFont.py:1624
-msgid "No suitable track found"
-msgstr "Uygun Yol Bulunamadı"
-
-#: sprintFont.py:1657 sprintFont.py:1672
+#: sprintFont.py:983 sprintFont.py:994
 msgid "Please click the Adjust button first to match the trace length"
 msgstr "Lütfen önce İz uzunluğunu eşleştirmek için Ayarla düğmesine tıklayın"
 
-#: sprintFont.py:1687
+#: sprintFont.py:1016
 msgid "At least two traces must be selected"
 msgstr "En az iki iletken seçilmelidir"
+
+#: app/autorouter_handler.py:34
+msgid "Unknown error"
+msgstr "Bilinmeyen Hata"
+
+#: app/autorouter_handler.py:43
+msgid "Export Specctra DSN file successfully"
+msgstr "Specctra DSN Dosyası Başarıyla Dışa Aktarıldı"
+
+#: app/pcb_enhancements.py:46
+#, python-brace-format
+msgid "Successfully added [{}] teardrop pads"
+msgstr "Başarıyla [{}] Damla Pad Eklendi"
+
+#: app/pcb_enhancements.py:49
+msgid "No teardrop pads are generated"
+msgstr "Hiç Damla Pad Oluşturulmadı"
+
+#: app/pcb_enhancements.py:61
+msgid ""
+"Dangerous operation:\\nThis operation may delete some small polygons by "
+"mistake or not delete the desired polygons\\nDo you want to continue?"
+msgstr ""
+"Tehlikeli işlem:\n"
+"Bu işlem yanlışlıkla bazı küçük çokgenleri silebilir veya istenen "
+"çokgenleri silmeyebilir\n"
+"Devam etmek istiyor musunuz?"
+
+#: app/pcb_enhancements.py:79
+#, python-brace-format
+msgid "Successfully removed [{}] teardrop pads"
+msgstr "Başarıyla [{}] Damla Pad Silindi"
+
+#: app/pcb_enhancements.py:82
+msgid "No teardrop pads found"
+msgstr "Hiç Damla Pad Bulunamadı"
+
+#: app/pcb_enhancements.py:106
+msgid "No suitable track found"
+msgstr "Uygun Yol Bulunamadı"
 
 #: conversion/kicad_to_sprint.py:200
 msgid "The file contains no components."
@@ -657,12 +651,17 @@ msgstr "Çıktı"
 msgid ""
 "Currently supports:\n"
 "1. Kicad PCB file : *.kicad_pcb\n"
-"2. OpenSCAD file : *.scad"
-msgstr "Şu anda desteklenenler:\n1. Kicad PCB dosyası: *.kicad_pcb\n2. OpenSCAD dosyası: *.scad"
+"2. OpenSCAD file : *.scad\n"
+"3. SVG file : *.svg"
+msgstr ""
+"Şu anda desteklenenler:\n"
+"1. Kicad PCB dosyası: *.kicad_pcb\n"
+"2. OpenSCAD dosyası: *.scad\n"
+"3. SVG dosyası: *.svg"
 
 #: ui/sprint_font_ui.py:840
-msgid "Only for OpenSCAD"
-msgstr "Yalnızca OpenSCAD için"
+msgid "Only for OpenSCAD and SVG"
+msgstr "Sadece OpenSCAD ve SVG için"
 
 #: ui/sprint_font_ui.py:841
 msgid "   Export  "

@@ -33,8 +33,8 @@ from app.footprint_svg_handler import FootprintSvgHandler
 from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
 
-__Version__ = "1.8"
-__DATE__ = "20251205"
+__Version__ = "1.8.1"
+__DATE__ = "20251215"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
@@ -434,9 +434,26 @@ class Application(Application_ui):
 
     #选择一个导出文件
     def cmdChooseExportFile_Cmd(self, event=None):
-        ret = filedialog.asksaveasfilename(filetypes=[(_("Kicad and OpenSCAD files"), "*.kicad_pcb"), 
-            (_("Kicad and OpenSCAD files"), "*.scad"), (_("All files"), "*.*")])
+        selectedFilter = StringVar()
+        FILE_TYPES_MAP = {
+            _("KiCad PCB files"): ".kicad_pcb",
+            _("OpenSCAD files"): ".scad",
+            _("SVG files"): ".svg",
+        }
+        ret = filedialog.asksaveasfilename(filetypes=[
+            (_("All supported files"), "*.kicad_pcb;*.scad;*.svg"),
+            (_("KiCad PCB files"), "*.kicad_pcb"),
+            (_("OpenSCAD files"), "*.scad"),
+            (_("SVG files"), "*.svg"),
+            (_("All files"), "*.*")
+        ], typevariable=selectedFilter)
         if ret:
+            rootName, ext = os.path.splitext(ret)
+            if not ext:
+                choiceName = selectedFilter.get()
+                targetExt = FILE_TYPES_MAP.get(choiceName)
+                if targetExt:
+                    ret = rootName + targetExt
             self.txtExportFile.setText(ret)
 
     #选择一个SVG文件
@@ -580,13 +597,14 @@ class Application(Application_ui):
     def cmdExport_Cmd(self, event=None):
         from conversion.sprint_to_kicad import KicadGenerator
         from conversion.sprint_to_openscad import OpenSCADGenerator
+        from conversion.sprint_to_svg import SVGGenerator
 
         self.saveConfig()
         outFileName = self.txtExportFile.text().strip()
         if not outFileName:
             showwarning(_('info'), _('Input is empty'))
             return
-        elif not outFileName.lower().endswith(('.kicad_pcb', '.scad')):
+        elif not outFileName.lower().endswith(('.kicad_pcb', '.scad', '.svg')):
             showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
             return
 
@@ -596,6 +614,9 @@ class Application(Application_ui):
 
         if outFileName.lower().endswith('.kicad_pcb'):
             generator = KicadGenerator(textIo)
+        elif outFileName.lower().endswith('.svg'):
+            layer = self.cmbExportLayer.current()
+            generator = SVGGenerator(textIo, layers=layer)
         else:
             layer = self.cmbExportLayer.current()
             generator = OpenSCADGenerator(textIo, layers=layer)

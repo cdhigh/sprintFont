@@ -455,7 +455,7 @@ Begin VB.Form frmMain
          Width           =   495
       End
       Begin VB.Label lblExportLayerTips 
-         Caption         =   "Only for OpenSCAD"
+         Caption         =   "Only for OpenSCAD and SVG"
          Height          =   375
          Left            =   4680
          TabIndex        =   123
@@ -472,7 +472,7 @@ Begin VB.Form frmMain
          Width           =   1215
       End
       Begin VB.Label lblExportTips 
-         Caption         =   "Currently supports:\n1. Kicad PCB file : *.kicad_pcb\n2. OpenSCAD file : *.scad"
+         Caption         =   "Currently supports:\n1. Kicad PCB file : *.kicad_pcb\n2. OpenSCAD file : *.scad\n3. SVG file : *.svg"
          Height          =   1575
          Left            =   1560
          TabIndex        =   120
