@@ -178,19 +178,15 @@ class SprintComponent(SprintElement):
 
     #根据绘图元素，更新元件自己的外框
     def updateBbox(self, elem):
-        if elem.xMin < self.xMin:
-            self.xMin = elem.xMin
-        if elem.xMax > self.xMax:
-            self.xMax = elem.xMax
-        if elem.yMin < self.yMin:
-            self.yMin = elem.yMin
-        if elem.yMax > self.yMax:
-            self.yMax = elem.yMax
+        self.xMin = min(elem.xMin, self.xMin)
+        self.xMax = max(elem.xMax, self.xMax)
+        self.yMin = min(elem.yMin, self.yMin)
+        self.yMax = max(elem.yMax, self.yMax)
 
     #更新元件所占的外框
     def updateSelfBbox(self):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         for elem in self.elements:
             elem.updateSelfBbox()
             self.updateBbox(elem)

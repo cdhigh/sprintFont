@@ -23,10 +23,10 @@ class SprintTrack(SprintElement):
         return (len(self.points) >= 2)
 
     def updateSelfBbox(self):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         for (x, y) in self.points:
-            self.updateBbox(x, y)
+            self.updateBbox(x, y, self.width)
 
     #增加一个点
     #如果y=None，则x为一个点定义(x,y)
@@ -92,7 +92,7 @@ class SprintTrack(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         for idx in range(len(self.points)):
-            self.points[idx] = (round(self.points[idx][0] - offsetX, 4), round(self.points[idx][1] - offsetY, 4))
+            self.points[idx] = (round(self.points[idx][0] + offsetX, 4), round(self.points[idx][1] + offsetY, 4))
         self.updateSelfBbox()
 
     #计算导线的总长度

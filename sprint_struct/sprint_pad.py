@@ -36,7 +36,6 @@ class SprintPad(SprintElement):
         super().__init__(layerIdx)
         self.padType = padType # 'PAD'/'SMDPAD'
         self.pos = (0, 0)
-        self.size = 0 #外径
         self.sizeX = 0
         self.sizeY = 0
         self.drill = 0  #钻孔直径
@@ -51,20 +50,22 @@ class SprintPad(SprintElement):
         self.thermalTracks = 0
         self.padId = None
         self.connectToOtherPads = [] #从此焊盘到特定其他焊盘的网络连线
+
+    @property
+    def size(self):
+        return max(self.sizeX, self.sizeY)
+    @size.setter
+    def size(self, value):
+        self.sizeX = self.sizeY = value
     
     def isValid(self):
-        return (self.size > 0) if (self.padType == 'PAD') else ((self.sizeX > 0) and (self.sizeY > 0))
+        return (self.sizeX > 0) and (self.sizeY > 0)
         
     def updateSelfBbox(self):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
-        if (self.padType == 'PAD'):
-            size2 = self.size / 2
-            self.updateBbox(self.pos[0] - size2, self.pos[1] - size2)
-            self.updateBbox(self.pos[0] + size2, self.pos[1] + size2)
-        else:
-            self.updateBbox(self.pos[0] - self.sizeX / 2, self.pos[1] - self.sizeY / 2)
-            self.updateBbox(self.pos[0] + self.sizeX / 2, self.pos[1] + self.sizeY / 2)
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
+        width = self.size / 2
+        self.updateBbox(self.pos[0], self.pos[1], width)
 
     def __str__(self):
         return self.toStr()
@@ -138,7 +139,7 @@ class SprintPad(SprintElement):
         if not isinstance(other, SprintPad):
             return False
 
-        if ((self.layerIdx != other.layerIdx) or (self.padType != other.padType) or (self.size != other.size)
+        if ((self.layerIdx != other.layerIdx) or (self.padType != other.padType)
             or (self.sizeX != other.sizeX) or (self.sizeY != other.sizeY) or (self.drill != other.drill)
             or (self.form != other.form) or (self.rotation != other.rotation) or (self.clearance != other.clearance)
             or (self.soldermask != other.soldermask) or (self.via != other.via) or (self.thermal != other.thermal)
@@ -164,7 +165,6 @@ class SprintPad(SprintElement):
     def cloneToNewOrigin(self, ox: float, oy: float, overwritePadId=None):
         ins = SprintPad(self.padType, self.layerIdx)
         ins.pos = (round(self.pos[0] - ox, 4), round(self.pos[1] - oy, 4))
-        ins.size = self.size
         ins.sizeX = self.sizeX
         ins.sizeY = self.sizeY
         ins.drill = self.drill
@@ -185,7 +185,7 @@ class SprintPad(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.pos = (round(self.pos[0] - offsetX, 4), round(self.pos[1] - offsetY, 4))
+        self.pos = (round(self.pos[0] + offsetX, 4), round(self.pos[1] + offsetY, 4))
         self.updateSelfBbox()
     
     #判断一个点是否在本焊盘的范围内，用最简化的算法，到中心的距离小于最小外围尺寸

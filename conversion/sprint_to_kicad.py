@@ -203,8 +203,8 @@ class KicadGenerator:
     def _writePad(self, f, pad, centroid=(0,0), padNo=1):
         layer = self.getLayerName(pad.layerIdx)
         rotation = sprintAngleToKicad(pad.rotation)
-        sizeX = r2(max(pad.size, 0.1) if pad.sizeX == 0 else pad.sizeX)
-        sizeY = r2(max(pad.size, 0.1) if pad.sizeY == 0 else pad.sizeY)
+        sizeX = r2(max(pad.sizeX, 0.1))
+        sizeY = r2(max(pad.sizeY, 0.1))
         x, y = r2(pad.pos[0] - centroid[0]), r2(pad.pos[1] - centroid[1])
 
         # 通孔焊盘

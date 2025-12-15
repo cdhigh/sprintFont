@@ -117,7 +117,7 @@ class OpenSCADGenerator:
 
     #添加导线
     def addTrack(self, track):
-        hWidth = r4(track.width / 2)
+        hWidth = r4(max(track.width / 2, 0.01))
         points = [self._transform(p[0], p[1]) for p in track.points]
         if len(points) < 2:
             return
@@ -137,7 +137,7 @@ class OpenSCADGenerator:
     def addCircle(self, circle):
         cx, cy = self._transform(circle.center[0], circle.center[1])
         radius = circle.radius
-        width = circle.width
+        width = max(circle.width, 0.01)
         rOuter = r4(radius + width / 2) #外环和内环半径
         rInner = r4(max(radius - width / 2, 0.001))
 

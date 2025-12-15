@@ -26,10 +26,9 @@ class SprintCircle(SprintElement):
         return (self.radius > 0)
 
     def updateSelfBbox(self):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
-        self.updateBbox(self.center[0] - self.radius, self.center[1] + self.radius)
-        self.updateBbox(self.center[0] + self.radius, self.center[1] - self.radius)
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
+        self.updateBbox(self.center[0], self.center[1], self.radius + self.width)
         
     #Kicad没有直接指定半径，而是指定处于圆弧上的一个点来定义半径
     #注意调用此函数前请先保证设置了圆心坐标
@@ -125,7 +124,7 @@ class SprintCircle(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.center = (round(self.center[0] - offsetX, 4), round(self.center[1] - offsetY, 4))
+        self.center = (round(self.center[0] + offsetX, 4), round(self.center[1] + offsetY, 4))
         self.updateSelfBbox()
 
     #返回一个三元组, 分别对应起点坐标,圆弧中心坐标,终点坐标

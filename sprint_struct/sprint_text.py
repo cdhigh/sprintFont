@@ -28,9 +28,10 @@ class SprintText(SprintElement):
 
     #文本比较特殊，很难确定其确切的外框，所以使用中心点
     def updateSelfBbox(self):
-        self.xMin = self.xMax = self.pos[0]
-        self.yMin = self.yMax = self.pos[1]
-
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
+        self.updateBbox(self.pos[0], self.pos[1], self.height)
+        
     def __str__(self):
         self.text = self.justifiedText(self.text)
 
@@ -91,5 +92,5 @@ class SprintText(SprintElement):
 
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
-        self.pos = (round(self.pos[0] - offsetX, 4), round(self.pos[1] - offsetY, 4))
+        self.pos = (round(self.pos[0] + offsetX, 4), round(self.pos[1] + offsetY, 4))
         self.updateSelfBbox()

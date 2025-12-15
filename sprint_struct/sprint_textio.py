@@ -63,21 +63,19 @@ class SprintTextIO(SprintElement):
             
     #更新元件所占的外框
     def updateSelfBbox(self):
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         for elem in self.elements:
             elem.updateSelfBbox()
             self.updateBbox(elem)
 
     #根据绘图元素，更新元件自己的外框
     def updateBbox(self, elem):
-        if elem.xMin < self.xMin:
-            self.xMin = elem.xMin
-        if elem.xMax > self.xMax:
-            self.xMax = elem.xMax
-        if elem.yMin < self.yMin:
-            self.yMin = elem.yMin
-        if elem.yMax > self.yMax:
-            self.yMax = elem.yMax
-
+        self.xMin = min(elem.xMin, self.xMin)
+        self.xMax = max(elem.xMax, self.xMax)
+        self.yMin = min(elem.yMin, self.yMin)
+        self.yMax = max(elem.yMax, self.yMax)
+        
     #获取所有焊盘
     #padType: 'PAD'/'SMDPAD'/none
     #layerIdx: 为空则仅返回导电焊盘, 输入参数可以是整数或一个列表
@@ -88,12 +86,19 @@ class SprintTextIO(SprintElement):
             layers = layerIdx
         else:
             layers = (layerIdx,)
-        if not padType:
-            return [elem for elem in self.baseDrawElements() 
-                if (isinstance(elem, SprintPad) and (elem.layerIdx in layers))]
-        else:
-            return [elem for elem in self.baseDrawElements() 
-                if (isinstance(elem, SprintPad) and (elem.layerIdx in layers) and (elem.padType == padType))]
+
+        padTypes = (padType,) if padType else ('PAD', 'SMDPAD')
+
+        ret = []
+        #双面焊盘相当于两个铜层都有
+        viaNeed = (LAYER_C1 in layers) or (LAYER_C2 in layers)
+        for elem in self.baseDrawElements():
+            if not isinstance(elem, SprintPad) or (elem.padType not in padTypes):
+                continue
+            if (elem.layerIdx in layers) or (elem.via and viaNeed):
+                ret.append(elem)
+        
+        return ret
 
     #获取所有导线，参数为空则仅返回导电导线, 输入参数可以是整数或一个列表
     def getTracks(self, layerIdx=None):
@@ -248,3 +253,11 @@ class SprintTextIO(SprintElement):
             else:
                 compDict[name] = {'image': compsOrigin[idx], 'instance': [comp]}
         return compDict
+
+    #整体移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        for elem in self.elements:
+            elem.moveByOffset(offsetX, offsetY)
+            
+        self.updateSelfBbox()
+        

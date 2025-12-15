@@ -39,8 +39,8 @@ sprintLayerMapSes = {
 class SprintElement:
     def __init__(self, layerIdx: int=1):
         self.layerIdx = layerIdx
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         self.name = ''
     
     #子类实现是否有效的函数
@@ -53,21 +53,17 @@ class SprintElement:
         return
 
     #更新元件的外框 boundingbox
-    def updateBboxX(self, x: float):
-        if x < self.xMin:
-            self.xMin = x
-        if x > self.xMax:
-            self.xMax = x
+    def updateBboxX(self, x: float, width: float):
+        self.xMin = min(self.xMin, x - width)
+        self.xMax = max(self.xMax, x + width)
     
-    def updateBboxY(self, y: float):
-        if y < self.yMin:
-            self.yMin = y
-        if y > self.yMax:
-            self.yMax = y
-    
-    def updateBbox(self, x: float, y: float):
-        self.updateBboxX(x)
-        self.updateBboxY(y)
+    def updateBboxY(self, y: float, width: float):
+        self.yMin = min(self.yMin, y - width)
+        self.yMax = max(self.yMax, y + width)
+        
+    def updateBbox(self, x: float, y: float, width: float):
+        self.updateBboxX(x, width)
+        self.updateBboxY(y, width)
     
     #返回true/false字符串
     @classmethod
@@ -87,5 +83,10 @@ class SprintElement:
     #重载等号运算符，判断两个是否相等，子类需要重新实现
     def __eq__(self, other):
         return False
+
+    #移动自身的位置
+    def moveByOffset(self, offsetX: float, offsetY: float):
+        return
+
         
             

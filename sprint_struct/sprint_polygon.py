@@ -14,8 +14,8 @@ class SprintPolygon(SprintElement):
         self.reset(layerIdx, width)
 
     def reset(self, layerIdx: int=2, width: float=0):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         self.points = [] #元素为 (x,y)
         self._ptIdx = 0
         self._segIdx = 0
@@ -34,10 +34,10 @@ class SprintPolygon(SprintElement):
         return (len(self.points) >= 2)
     
     def updateSelfBbox(self):
-        self.xMin = self.yMin = 100000.0
-        self.xMax = self.yMax = -100000.0
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         for (x, y) in self.points:
-            self.updateBbox(x, y)
+            self.updateBbox(x, y, self.width)
             
     def __str__(self):
         if (not self.isValid()):
@@ -99,7 +99,7 @@ class SprintPolygon(SprintElement):
     def addPoint(self, x: float, y: float=None):
         if (y is None):
             x, y = x
-        self.updateBbox(x, y) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
+        self.updateBbox(x, y, self.width) #这里要先调用，因为在添加到textIo前encircle()等函数就要使用外框
         self.points.append((x, y))
 
     #添加列表中所有点
@@ -207,7 +207,7 @@ class SprintPolygon(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         for idx in range(len(self.points)):
-            self.points[idx] = (round(self.points[idx][0] - offsetX, 4), round(self.points[idx][1] - offsetY, 4))
+            self.points[idx] = (round(self.points[idx][0] + offsetX, 4), round(self.points[idx][1] + offsetY, 4))
         self.updateSelfBbox()
         
 

@@ -15,6 +15,7 @@ Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelea
 * 插入泪滴焊盘
 * 生成圆弧走线
 * 差分线长度匹配
+* 导出到Kicad和OpenSCAD
 
 
 

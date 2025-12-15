@@ -70,7 +70,7 @@ class SprintImportSes:
                     if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
                         and (abs(y - round(comp.pos[1], 3)) > 0.01)):
                         #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
-                        comp.moveByOffset(comp.pos[0] - x, comp.pos[1] - y)
+                        comp.moveByOffset(x - comp.pos[0], y - comp.pos[1])
 
         #添加走线
         wires = self._getArray(self.ses, 'wire')

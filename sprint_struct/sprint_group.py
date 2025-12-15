@@ -57,21 +57,19 @@ class SprintGroup(SprintElement):
 
     #更新组合所占的外框
     def updateSelfBbox(self):
+        self.xMin = self.yMin = float('inf')
+        self.xMax = self.yMax = float('-inf')
         for elem in self.elements:
             elem.updateSelfBbox()
             self.updateBbox(elem)
             
     #根据绘图元素，更新组合自己的外框
     def updateBbox(self, elem):
-        if elem.xMin < self.xMin:
-            self.xMin = elem.xMin
-        if elem.xMax > self.xMax:
-            self.xMax = elem.xMax
-        if elem.yMin < self.yMin:
-            self.yMin = elem.yMin
-        if elem.yMax > self.yMax:
-            self.yMax = elem.yMax
-
+        self.xMin = min(elem.xMin, self.xMin)
+        self.xMax = max(elem.xMax, self.xMax)
+        self.yMin = min(elem.yMin, self.yMin)
+        self.yMax = max(elem.yMax, self.yMax)
+        
     #获取特定板层的所有元素，返回一个列表
     def getAllElementsInLayer(self, layerIdx: int):
         return [elem for elem in self.elements if elem.layerIdx == layerIdx]
@@ -109,7 +107,6 @@ class SprintGroup(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         for elem in self.elements:
-            if hasattr(elem, 'moveByOffset'):
-                elem.moveByOffset(offsetX, offsetY)
+            elem.moveByOffset(offsetX, offsetY)
         self.updateSelfBbox()
 
