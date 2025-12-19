@@ -32,9 +32,10 @@ if os.path.exists(appMain):
             break
 
 build_exe_options = {'packages': ['tkinter'], 
-                    'excludes' : ['pyQt5', 'PIL'],
+                    'excludes' : ['pyQt5', 'PIL', 'tkinter.test'],
                     'include_files' : [('i18n', 'i18n')],
                     'optimize' : 2,
+                    "include_msvcr": True,
                     }
 
 exe = Executable(script='sprintFont.py',

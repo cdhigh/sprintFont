@@ -232,15 +232,15 @@ class ConfigManager:
 
         # 自动布线规则和其他配置
         trackWidth = str_to_float(cfg.get('trackWidth', '0.3'))
-        viaDiameter = str_to_float(cfg.get('viaDiameter', '0.7'))
+        viaDiameter = str_to_float(cfg.get('viaDiameter', '0.6'))
         viaDrill = str_to_float(cfg.get('viaDrill', '0.3'))
-        clearance = str_to_float(cfg.get('clearance', '0.3'))
-        smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.06'))
+        clearance = str_to_float(cfg.get('clearance', '0.2'))
+        smdSmdClearance = str_to_float(cfg.get('smdSmdClearance', '0.2'))
         app.pcbRule.trackWidth = trackWidth if (trackWidth > 0.1) else 0.3
-        app.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.7
+        app.pcbRule.viaDiameter = viaDiameter if (viaDiameter > 0.1) else 0.6
         app.pcbRule.viaDrill = viaDrill if (viaDrill > 0.1) else 0.3
-        app.pcbRule.clearance = clearance if (clearance > 0.1) else 0.3
-        app.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.06
+        app.pcbRule.clearance = clearance if (clearance > 0.1) else 0.2
+        app.pcbRule.smdSmdClearance = smdSmdClearance if (smdSmdClearance > 0.01) else 0.2
         if (app.pcbRule.viaDiameter <= app.pcbRule.viaDrill):
             app.pcbRule.viaDiameter = app.pcbRule.viaDrill + 0.1
         app.updateRuleView()

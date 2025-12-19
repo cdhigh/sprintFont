@@ -46,6 +46,9 @@ FONT_DIR = os.path.join(WIN_DIR if WIN_DIR else "c:/windows", "fonts")
 
 if getattr(sys, 'frozen', False): #在cxFreeze打包后
     MODULE_PATH = os.path.dirname(sys.executable)
+    #basePath = sys._MEIPASS #for pyinstaller
+    #os.environ['TCL_LIBRARY'] = os.path.join(basePath, 'tcl', 'tcl8.6')
+    #os.environ['TK_LIBRARY'] = os.path.join(basePath, 'tk', 'tk8.6')
 else:
     MODULE_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -76,7 +79,6 @@ URI_RELEASES = 'https://github.com/cdhigh/sprintFontRelease/releases'
 URI_ISSUES = 'https://github.com/cdhigh/sprintFontRelease/issues'
 
 class Application(Application_ui):
-    #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
         
@@ -150,6 +152,13 @@ class Application(Application_ui):
         self.master.after(5000, self.periodicCheckUpdate)
         #self.txtMain.focus_set()
 
+    #安全退出程序，确保焦点正确返回给Sprint-Layout
+    def safeExit(self, returnCode=RETURN_CODE_NONE):
+        self.master.update()
+        self.master.quit()
+        self.destroy()
+        sys.exit(returnCode)
+    
     #分析Sprint-Layout传入的参数
     def getSprintApiData(self):
         realArgs = sys.argv[1:]
@@ -479,8 +488,7 @@ class Application(Application_ui):
     
     #取消退出
     def cmdCancel_Cmd(self, event=None):
-        self.destroy()
-        sys.exit(RETURN_CODE_NONE)
+        self.safeExit(RETURN_CODE_NONE)
 
     def cmdCancelFootprint_Cmd(self, event=None):
         self.cmdCancel_Cmd(event)
@@ -554,8 +562,7 @@ class Application(Application_ui):
             self.saveTextFile(str(textIo))
         else: #写输出文件
             self.saveOutputFile(str(textIo))
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_STICKY)
+            self.safeExit(RETURN_CODE_INSERT_STICKY)
 
     #在封装文件文本框中回车，根据情况自动执行响应的命令
     #因为可以在文本框中输入easyEDA的元件编码然后回车, 所以需要一个快捷方式比较好
@@ -590,8 +597,7 @@ class Application(Application_ui):
             self.saveTextFile(retStr)
         else:
             self.saveOutputFile(retStr)
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_STICKY)
+            self.safeExit(RETURN_CODE_INSERT_STICKY)
 
     #点击了导出按钮
     def cmdExport_Cmd(self, event=None):
@@ -675,8 +681,7 @@ class Application(Application_ui):
             self.saveTextFile(retStr)
         else:
             self.saveOutputFile(retStr)
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_STICKY)
+            self.safeExit(RETURN_CODE_INSERT_STICKY)
         
     #校验文件是否存在或是否合法，不合法则做出提示
     #fileName: 文件名
@@ -776,16 +781,16 @@ class Application(Application_ui):
         msg = _("\nPlease enter a new value for the parameter '{}'\nThe unit is mm\n").format(itemName)
 
         ret = simpledialog.askfloat(_("Edit parameter"), msg, initialvalue=str_to_float(record[1]))
-        if ret and ret > 0.1:
-            if (itemName == _("Track width")):
+        if ret and ret >= 0.01:
+            if itemName == _("Track width"):
                 self.pcbRule.trackWidth = ret
-            elif (itemName == _("Via diameter")):
+            elif itemName == _("Via diameter"):
                 self.pcbRule.viaDiameter = ret
-            elif (itemName == _("Via drill")):
+            elif itemName == _("Via drill"):
                 self.pcbRule.viaDrill = ret
-            elif (itemName == _("Clearance")):
+            elif itemName == _("Clearance"):
                 self.pcbRule.clearance = ret
-            elif (itemName == _("Smd-Smd Clearance")):
+            elif itemName == _("Smd-Smd Clearance"):
                 self.pcbRule.smdSmdClearance = ret
 
         self.updateRuleView()
@@ -819,14 +824,8 @@ class Application(Application_ui):
         finally:
             self.mnuImportSes.grab_release()
 
-    #菜单项“导入...”的点击响应函数
+    #菜单项“导入SES”的点击响应函数
     def cmdmnuImportSes(self, trimRatsnestMode: str='trimRouted', trackOnly: bool=False):
-        if (self.importSes(trimRatsnestMode, trackOnly)):
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_STICKY if trackOnly else RETURN_CODE_REPLACE_ALL)
-
-    #导入SES文件 - 委托给AutorouterHandler
-    def importSes(self, trimRatsnestMode, trackOnly):
         self.saveConfig()
         sesFile = self.txtSesFile.text().strip()
         dsnPickleFile = os.path.splitext(sesFile)[0] + '.pickle'
@@ -837,8 +836,7 @@ class Application(Application_ui):
         ret = self.autorouterHandler.importSes(sesFile, dsnPickleFile, trimRatsnestMode, trackOnly)
         if ret:
             self.saveOutputFile(ret)
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_STICKY)
+            self.safeExit(RETURN_CODE_INSERT_STICKY if trackOnly else RETURN_CODE_REPLACE_ALL)
 
     #将自动布线结果另存为
     def lblSaveAsAutoRouter_Button_1(self, event=None):
@@ -903,8 +901,7 @@ class Application(Application_ui):
         result = self.pcbEnhancements.addTeardrops(textIo, hPercent, vPercent, segs, padType)
         if result:
             self.saveOutputFile(result)
-            self.destroy()
-            sys.exit(RETURN_CODE_INSERT_ALL)
+            self.safeExit(RETURN_CODE_INSERT_ALL)
 
     #删除泪滴焦盘按钮事件 - 委托给PcbEnhancements
     def cmdRemoveTeardrops_Cmd(self, event=None):
@@ -915,8 +912,7 @@ class Application(Application_ui):
         result = self.pcbEnhancements.removeTeardrops(textIo, padType)
         if result:
             self.saveOutputFile(result)
-            self.destroy()
-            sys.exit(RETURN_CODE_REPLACE_ALL)
+            self.safeExit(RETURN_CODE_REPLACE_ALL)
 
     #从输入文件创建一个TextIo
     def createTextIoFromInFile(self):
@@ -950,8 +946,7 @@ class Application(Application_ui):
         textIo = self.convertRounedTrack()
         if textIo:
             self.saveOutputFile(str(textIo))
-            self.destroy()
-            sys.exit(RETURN_CODE_REPLACE_ALL)
+            self.safeExit(RETURN_CODE_REPLACE_ALL)
 
     #将弧形走线的转换结果保存为文本文件
     def lblSaveAsRoundedTrack_Button_1(self, event=None):
@@ -977,8 +972,7 @@ class Application(Application_ui):
         if self.wirePairTextIo:
             self.saveConfig()
             self.saveOutputFile(str(self.wirePairTextIo))
-            self.destroy()
-            sys.exit(RETURN_CODE_REPLACE_ALL)
+            self.safeExit(RETURN_CODE_REPLACE_ALL)
         else:
             showinfo(_("info"), _("Please click the Adjust button first to match the trace length"))
 

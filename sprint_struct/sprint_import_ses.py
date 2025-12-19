@@ -178,7 +178,7 @@ class SprintImportSes:
                 result.append(data)
         return result
 
-    #智能判断铜箔连接情况，将有铜箔连接的焊盘之间的鼠线删除
+    #智能判断铜箔连接情况,将有铜箔连接的焊盘之间的鼠线删除
     #大概原理：首先通过过孔将所有布线转换为(坐标,板层)列表。形成一个字典，键为网表号
     #遍历所有焊盘，先获取焊盘位置，然后逐个布线各端点，如果端点在焊盘范围内并且板层相同，则为连通，
     #记录布线索引对应的字典键值和焊盘ID的对应情况(ID,
@@ -186,8 +186,9 @@ class SprintImportSes:
     def trimRatsnest(self, textIo):
         #所有过孔和铜箔走线
         #round(2)而不是round(4)是为了减小浮点误差导致之后的比较错误
-        vias = [(round(elem.pos[0], 2), round(elem.pos[1], 2)) for elem in textIo.baseDrawElements() if (isinstance(elem, SprintPad) and elem.via)]
-        tracks = [elem for elem in textIo.baseDrawElements() if (isinstance(elem, SprintTrack) and (elem.layerIdx in (LAYER_C1, LAYER_C2)))]
+        self.vias = [(round(elem.pos[0], 2), round(elem.pos[1], 2)) for elem in textIo.baseDrawElements() if (isinstance(elem, SprintPad) and elem.via)]
+        #包含所有铜层: C1(1), C2(3), I1(5), I2(6)
+        tracks = [elem for elem in textIo.baseDrawElements() if (isinstance(elem, SprintTrack) and (elem.layerIdx in (LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2)))]
         trackPoints = []
 
         #先生成点列表
@@ -195,13 +196,15 @@ class SprintImportSes:
             ptSet = set()
             points =[(round(x, 2), round(y, 2))  for (x, y) in track.points]
             for (x, y) in points:
-                found = True
-                for (xv, yv) in vias: #确认一个过孔连通，再找其他有同样这个过孔的走线
+                found = False
+                for (xv, yv) in self.vias: #确认一个过孔连通，再找其他有同样这个过孔的走线
                     if ((abs(x - xv) < 0.1) and (abs(y - yv) < 0.1)):
-                        ptSet.add((x, y, LAYER_C1))
-                        ptSet.add((x, y, LAYER_C2))
+                        #使用过孔的精确坐标，而不是track点的坐标，确保所有经过这个过孔的track使用相同的坐标
+                        ptSet.add((xv, yv, LAYER_C1))
+                        ptSet.add((xv, yv, LAYER_C2))
+                        found = True
                         break
-                else:
+                if not found:
                     ptSet.add((x, y, track.layerIdx))
 
             trackPoints.append(ptSet)
@@ -215,14 +218,14 @@ class SprintImportSes:
             if not connects:
                 continue
 
-            #找到和此焊盘相连的布线
+            #找到和此焊盘相连的所有布线区域（可能有多个！）
+            connectedAreas = []
             for condutiveIdx, area in enumerate(trackPoints):
                 if (self.isPadConnectToArea(pad, area)):
-                    break
-            else: #此焊盘没有连通任何区域
+                    connectedAreas.append(area)
+            
+            if not connectedAreas: #此焊盘没有连通任何区域
                 continue
-
-            condutiveArea = trackPoints[condutiveIdx]
 
             #判断和此焊盘有鼠线连接的其他焊盘是否已经有布线连接了
             for otherId in connects[:]:
@@ -230,15 +233,29 @@ class SprintImportSes:
                 if not otherPad:
                     continue
 
-                if (self.isPadConnectToArea(otherPad, condutiveArea)):
-                    connects.remove(otherId)
+                # 检查otherPad是否在任何一个connectedAreas中
+                for condutiveArea in connectedAreas:
+                    if (self.isPadConnectToArea(otherPad, condutiveArea)):
+                        connects.remove(otherId)
+                        break
 
     #判断一个焊盘是否连接到一个连通区域
     #area: {(x, y, layer),...}
+    #修改逻辑：检查焊盘的位置是否接近area中的任何点，而不是检查焊盘是否包含这些点
+    #这样可以更准确地处理焊盘位置与track端点有微小偏差的情况
     def isPadConnectToArea(self, pad: SprintPad, area: set):
+        padX, padY = round(pad.pos[0], 2), round(pad.pos[1], 2)
+        
         for (x, y, layer) in area:
-            if ((layer == pad.layerIdx) and pad.enclose(x, y)):
-                return True
+            # 检查焊盘位置是否接近area中的某个点（距离<0.1mm）
+            if ((abs(padX - x) < 0.1) and (abs(padY - y) < 0.1)):
+                # 如果层匹配，则连通
+                if layer == pad.layerIdx:
+                    return True
+                # 如果层不匹配，检查这个位置是否是过孔（过孔可以连通两层）
+                for (xv, yv) in self.vias:
+                    if ((abs(x - xv) < 0.1) and (abs(y - yv) < 0.1)):
+                        return True
         return False
 
     #将列表中有相同元素的集合合并，算法时间复杂度O(n^2)
