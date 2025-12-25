@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-25 07:28-0300\n"
+"POT-Creation-Date: 2025-12-25 09:07-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language: tr\n"
@@ -181,14 +181,14 @@ msgstr "Specctra Oturum Dosyaları"
 #: app/pcb_enhancements.py:40 app/pcb_enhancements.py:50
 #: app/pcb_enhancements.py:53 app/pcb_enhancements.py:65
 #: app/pcb_enhancements.py:83 app/pcb_enhancements.py:86
-#: app/pcb_enhancements.py:110 sprintFont.py:539 sprintFont.py:558
+#: app/pcb_enhancements.py:104 sprintFont.py:539 sprintFont.py:558
 #: sprintFont.py:560 sprintFont.py:590 sprintFont.py:593 sprintFont.py:595
 #: sprintFont.py:611 sprintFont.py:614 sprintFont.py:631 sprintFont.py:633
 #: sprintFont.py:653 sprintFont.py:662 sprintFont.py:675 sprintFont.py:679
 #: sprintFont.py:691 sprintFont.py:698 sprintFont.py:724 sprintFont.py:803
 #: sprintFont.py:853 sprintFont.py:861 sprintFont.py:925 sprintFont.py:929
-#: sprintFont.py:936 sprintFont.py:940 sprintFont.py:977 sprintFont.py:988
-#: sprintFont.py:1010 sprint_struct/wire_pair_tuner.py:92
+#: sprintFont.py:936 sprintFont.py:940 sprintFont.py:979 sprintFont.py:990
+#: sprintFont.py:1012 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "Bilgi"
 
@@ -352,11 +352,11 @@ msgstr ""
 msgid "Failed to parse input file"
 msgstr "Girdi Dosyası Ayrıştırılamadı"
 
-#: sprintFont.py:977 sprintFont.py:988
+#: sprintFont.py:979 sprintFont.py:990
 msgid "Please click the Adjust button first to match the trace length"
 msgstr "Lütfen önce İz uzunluğunu eşleştirmek için Ayarla düğmesine tıklayın"
 
-#: sprintFont.py:1010
+#: sprintFont.py:1012
 msgid "At least two traces must be selected"
 msgstr "En az iki iletken seçilmelidir"
 
@@ -400,7 +400,7 @@ msgstr "Başarıyla [{}] Damla Pad Silindi"
 msgid "No teardrop pads found"
 msgstr "Hiç Damla Pad Bulunamadı"
 
-#: app/pcb_enhancements.py:110
+#: app/pcb_enhancements.py:104
 msgid "No suitable track found"
 msgstr "Uygun Yol Bulunamadı"
 
@@ -514,10 +514,10 @@ msgstr "Genlik-"
 msgid "Confirm"
 msgstr "Onayla"
 
-#: sprint_struct/wire_pair_tuner.py:73 ui/sprint_font_ui.py:816
-#: ui/sprint_font_ui.py:829 ui/sprint_font_ui.py:836 ui/sprint_font_ui.py:842
-#: ui/sprint_font_ui.py:854 ui/sprint_font_ui.py:864 ui/sprint_font_ui.py:873
-#: ui/sprint_font_ui.py:882
+#: sprint_struct/wire_pair_tuner.py:73 ui/sprint_font_ui.py:825
+#: ui/sprint_font_ui.py:838 ui/sprint_font_ui.py:843 ui/sprint_font_ui.py:851
+#: ui/sprint_font_ui.py:863 ui/sprint_font_ui.py:873 ui/sprint_font_ui.py:882
+#: ui/sprint_font_ui.py:892
 msgid "Cancel"
 msgstr "İptal"
 
@@ -555,82 +555,82 @@ msgstr "Yol uzunluğu: {} mm, sapma: {} mm"
 msgid "The difference is smaller than the minimum length of a ridge"
 msgstr "Fark, tek bir sırtın minimum uzunluğundan daha küçüktür"
 
-#: ui/sprint_font_ui.py:810
+#: ui/sprint_font_ui.py:819
 msgid "sprintFont"
 msgstr "sprintFont"
 
-#: ui/sprint_font_ui.py:811
+#: ui/sprint_font_ui.py:820
 msgid "Inverted Background"
 msgstr "Ters Arka Plan"
 
-#: ui/sprint_font_ui.py:812
+#: ui/sprint_font_ui.py:821
 msgid "Padding"
 msgstr "Yastıklama"
 
-#: ui/sprint_font_ui.py:813
+#: ui/sprint_font_ui.py:822
 msgid "Cap left"
 msgstr "Sol Kapak"
 
-#: ui/sprint_font_ui.py:814
+#: ui/sprint_font_ui.py:823
 msgid "Cap right"
 msgstr "Sağ Kapak"
 
-#: ui/sprint_font_ui.py:815 ui/sprint_font_ui.py:828 ui/sprint_font_ui.py:843
-#: ui/sprint_font_ui.py:883
+#: ui/sprint_font_ui.py:824 ui/sprint_font_ui.py:837 ui/sprint_font_ui.py:852
+#: ui/sprint_font_ui.py:893
 msgid "Ok"
 msgstr "Tamam"
 
-#: ui/sprint_font_ui.py:817
+#: ui/sprint_font_ui.py:826
 msgid "Text"
 msgstr "Metin"
 
-#: ui/sprint_font_ui.py:818 ui/sprint_font_ui.py:839 ui/sprint_font_ui.py:848
+#: ui/sprint_font_ui.py:827 ui/sprint_font_ui.py:847 ui/sprint_font_ui.py:857
 msgid "Layer"
 msgstr "Katman"
 
-#: ui/sprint_font_ui.py:819 ui/sprint_font_ui.py:847
+#: ui/sprint_font_ui.py:828 ui/sprint_font_ui.py:856
 msgid "Smooth"
 msgstr "Düzgün"
 
-#: ui/sprint_font_ui.py:820
+#: ui/sprint_font_ui.py:829
 msgid "Word spacing (mm)"
 msgstr "Kelime aralığı (mm)"
 
-#: ui/sprint_font_ui.py:821
+#: ui/sprint_font_ui.py:830
 msgid "Line spacing (mm)"
 msgstr "Satır aralığı (mm)"
 
-#: ui/sprint_font_ui.py:822 ui/sprint_font_ui.py:832 ui/sprint_font_ui.py:849
-#: ui/sprint_font_ui.py:859 ui/sprint_font_ui.py:876 ui/sprint_font_ui.py:888
+#: ui/sprint_font_ui.py:831 ui/sprint_font_ui.py:841 ui/sprint_font_ui.py:858
+#: ui/sprint_font_ui.py:868 ui/sprint_font_ui.py:885 ui/sprint_font_ui.py:898
 msgid "Save as"
 msgstr "Farklı kaydet"
 
-#: ui/sprint_font_ui.py:823
+#: ui/sprint_font_ui.py:832
 msgid "Font"
 msgstr "Yazı Tipi"
 
-#: ui/sprint_font_ui.py:824 ui/sprint_font_ui.py:845
+#: ui/sprint_font_ui.py:833 ui/sprint_font_ui.py:854
 msgid "Height (mm)"
 msgstr "Yükseklik (mm)"
 
-#: ui/sprint_font_ui.py:825
+#: ui/sprint_font_ui.py:834
 msgid "     Font     "
 msgstr " Yazı Tipi "
 
-#: ui/sprint_font_ui.py:826
+#: ui/sprint_font_ui.py:835
 msgid "Import text"
 msgstr "Metin İçe Aktar"
 
-#: ui/sprint_font_ui.py:827 ui/sprint_font_ui.py:834 ui/sprint_font_ui.py:844
-#: ui/sprint_font_ui.py:853 ui/sprint_font_ui.py:856
+#: ui/sprint_font_ui.py:836 ui/sprint_font_ui.py:845 ui/sprint_font_ui.py:853
+#: ui/sprint_font_ui.py:862 ui/sprint_font_ui.py:865
 msgid "..."
 msgstr "..."
 
-#: ui/sprint_font_ui.py:830
+#: ui/sprint_font_ui.py:839
 msgid "Input"
 msgstr "Girdi"
 
-#: ui/sprint_font_ui.py:831
+#: ui/sprint_font_ui.py:840
 msgid ""
 "Currently supports:\n"
 "1. Kicad footprint Library : *.kicad_mod\n"
@@ -640,19 +640,19 @@ msgstr ""
 "1. Kicad kaplama Kütüphanesi : *.kicad_mod\n"
 "2. EasyEDA parça ID: C + rakamlar (C opsiyonel)"
 
-#: ui/sprint_font_ui.py:833
+#: ui/sprint_font_ui.py:842
 msgid "   Footprint  "
 msgstr " Kaplama "
 
-#: ui/sprint_font_ui.py:835
+#: ui/sprint_font_ui.py:844
 msgid "Export"
 msgstr "Dışa aktar"
 
-#: ui/sprint_font_ui.py:837
-msgid "Output"
-msgstr "Çıktı"
+#: ui/sprint_font_ui.py:846
+msgid "Only for OpenSCAD and SVG"
+msgstr "Sadece OpenSCAD ve SVG için"
 
-#: ui/sprint_font_ui.py:838
+#: ui/sprint_font_ui.py:848
 msgid ""
 "Currently supports:\n"
 "1. Kicad PCB file : *.kicad_pcb\n"
@@ -664,19 +664,19 @@ msgstr ""
 "2. OpenSCAD dosyası: *.scad\n"
 "3. SVG dosyası: *.svg"
 
-#: ui/sprint_font_ui.py:840
-msgid "Only for OpenSCAD and SVG"
-msgstr "Sadece OpenSCAD ve SVG için"
+#: ui/sprint_font_ui.py:849
+msgid "Output"
+msgstr "Çıktı"
 
-#: ui/sprint_font_ui.py:841
+#: ui/sprint_font_ui.py:850
 msgid "   Export  "
 msgstr "Dışa Aktar"
 
-#: ui/sprint_font_ui.py:846
+#: ui/sprint_font_ui.py:855
 msgid "Mode"
 msgstr "Mod"
 
-#: ui/sprint_font_ui.py:850
+#: ui/sprint_font_ui.py:859
 msgid ""
 "Note:\n"
 "Only for simple images, may fail to convert complex images"
@@ -684,27 +684,27 @@ msgstr ""
 "Not: Sadece basit görseller için geçerlidir, karmaşık görseller dönüşümde"
 " başarısız olabilir."
 
-#: ui/sprint_font_ui.py:851
+#: ui/sprint_font_ui.py:860
 msgid "  SVG/Qrcode  "
 msgstr "SVG/Qrcode"
 
-#: ui/sprint_font_ui.py:852
+#: ui/sprint_font_ui.py:861
 msgid "Import SES"
 msgstr "SES İçe Aktar"
 
-#: ui/sprint_font_ui.py:855
+#: ui/sprint_font_ui.py:864
 msgid "Export DSN"
 msgstr "DSN Dışa Aktar"
 
-#: ui/sprint_font_ui.py:857
+#: ui/sprint_font_ui.py:866
 msgid "Rules"
 msgstr "Kurallar"
 
-#: ui/sprint_font_ui.py:858
+#: ui/sprint_font_ui.py:867
 msgid "Ses file"
 msgstr "Ses Dosyası"
 
-#: ui/sprint_font_ui.py:860
+#: ui/sprint_font_ui.py:869
 msgid ""
 "Open the exported DSN file with Freerouting for autorouting\n"
 "Currently only supports all components placed on the front side"
@@ -714,27 +714,27 @@ msgstr ""
 "Şu anda sadece tüm bileşenlerin ön yüzeyde yerleştirildiği "
 "desteklenmektedir"
 
-#: ui/sprint_font_ui.py:861
+#: ui/sprint_font_ui.py:870
 msgid "Dsn file"
 msgstr "Dsn Dosyası"
 
-#: ui/sprint_font_ui.py:862
+#: ui/sprint_font_ui.py:871
 msgid "  AutoRouter  "
 msgstr "Otomatik Yön"
 
-#: ui/sprint_font_ui.py:863
+#: ui/sprint_font_ui.py:872
 msgid "Remove"
 msgstr "Sil"
 
-#: ui/sprint_font_ui.py:865
+#: ui/sprint_font_ui.py:874
 msgid "Add"
 msgstr "Ekle"
 
-#: ui/sprint_font_ui.py:866
+#: ui/sprint_font_ui.py:875
 msgid "Pad type"
 msgstr "Pad tipi"
 
-#: ui/sprint_font_ui.py:867
+#: ui/sprint_font_ui.py:876
 msgid ""
 "Apply to all pads when deselecting all, otherwise apply to selected pads "
 "AND tracks only"
@@ -742,39 +742,39 @@ msgstr ""
 "Tüm seçimleri kaldırırken tüm pad'lere uygula, aksi takdirde yalnızca "
 "seçili pad'lere ve hatlara uygula"
 
-#: ui/sprint_font_ui.py:868
+#: ui/sprint_font_ui.py:877
 msgid "Horizontal percent"
 msgstr "Yatay yüzde (H)"
 
-#: ui/sprint_font_ui.py:869 ui/sprint_font_ui.py:878
+#: ui/sprint_font_ui.py:878 ui/sprint_font_ui.py:887
 msgid "Number of segments"
 msgstr "Bölüm sayısı"
 
-#: ui/sprint_font_ui.py:870
+#: ui/sprint_font_ui.py:879
 msgid "Vertical percent"
 msgstr "Dikey yüzde (W)"
 
-#: ui/sprint_font_ui.py:871
+#: ui/sprint_font_ui.py:880
 msgid "  Teardrop  "
 msgstr "Yaş pasta lehim pedi"
 
-#: ui/sprint_font_ui.py:872
+#: ui/sprint_font_ui.py:881
 msgid "Convert"
 msgstr "Dönüştür"
 
-#: ui/sprint_font_ui.py:874 ui/sprint_font_ui.py:890
+#: ui/sprint_font_ui.py:883 ui/sprint_font_ui.py:900
 msgid "Type"
 msgstr "Tür"
 
-#: ui/sprint_font_ui.py:875
+#: ui/sprint_font_ui.py:884
 msgid "small d(mm)"
 msgstr "küçük d(mm)"
 
-#: ui/sprint_font_ui.py:877
+#: ui/sprint_font_ui.py:886
 msgid "big d(mm)"
 msgstr "büyük d(mm)"
 
-#: ui/sprint_font_ui.py:879
+#: ui/sprint_font_ui.py:888
 msgid ""
 "Apply to all tracks when deselecting all, otherwise apply to selected "
 "tracks only"
@@ -782,35 +782,39 @@ msgstr ""
 "Tüm seçimleri kaldırırken tüm hatlara uygula, aksi takdirde yalnızca "
 "seçili hatlara uygula"
 
-#: ui/sprint_font_ui.py:880
+#: ui/sprint_font_ui.py:889
+msgid "Merge Connected Tracks"
+msgstr "Bağlantılı izleri birleştir"
+
+#: ui/sprint_font_ui.py:890
 msgid " RoundedTrack "
 msgstr " Yuvarlak Hat "
 
-#: ui/sprint_font_ui.py:881
+#: ui/sprint_font_ui.py:891
 msgid "Adjust"
 msgstr "Ayarla"
 
-#: ui/sprint_font_ui.py:884
+#: ui/sprint_font_ui.py:894
 msgid "Target skew"
 msgstr "Hedef sapma"
 
-#: ui/sprint_font_ui.py:885
+#: ui/sprint_font_ui.py:895
 msgid "Spacing (s)"
 msgstr "Mesafe (s)"
 
-#: ui/sprint_font_ui.py:886
+#: ui/sprint_font_ui.py:896
 msgid "Select the differential wire pair that needs to be adjusted in length"
 msgstr "Uzunluğu ayarlanması gereken diferansiyel çift teli seçin"
 
-#: ui/sprint_font_ui.py:887
+#: ui/sprint_font_ui.py:897
 msgid "Min amplitude (Amin)"
 msgstr "Min genlik (Amin)"
 
-#: ui/sprint_font_ui.py:889
+#: ui/sprint_font_ui.py:899
 msgid "Max amplitude (Amax)"
 msgstr "Maks genlik (Amax)"
 
-#: ui/sprint_font_ui.py:891
+#: ui/sprint_font_ui.py:901
 msgid " WirePair "
 msgstr " Dif. Çift "
 

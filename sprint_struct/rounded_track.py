@@ -167,8 +167,7 @@ def arcByTangentLine(pt1: tuple, pt2: tuple, pt3: tuple, distance: float, segNum
     center = getCrossPoint(intersectPt1, line1VertPt2, intersectPt2, line2VertPt2)
     if center is not None:
         radius = math.dist(center, intersectPt1)
-
-        if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
+        if (radius < 0.1) or (radius > 100.0):
             return None
 
         clockwise = isPointListClockwise(intersectPt1, pt2, intersectPt2)
@@ -229,7 +228,7 @@ def arcBy3Points(pt1: tuple, pt2: tuple, pt3: tuple, segNum: int):
 
     center = calCenterByThreePoints(pt1, pt2, pt3)
     radius = math.dist(pt1, center)
-    if (radius < 1.0) or (radius > 80.0): #如果半径太大，则说明原先的角度已经很缓，不需要修改为圆弧
+    if (radius < 0.1) or (radius > 100.0):
         return None
 
     clockwise = isPointListClockwise(pt1, pt2, pt3)

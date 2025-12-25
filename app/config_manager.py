@@ -121,6 +121,7 @@ class ConfigManager:
             'roundedTrackBigDistance': app.cmbRoundedTrackBigDistance.text(),
             'roundedTrackSmallDistance': app.cmbRoundedTrackSmallDistance.text(),
             'roundedTrackSegs': app.cmbRoundedTrackSegs.text(),
+            'mergeConnectedTracks': str(app.chkMergeConnectedTracks.value()),
             'wirePairType': str(app.cmbWirePairType.current()), 
             'wirePairAmin': app.txtWirePairAmin.text(),
             'wirePairAmax': app.txtWirePairAmax.text(), 
@@ -271,6 +272,8 @@ class ConfigManager:
         segs = str_to_int(cfg.get('roundedTrackSegs', '10'))
         if segs:
             app.cmbRoundedTrackSegs.setText(segs)
+        if (str_to_int(cfg.get('mergeConnectedTracks', '0'))):
+            app.chkMergeConnectedTracks.setValue(1)
 
         # 导线对长度调整
         wType = str_to_int(cfg.get('wirePairType', '0'))

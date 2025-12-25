@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   6240
+   ClientHeight    =   6225
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   10425
@@ -19,16 +19,154 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6240
+   ScaleHeight     =   6225
    ScaleWidth      =   10425
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab7 
+      Caption         =   " RoundedTrack "
+      Height          =   5055
+      Left            =   10320
+      TabIndex        =   73
+      Top             =   1200
+      Width           =   9895
+      Begin VB.CheckBox chkMergeConnectedTracks 
+         Caption         =   "Merge Connected Tracks"
+         Height          =   375
+         Left            =   840
+         TabIndex        =   124
+         Top             =   3600
+         Width           =   4095
+      End
+      Begin VB.ComboBox cmbRoundedTrackType 
+         Height          =   420
+         Left            =   3000
+         Style           =   2  'Dropdown List
+         TabIndex        =   95
+         Top             =   1080
+         Width           =   1935
+      End
+      Begin VB.ComboBox cmbRoundedTrackSmallDistance 
+         Height          =   420
+         Left            =   3000
+         TabIndex        =   83
+         Text            =   "cmbhPercent"
+         Top             =   2280
+         Width           =   1935
+      End
+      Begin VB.ComboBox cmbRoundedTrackSegs 
+         Height          =   420
+         Left            =   3000
+         TabIndex        =   78
+         Text            =   "cmbSegs"
+         Top             =   2880
+         Width           =   1935
+      End
+      Begin VB.CommandButton cmdRoundedTrackConvert 
+         Caption         =   "Convert"
+         Height          =   450
+         Left            =   1200
+         TabIndex        =   77
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.CommandButton cmdRoundedTrackCancel 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   4440
+         TabIndex        =   76
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.ComboBox cmbRoundedTrackBigDistance 
+         Height          =   420
+         Left            =   3000
+         TabIndex        =   75
+         Text            =   "cmbhPercent"
+         Top             =   1680
+         Width           =   1935
+      End
+      Begin VB.PictureBox picRoundedTrack 
+         BorderStyle     =   0  'None
+         Height          =   2415
+         Left            =   5520
+         ScaleHeight     =   2415
+         ScaleWidth      =   3375
+         TabIndex        =   74
+         Top             =   1080
+         Width           =   3375
+      End
+      Begin VB.Label lblRoundedTrackType 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Type"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   96
+         Top             =   1080
+         Width           =   2415
+      End
+      Begin VB.Label lblRoundedTrackSmallD 
+         Alignment       =   1  'Right Justify
+         Caption         =   "small d(mm)"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   84
+         Top             =   2280
+         Width           =   2415
+      End
+      Begin VB.Label lblSaveAsRoundedTrack 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Save as"
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   10.5
+            Charset         =   134
+            Weight          =   400
+            Underline       =   -1  'True
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00FF0000&
+         Height          =   375
+         Left            =   6960
+         TabIndex        =   82
+         Top             =   4560
+         Width           =   1695
+      End
+      Begin VB.Label lblRoundedTrackBigD 
+         Alignment       =   1  'Right Justify
+         Caption         =   "big d(mm)"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   81
+         Top             =   1680
+         Width           =   2415
+      End
+      Begin VB.Label lblRoundedTrackSegs 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Number of segments"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   80
+         Top             =   2880
+         Width           =   2415
+      End
+      Begin VB.Label lblRoundedTrackTips 
+         Alignment       =   2  'Center
+         Caption         =   "Apply to all tracks when deselecting all, otherwise apply to selected tracks only"
+         Height          =   495
+         Left            =   240
+         TabIndex        =   79
+         Top             =   360
+         Width           =   9375
+      End
+   End
    Begin VB.Frame tabStrip__Tab1 
       Caption         =   "     Font     "
       Height          =   5055
-      Left            =   10320
+      Left            =   10200
       TabIndex        =   2
-      Top             =   600
+      Top             =   1200
       Width           =   9895
       Begin VB.Frame frmInvertedBg 
          BackColor       =   &H00C0C0C0&
@@ -797,136 +935,6 @@ Begin VB.Form frmMain
          Width           =   3015
       End
    End
-   Begin VB.Frame tabStrip__Tab7 
-      Caption         =   " RoundedTrack "
-      Height          =   5055
-      Left            =   10440
-      TabIndex        =   73
-      Top             =   1920
-      Width           =   9895
-      Begin VB.ComboBox cmbRoundedTrackType 
-         Height          =   420
-         Left            =   3000
-         Style           =   2  'Dropdown List
-         TabIndex        =   95
-         Top             =   1440
-         Width           =   1935
-      End
-      Begin VB.ComboBox cmbRoundedTrackSmallDistance 
-         Height          =   420
-         Left            =   3000
-         TabIndex        =   83
-         Text            =   "cmbhPercent"
-         Top             =   2640
-         Width           =   1935
-      End
-      Begin VB.ComboBox cmbRoundedTrackSegs 
-         Height          =   420
-         Left            =   3000
-         TabIndex        =   78
-         Text            =   "cmbSegs"
-         Top             =   3240
-         Width           =   1935
-      End
-      Begin VB.CommandButton cmdRoundedTrackConvert 
-         Caption         =   "Convert"
-         Height          =   450
-         Left            =   1200
-         TabIndex        =   77
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.CommandButton cmdRoundedTrackCancel 
-         Caption         =   "Cancel"
-         Height          =   450
-         Left            =   4440
-         TabIndex        =   76
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.ComboBox cmbRoundedTrackBigDistance 
-         Height          =   420
-         Left            =   3000
-         TabIndex        =   75
-         Text            =   "cmbhPercent"
-         Top             =   2040
-         Width           =   1935
-      End
-      Begin VB.PictureBox picRoundedTrack 
-         BorderStyle     =   0  'None
-         Height          =   2415
-         Left            =   5520
-         ScaleHeight     =   2415
-         ScaleWidth      =   3375
-         TabIndex        =   74
-         Top             =   1440
-         Width           =   3375
-      End
-      Begin VB.Label lblRoundedTrackType 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Type"
-         Height          =   375
-         Left            =   480
-         TabIndex        =   96
-         Top             =   1440
-         Width           =   2415
-      End
-      Begin VB.Label lblRoundedTrackSmallD 
-         Alignment       =   1  'Right Justify
-         Caption         =   "small d(mm)"
-         Height          =   375
-         Left            =   480
-         TabIndex        =   84
-         Top             =   2640
-         Width           =   2415
-      End
-      Begin VB.Label lblSaveAsRoundedTrack 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Save as"
-         BeginProperty Font 
-            Name            =   "Î¢ÈíÑÅºÚ"
-            Size            =   10.5
-            Charset         =   134
-            Weight          =   400
-            Underline       =   -1  'True
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H00FF0000&
-         Height          =   375
-         Left            =   6960
-         TabIndex        =   82
-         Top             =   4560
-         Width           =   1695
-      End
-      Begin VB.Label lblRoundedTrackBigD 
-         Alignment       =   1  'Right Justify
-         Caption         =   "big d(mm)"
-         Height          =   375
-         Left            =   480
-         TabIndex        =   81
-         Top             =   2040
-         Width           =   2415
-      End
-      Begin VB.Label lblRoundedTrackSegs 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Number of segments"
-         Height          =   375
-         Left            =   480
-         TabIndex        =   80
-         Top             =   3240
-         Width           =   2415
-      End
-      Begin VB.Label lblRoundedTrackTips 
-         Alignment       =   2  'Center
-         Caption         =   "Apply to all tracks when deselecting all, otherwise apply to selected tracks only"
-         Height          =   495
-         Left            =   240
-         TabIndex        =   79
-         Top             =   360
-         Width           =   9375
-      End
-   End
    Begin VB.Frame tabStrip__Tab6 
       Caption         =   "  Teardrop  "
       Height          =   5055
@@ -1218,7 +1226,7 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5895
+      Top             =   5880
       Width           =   10425
       _ExtentX        =   18389
       _ExtentY        =   609

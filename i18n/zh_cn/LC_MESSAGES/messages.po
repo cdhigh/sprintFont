@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2025-12-25 07:28-0300\n"
+"POT-Creation-Date: 2025-12-25 09:07-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language: zh_CN\n"
@@ -181,14 +181,14 @@ msgstr "自动布线session文件"
 #: app/pcb_enhancements.py:40 app/pcb_enhancements.py:50
 #: app/pcb_enhancements.py:53 app/pcb_enhancements.py:65
 #: app/pcb_enhancements.py:83 app/pcb_enhancements.py:86
-#: app/pcb_enhancements.py:110 sprintFont.py:539 sprintFont.py:558
+#: app/pcb_enhancements.py:104 sprintFont.py:539 sprintFont.py:558
 #: sprintFont.py:560 sprintFont.py:590 sprintFont.py:593 sprintFont.py:595
 #: sprintFont.py:611 sprintFont.py:614 sprintFont.py:631 sprintFont.py:633
 #: sprintFont.py:653 sprintFont.py:662 sprintFont.py:675 sprintFont.py:679
 #: sprintFont.py:691 sprintFont.py:698 sprintFont.py:724 sprintFont.py:803
 #: sprintFont.py:853 sprintFont.py:861 sprintFont.py:925 sprintFont.py:929
-#: sprintFont.py:936 sprintFont.py:940 sprintFont.py:977 sprintFont.py:988
-#: sprintFont.py:1010 sprint_struct/wire_pair_tuner.py:92
+#: sprintFont.py:936 sprintFont.py:940 sprintFont.py:979 sprintFont.py:990
+#: sprintFont.py:1012 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "信息"
 
@@ -352,11 +352,11 @@ msgstr ""
 msgid "Failed to parse input file"
 msgstr "分析输入文件失败"
 
-#: sprintFont.py:977 sprintFont.py:988
+#: sprintFont.py:979 sprintFont.py:990
 msgid "Please click the Adjust button first to match the trace length"
 msgstr "请先点击调整按钮进行导线长度匹配"
 
-#: sprintFont.py:1010
+#: sprintFont.py:1012
 msgid "At least two traces must be selected"
 msgstr "至少要选择两根导线"
 
@@ -399,7 +399,7 @@ msgstr "成功删除 [{}] 个泪滴焊盘"
 msgid "No teardrop pads found"
 msgstr "没有找到泪滴焊盘"
 
-#: app/pcb_enhancements.py:110
+#: app/pcb_enhancements.py:104
 msgid "No suitable track found"
 msgstr "没有找到符合条件的走线"
 
@@ -512,10 +512,10 @@ msgstr "幅度-"
 msgid "Confirm"
 msgstr "确认"
 
-#: sprint_struct/wire_pair_tuner.py:73 ui/sprint_font_ui.py:816
-#: ui/sprint_font_ui.py:829 ui/sprint_font_ui.py:836 ui/sprint_font_ui.py:842
-#: ui/sprint_font_ui.py:854 ui/sprint_font_ui.py:864 ui/sprint_font_ui.py:873
-#: ui/sprint_font_ui.py:882
+#: sprint_struct/wire_pair_tuner.py:73 ui/sprint_font_ui.py:825
+#: ui/sprint_font_ui.py:838 ui/sprint_font_ui.py:843 ui/sprint_font_ui.py:851
+#: ui/sprint_font_ui.py:863 ui/sprint_font_ui.py:873 ui/sprint_font_ui.py:882
+#: ui/sprint_font_ui.py:892
 msgid "Cancel"
 msgstr "取消"
 
@@ -551,82 +551,82 @@ msgstr "导线长度: {} mm, 偏差: {} mm"
 msgid "The difference is smaller than the minimum length of a ridge"
 msgstr "偏差值小于单一蛇形线的最小长度"
 
-#: ui/sprint_font_ui.py:810
+#: ui/sprint_font_ui.py:819
 msgid "sprintFont"
 msgstr "sprintFont"
 
-#: ui/sprint_font_ui.py:811
+#: ui/sprint_font_ui.py:820
 msgid "Inverted Background"
 msgstr "反转背景"
 
-#: ui/sprint_font_ui.py:812
+#: ui/sprint_font_ui.py:821
 msgid "Padding"
 msgstr "内边距"
 
-#: ui/sprint_font_ui.py:813
+#: ui/sprint_font_ui.py:822
 msgid "Cap left"
 msgstr "左侧形状"
 
-#: ui/sprint_font_ui.py:814
+#: ui/sprint_font_ui.py:823
 msgid "Cap right"
 msgstr "右侧形状"
 
-#: ui/sprint_font_ui.py:815 ui/sprint_font_ui.py:828 ui/sprint_font_ui.py:843
-#: ui/sprint_font_ui.py:883
+#: ui/sprint_font_ui.py:824 ui/sprint_font_ui.py:837 ui/sprint_font_ui.py:852
+#: ui/sprint_font_ui.py:893
 msgid "Ok"
 msgstr "确定"
 
-#: ui/sprint_font_ui.py:817
+#: ui/sprint_font_ui.py:826
 msgid "Text"
 msgstr "文本"
 
-#: ui/sprint_font_ui.py:818 ui/sprint_font_ui.py:839 ui/sprint_font_ui.py:848
+#: ui/sprint_font_ui.py:827 ui/sprint_font_ui.py:847 ui/sprint_font_ui.py:857
 msgid "Layer"
 msgstr "板层"
 
-#: ui/sprint_font_ui.py:819 ui/sprint_font_ui.py:847
+#: ui/sprint_font_ui.py:828 ui/sprint_font_ui.py:856
 msgid "Smooth"
 msgstr "平滑"
 
-#: ui/sprint_font_ui.py:820
+#: ui/sprint_font_ui.py:829
 msgid "Word spacing (mm)"
 msgstr "字间距 (mm)"
 
-#: ui/sprint_font_ui.py:821
+#: ui/sprint_font_ui.py:830
 msgid "Line spacing (mm)"
 msgstr "行间距 (mm)"
 
-#: ui/sprint_font_ui.py:822 ui/sprint_font_ui.py:832 ui/sprint_font_ui.py:849
-#: ui/sprint_font_ui.py:859 ui/sprint_font_ui.py:876 ui/sprint_font_ui.py:888
+#: ui/sprint_font_ui.py:831 ui/sprint_font_ui.py:841 ui/sprint_font_ui.py:858
+#: ui/sprint_font_ui.py:868 ui/sprint_font_ui.py:885 ui/sprint_font_ui.py:898
 msgid "Save as"
 msgstr "另存为"
 
-#: ui/sprint_font_ui.py:823
+#: ui/sprint_font_ui.py:832
 msgid "Font"
 msgstr "字体"
 
-#: ui/sprint_font_ui.py:824 ui/sprint_font_ui.py:845
+#: ui/sprint_font_ui.py:833 ui/sprint_font_ui.py:854
 msgid "Height (mm)"
 msgstr "字高 (mm)"
 
-#: ui/sprint_font_ui.py:825
+#: ui/sprint_font_ui.py:834
 msgid "     Font     "
 msgstr "    字体    "
 
-#: ui/sprint_font_ui.py:826
+#: ui/sprint_font_ui.py:835
 msgid "Import text"
 msgstr "导入文本"
 
-#: ui/sprint_font_ui.py:827 ui/sprint_font_ui.py:834 ui/sprint_font_ui.py:844
-#: ui/sprint_font_ui.py:853 ui/sprint_font_ui.py:856
+#: ui/sprint_font_ui.py:836 ui/sprint_font_ui.py:845 ui/sprint_font_ui.py:853
+#: ui/sprint_font_ui.py:862 ui/sprint_font_ui.py:865
 msgid "..."
 msgstr "..."
 
-#: ui/sprint_font_ui.py:830
+#: ui/sprint_font_ui.py:839
 msgid "Input"
 msgstr "输入"
 
-#: ui/sprint_font_ui.py:831
+#: ui/sprint_font_ui.py:840
 msgid ""
 "Currently supports:\n"
 "1. Kicad footprint Library : *.kicad_mod\n"
@@ -636,19 +636,19 @@ msgstr ""
 "1. Kicad 封装库文件：*.kicad_mod\n"
 "2. 力创商城元件编号：C + 若干位数字 (C可省略)"
 
-#: ui/sprint_font_ui.py:833
+#: ui/sprint_font_ui.py:842
 msgid "   Footprint  "
 msgstr "       封装      "
 
-#: ui/sprint_font_ui.py:835
+#: ui/sprint_font_ui.py:844
 msgid "Export"
 msgstr "导出"
 
-#: ui/sprint_font_ui.py:837
-msgid "Output"
-msgstr "输出"
+#: ui/sprint_font_ui.py:846
+msgid "Only for OpenSCAD and SVG"
+msgstr "仅适用于OpenSCAD和SVG"
 
-#: ui/sprint_font_ui.py:838
+#: ui/sprint_font_ui.py:848
 msgid ""
 "Currently supports:\n"
 "1. Kicad PCB file : *.kicad_pcb\n"
@@ -660,19 +660,19 @@ msgstr ""
 "2. OpenSCAD文件: *.scad\n"
 "3. SVG文件: *.svg"
 
-#: ui/sprint_font_ui.py:840
-msgid "Only for OpenSCAD and SVG"
-msgstr "仅适用于OpenSCAD和SVG"
+#: ui/sprint_font_ui.py:849
+msgid "Output"
+msgstr "输出"
 
-#: ui/sprint_font_ui.py:841
+#: ui/sprint_font_ui.py:850
 msgid "   Export  "
 msgstr "  导出  "
 
-#: ui/sprint_font_ui.py:846
+#: ui/sprint_font_ui.py:855
 msgid "Mode"
 msgstr "模式"
 
-#: ui/sprint_font_ui.py:850
+#: ui/sprint_font_ui.py:859
 msgid ""
 "Note:\n"
 "Only for simple images, may fail to convert complex images"
@@ -680,27 +680,27 @@ msgstr ""
 "注意：\n"
 "仅适用于简单的图像，复杂的图像可能会转换失败"
 
-#: ui/sprint_font_ui.py:851
+#: ui/sprint_font_ui.py:860
 msgid "  SVG/Qrcode  "
 msgstr "    SVG/二维码   "
 
-#: ui/sprint_font_ui.py:852
+#: ui/sprint_font_ui.py:861
 msgid "Import SES"
 msgstr "导入SES"
 
-#: ui/sprint_font_ui.py:855
+#: ui/sprint_font_ui.py:864
 msgid "Export DSN"
 msgstr "导出DSN"
 
-#: ui/sprint_font_ui.py:857
+#: ui/sprint_font_ui.py:866
 msgid "Rules"
 msgstr "布线规则"
 
-#: ui/sprint_font_ui.py:858
+#: ui/sprint_font_ui.py:867
 msgid "Ses file"
 msgstr "SES文件"
 
-#: ui/sprint_font_ui.py:860
+#: ui/sprint_font_ui.py:869
 msgid ""
 "Open the exported DSN file with Freerouting for autorouting\n"
 "Currently only supports all components placed on the front side"
@@ -708,99 +708,103 @@ msgstr ""
 "使用 Freerouting 打开导出后的DSN文件进行自动布线\n"
 "当前仅支持在板子正面放置元件"
 
-#: ui/sprint_font_ui.py:861
+#: ui/sprint_font_ui.py:870
 msgid "Dsn file"
 msgstr "DSN文件"
 
-#: ui/sprint_font_ui.py:862
+#: ui/sprint_font_ui.py:871
 msgid "  AutoRouter  "
 msgstr "    自动布线     "
 
-#: ui/sprint_font_ui.py:863
+#: ui/sprint_font_ui.py:872
 msgid "Remove"
 msgstr "删除"
 
-#: ui/sprint_font_ui.py:865
+#: ui/sprint_font_ui.py:874
 msgid "Add"
 msgstr "添加"
 
-#: ui/sprint_font_ui.py:866
+#: ui/sprint_font_ui.py:875
 msgid "Pad type"
 msgstr "焊盘类型"
 
-#: ui/sprint_font_ui.py:867
+#: ui/sprint_font_ui.py:876
 msgid ""
 "Apply to all pads when deselecting all, otherwise apply to selected pads "
 "AND tracks only"
 msgstr "取消全部选择时应用到所有焊盘，否则仅应用到您选择的焊盘和对应的走线"
 
-#: ui/sprint_font_ui.py:868
+#: ui/sprint_font_ui.py:877
 msgid "Horizontal percent"
 msgstr "水平比例 (H)"
 
-#: ui/sprint_font_ui.py:869 ui/sprint_font_ui.py:878
+#: ui/sprint_font_ui.py:878 ui/sprint_font_ui.py:887
 msgid "Number of segments"
 msgstr "线段数量"
 
-#: ui/sprint_font_ui.py:870
+#: ui/sprint_font_ui.py:879
 msgid "Vertical percent"
 msgstr "垂直比例 (W)"
 
-#: ui/sprint_font_ui.py:871
+#: ui/sprint_font_ui.py:880
 msgid "  Teardrop  "
 msgstr "  泪滴焊盘  "
 
-#: ui/sprint_font_ui.py:872
+#: ui/sprint_font_ui.py:881
 msgid "Convert"
 msgstr "转换"
 
-#: ui/sprint_font_ui.py:874 ui/sprint_font_ui.py:890
+#: ui/sprint_font_ui.py:883 ui/sprint_font_ui.py:900
 msgid "Type"
 msgstr "类型"
 
-#: ui/sprint_font_ui.py:875
+#: ui/sprint_font_ui.py:884
 msgid "small d(mm)"
 msgstr "小 d(mm)"
 
-#: ui/sprint_font_ui.py:877
+#: ui/sprint_font_ui.py:886
 msgid "big d(mm)"
 msgstr "大 d(mm)"
 
-#: ui/sprint_font_ui.py:879
+#: ui/sprint_font_ui.py:888
 msgid ""
 "Apply to all tracks when deselecting all, otherwise apply to selected "
 "tracks only"
 msgstr "取消全部选择时应用到所有走线，否则仅应用到您选择的走线"
 
-#: ui/sprint_font_ui.py:880
+#: ui/sprint_font_ui.py:889
+msgid "Merge Connected Tracks"
+msgstr ""
+
+#: ui/sprint_font_ui.py:890
 msgid " RoundedTrack "
 msgstr "  圆弧走线  "
 
-#: ui/sprint_font_ui.py:881
+#: ui/sprint_font_ui.py:891
 msgid "Adjust"
 msgstr "调整"
 
-#: ui/sprint_font_ui.py:884
+#: ui/sprint_font_ui.py:894
 msgid "Target skew"
 msgstr "目标偏差"
 
-#: ui/sprint_font_ui.py:885
+#: ui/sprint_font_ui.py:895
 msgid "Spacing (s)"
 msgstr "间距 (s)"
 
-#: ui/sprint_font_ui.py:886
+#: ui/sprint_font_ui.py:896
 msgid "Select the differential wire pair that needs to be adjusted in length"
 msgstr "选择需要匹配长度的差分线对"
 
-#: ui/sprint_font_ui.py:887
+#: ui/sprint_font_ui.py:897
 msgid "Min amplitude (Amin)"
 msgstr "最小波幅 (Amin)"
 
-#: ui/sprint_font_ui.py:889
+#: ui/sprint_font_ui.py:899
 msgid "Max amplitude (Amax)"
 msgstr "最大波幅 (Amax)"
 
-#: ui/sprint_font_ui.py:891
+#: ui/sprint_font_ui.py:901
 msgid " WirePair "
 msgstr "  差分线  "
 

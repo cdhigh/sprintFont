@@ -34,7 +34,7 @@ from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
 
 __Version__ = "1.8.1"
-__DATE__ = "20251215"
+__DATE__ = "20251225"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
@@ -965,6 +965,8 @@ class Application(Application_ui):
         smallDistance = str_to_float(self.cmbRoundedTrackSmallDistance.text())
         segs = str_to_int(self.cmbRoundedTrackSegs.text())
         rtType = {0: 'tangent', 1: '3Points', 2: 'bezier'}.get(self.cmbRoundedTrackType.current(), 'tangent')
+        if textIo and self.chkMergeConnectedTracks.value():
+            textIo.mergeConnectedTracks()
         return self.pcbEnhancements.convertRoundedTrack(textIo, rtType, bigDistance, smallDistance, segs)
 
     #导线对调整长度，确认

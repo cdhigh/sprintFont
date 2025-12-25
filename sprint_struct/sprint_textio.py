@@ -260,4 +260,157 @@ class SprintTextIO(SprintElement):
             elem.moveByOffset(offsetX, offsetY)
             
         self.updateSelfBbox()
+    
+    #合并首尾相连的track, 让圆弧导线体验更好
+    #可能有多个track首尾相连, 可以统一合并为一个
+    def mergeConnectedTracks(self):
+        tracks = self.getTracks() #只选择导线
+        if len(tracks) < 2:
+            return 0
         
+        # 辅助函数: 判断两个track是否可以合并 (属性相同)
+        def canMerge(t1, t2):
+            if t1.name or t2.name:  # 有名字的track不能合并
+                return False
+            return (t1.layerIdx == t2.layerIdx and
+                    t1.width == t2.width and
+                    t1.clearance == t2.clearance and
+                    t1.cutout == t2.cutout and
+                    t1.soldermask == t2.soldermask and
+                    t1.flatstart == t2.flatstart and
+                    t1.flatend == t2.flatend)
+        
+        # 辅助函数: 判断两个点是否相同 (考虑浮点数精度)
+        def pointsEqual(p1, p2, tolerance=1e-6):
+            return abs(p1[0] - p2[0]) < tolerance and abs(p1[1] - p2[1]) < tolerance
+        
+        # 辅助函数: 判断两个track是否首尾相连
+        # 返回: None(不相连), 'normal'(t1尾连t2头), 'reverse'(t1尾连t2尾), 
+        #      'reverse_first'(t1头连t2头), 'reverse_both'(t1头连t2尾)
+        def getConnectionType(t1, t2):
+            if not t1.isValid() or not t2.isValid():
+                return None
+            
+            t1Start = t1.points[0]
+            t1End = t1.points[-1]
+            t2Start = t2.points[0]
+            t2End = t2.points[-1]
+            
+            if pointsEqual(t1End, t2Start):
+                return 'normal'  # t1 -> t2
+            elif pointsEqual(t1End, t2End):
+                return 'reverse'  # t1 -> t2逆序
+            elif pointsEqual(t1Start, t2Start):
+                return 'reverse_first'  # t1逆序 -> t2
+            elif pointsEqual(t1Start, t2End):
+                return 'reverse_both'  # t1逆序 -> t2逆序
+            return None
+        
+        # 辅助函数: 合并两个track的点列表
+        def mergePoints(points1, points2, connectionType):
+            if connectionType == 'normal':
+                # t1尾 连接 t2头: 保持t1, 去掉t2的第一个点(重复点)后追加
+                return points1 + points2[1:]
+            elif connectionType == 'reverse':
+                # t1尾 连接 t2尾: 保持t1, 将t2逆序后去掉最后一个点(重复点)
+                return points1 + list(reversed(points2))[1:]
+            elif connectionType == 'reverse_first':
+                # t1头 连接 t2头: 将t1逆序后, 去掉t2的第一个点(重复点)后追加
+                return list(reversed(points1)) + points2[1:]
+            elif connectionType == 'reverse_both':
+                # t1头 连接 t2尾: 将t1逆序, 将t2也逆序后去掉最后一个点(重复点)
+                return list(reversed(points1)) + list(reversed(points2))[1:]
+            return points1
+        
+        # 构建track链: 找出所有相连的track组
+        mergedCount = 0
+        processed = set()  # 已处理的track
+        chains = []  # 存储所有的track链
+        
+        for i, track in enumerate(tracks):
+            if i in processed:
+                continue
+            
+            # 开始构建一个新的链
+            chain = [track]
+            chainIndices = [i]
+            changed = True
+            
+            # 持续扩展链，直到没有新的track可以加入
+            while changed:
+                changed = False
+                
+                # 尝试在链的两端添加新的track
+                for j, otherTrack in enumerate(tracks):
+                    if j in chainIndices or j in processed:
+                        continue
+                    
+                    if not canMerge(chain[0], otherTrack):
+                        continue
+                    
+                    # 检查是否可以连接到链的开头
+                    connType = getConnectionType(otherTrack, chain[0])
+                    if connType:
+                        chain.insert(0, otherTrack)
+                        chainIndices.insert(0, j)
+                        changed = True
+                        continue
+                    
+                    # 检查是否可以连接到链的结尾
+                    connType = getConnectionType(chain[-1], otherTrack)
+                    if connType:
+                        chain.append(otherTrack)
+                        chainIndices.append(j)
+                        changed = True
+                        continue
+            
+            # 如果链长度大于1，说明有可以合并的track
+            if len(chain) > 1:
+                chains.append((chain, chainIndices))
+                processed.update(chainIndices)
+        
+        # 执行合并操作
+        for chain, chainIndices in chains:
+            # 创建合并后的新track
+            mergedTrack = SprintTrack(chain[0].layerIdx, chain[0].width)
+            mergedTrack.clearance = chain[0].clearance
+            mergedTrack.cutout = chain[0].cutout
+            mergedTrack.soldermask = chain[0].soldermask
+            mergedTrack.flatstart = chain[0].flatstart
+            mergedTrack.flatend = chain[0].flatend
+            
+            # 合并所有点
+            # 使用临时track来跟踪已合并的点，以正确判断连接类型
+            mergedPoints = chain[0].points[:]
+            for k in range(1, len(chain)):
+                # 创建一个临时track来表示当前已合并的点
+                tempTrack = SprintTrack()
+                tempTrack.points = mergedPoints
+                
+                # 检查已合并的点与下一个track的连接方式
+                connType = getConnectionType(tempTrack, chain[k])
+                if connType == 'normal':
+                    # tempTrack尾 连接 chain[k]头
+                    mergedPoints.extend(chain[k].points[1:])
+                elif connType == 'reverse':
+                    # tempTrack尾 连接 chain[k]尾
+                    mergedPoints.extend(list(reversed(chain[k].points))[1:])
+                elif connType == 'reverse_first':
+                    # tempTrack头 连接 chain[k]头
+                    mergedPoints = list(reversed(mergedPoints)) + chain[k].points[1:]
+                elif connType == 'reverse_both':
+                    # tempTrack头 连接 chain[k]尾
+                    mergedPoints = list(reversed(mergedPoints)) + list(reversed(chain[k].points))[1:]
+            
+            mergedTrack.points = mergedPoints
+            mergedTrack.removeDuplicatePoints()  # 删除可能的重复点
+            mergedTrack.updateSelfBbox()
+            
+            # 删除原来的track，添加合并后的track
+            for track in chain:
+                self.remove(track)
+            
+            self.add(mergedTrack)
+            mergedCount += len(chain) - 1  # 合并数量 = 原track数 - 1
+        
+        return mergedCount

@@ -86,20 +86,14 @@ class PcbEnhancements:
             showinfo(_("info"), _("No teardrop pads found"))
             return None
     
+    #转换弧形走线
+    #textIo: SprintTextIO实例
+    #roundedTrackType: 圆角类型(0-大圆角, 1-小圆角, 2-自动)
+    #bigDistance: 大圆角距离
+    #smallDistance: 小圆角距离
+    #segs: 分段数
+    #Returns: 成功返回textIo对象，失败返回None
     def convertRoundedTrack(self, textIo, roundedTrackType, bigDistance, smallDistance, segs):
-        """
-        转换弧形走线
-        
-        Args:
-            textIo: SprintTextIO实例
-            roundedTrackType: 圆角类型(0-大圆角, 1-小圆角, 2-自动)
-            bigDistance: 大圆角距离
-            smallDistance: 小圆角距离
-            segs: 分段数
-            
-        Returns:
-            成功返回textIo对象，失败返回None
-        """
         from sprint_struct.rounded_track import createArcTracksInTextIo
         
         if not textIo:

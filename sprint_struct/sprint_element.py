@@ -13,6 +13,7 @@ LAYER_S2 = 4
 LAYER_I1 = 5
 LAYER_I2 = 6
 LAYER_U  = 7
+ALL_LAYERS = (LAYER_C1, LAYER_S1, LAYER_C2, LAYER_S2, LAYER_I1, LAYER_I2, LAYER_U)
 
 #对应索引的板层名字，主要用于Kicad/DSN导出
 sprintLayerMap = {
