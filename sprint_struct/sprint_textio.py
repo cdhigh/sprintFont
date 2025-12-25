@@ -268,6 +268,19 @@ class SprintTextIO(SprintElement):
         if len(tracks) < 2:
             return 0
         
+        pads = self.getPads()
+        polys = self.getPolygons() #仅返回导电多边形
+        
+        #内嵌函数，判断一个点是否在导电区域（焊盘或多边形）内
+        def isPointInsideConductiveArea(pt, layerIdx):
+            for pad in pads:
+                if ((pad.layerIdx == layerIdx) and pad.enclose(pt)):
+                    return True
+            for poly in polys:
+                if ((poly.layerIdx == layerIdx) and poly.encircle(pt)):
+                    return True
+            return False
+        
         # 辅助函数: 判断两个track是否可以合并 (属性相同)
         def canMerge(t1, t2):
             if t1.name or t2.name:  # 有名字的track不能合并
@@ -296,13 +309,14 @@ class SprintTextIO(SprintElement):
             t2Start = t2.points[0]
             t2End = t2.points[-1]
             
-            if pointsEqual(t1End, t2Start):
+            #如果首尾节点在焊盘或覆铜区域内, 这个点不应该视为和其他导线有可能连接
+            if pointsEqual(t1End, t2Start) and not isPointInsideConductiveArea(t1End, t1.layerIdx):
                 return 'normal'  # t1 -> t2
-            elif pointsEqual(t1End, t2End):
+            elif pointsEqual(t1End, t2End) and not isPointInsideConductiveArea(t1End, t1.layerIdx):
                 return 'reverse'  # t1 -> t2逆序
-            elif pointsEqual(t1Start, t2Start):
+            elif pointsEqual(t1Start, t2Start) and not isPointInsideConductiveArea(t1Start, t1.layerIdx):
                 return 'reverse_first'  # t1逆序 -> t2
-            elif pointsEqual(t1Start, t2End):
+            elif pointsEqual(t1Start, t2End) and not isPointInsideConductiveArea(t1Start, t1.layerIdx):
                 return 'reverse_both'  # t1逆序 -> t2逆序
             return None
         
