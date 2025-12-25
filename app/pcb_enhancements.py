@@ -35,6 +35,10 @@ class PcbEnhancements:
         
         if not textIo:
             return None
+            
+        if ((hPercent <= 0) or (vPercent <= 0) or (segs <= 0)):
+            showwarning(_("info"), _("Wrong parameter value"))
+            return None
 
         usePth = True if padType in (0, 2) else False
         useSmd = True if padType in (1, 2) else False

@@ -40,7 +40,7 @@ class SprintPad(SprintElement):
         self.sizeY = 0
         self.drill = 0  #钻孔直径
         self.form = PAD_FORM_ROUND
-        self.clearance = 0
+        self.clearance = None #这里不能修改为0,=0表示十字焊盘,和铺铜直接相连
         self.soldermask = None
         self.rotation = 0
         self.via = None #是否是双面焊盘
