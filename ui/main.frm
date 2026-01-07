@@ -23,6 +23,106 @@ Begin VB.Form frmMain
    ScaleWidth      =   10425
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab3 
+      Caption         =   "   Export  "
+      Height          =   5055
+      Left            =   9840
+      TabIndex        =   114
+      Top             =   2640
+      Width           =   9895
+      Begin VB.CheckBox chkLayeredScad 
+         Caption         =   "Export as Layered OpenSCAD"
+         Height          =   375
+         Left            =   960
+         TabIndex        =   125
+         Top             =   3360
+         Width           =   3615
+      End
+      Begin VB.ComboBox cmbExportLayer 
+         Height          =   420
+         ItemData        =   "main.frx":0000
+         Left            =   1560
+         List            =   "main.frx":0002
+         Style           =   2  'Dropdown List
+         TabIndex        =   122
+         Top             =   2760
+         Width           =   3015
+      End
+      Begin VB.CommandButton cmdCancelExport 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   4440
+         TabIndex        =   118
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.CommandButton cmdExport 
+         Caption         =   "Export"
+         Height          =   450
+         Left            =   1200
+         TabIndex        =   117
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.TextBox txtExportFile 
+         Height          =   420
+         Left            =   1560
+         TabIndex        =   116
+         Top             =   2040
+         Width           =   7335
+      End
+      Begin VB.CommandButton cmdChooseExportFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   9000
+         TabIndex        =   115
+         Top             =   2040
+         Width           =   495
+      End
+      Begin VB.Label lblExportLayerTips 
+         Caption         =   "Only for OpenSCAD and SVG"
+         Height          =   375
+         Left            =   4680
+         TabIndex        =   123
+         Top             =   2760
+         Width           =   4815
+      End
+      Begin VB.Label lblExportLayer 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Layer"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   121
+         Top             =   2760
+         Width           =   1215
+      End
+      Begin VB.Label lblExportTips 
+         Caption         =   "Currently supports:\n1. Kicad PCB file : *.kicad_pcb\n2. OpenSCAD file : *.scad\n3. SVG file : *.svg"
+         Height          =   1335
+         Left            =   1560
+         TabIndex        =   120
+         Top             =   360
+         Width           =   7815
+      End
+      Begin VB.Label lblExportFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Output"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   119
+         Top             =   2040
+         Width           =   1215
+      End
+   End
    Begin VB.Frame tabStrip__Tab7 
       Caption         =   " RoundedTrack "
       Height          =   5055
@@ -291,9 +391,9 @@ Begin VB.Form frmMain
       End
       Begin VB.ComboBox cmbLayer 
          Height          =   420
-         ItemData        =   "main.frx":0000
+         ItemData        =   "main.frx":0004
          Left            =   1560
-         List            =   "main.frx":0002
+         List            =   "main.frx":0006
          Style           =   2  'Dropdown List
          TabIndex        =   11
          Top             =   1920
@@ -533,98 +633,6 @@ Begin VB.Form frmMain
          TabIndex        =   29
          Top             =   4560
          Width           =   1695
-      End
-   End
-   Begin VB.Frame tabStrip__Tab3 
-      Caption         =   "   Export  "
-      Height          =   5055
-      Left            =   9600
-      TabIndex        =   114
-      Top             =   2760
-      Width           =   9895
-      Begin VB.ComboBox cmbExportLayer 
-         Height          =   420
-         ItemData        =   "main.frx":0004
-         Left            =   1560
-         List            =   "main.frx":0006
-         Style           =   2  'Dropdown List
-         TabIndex        =   122
-         Top             =   3000
-         Width           =   3015
-      End
-      Begin VB.CommandButton cmdCancelExport 
-         Caption         =   "Cancel"
-         Height          =   450
-         Left            =   4440
-         TabIndex        =   118
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.CommandButton cmdExport 
-         Caption         =   "Export"
-         Height          =   450
-         Left            =   1200
-         TabIndex        =   117
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.TextBox txtExportFile 
-         Height          =   420
-         Left            =   1560
-         TabIndex        =   116
-         Top             =   2160
-         Width           =   7335
-      End
-      Begin VB.CommandButton cmdChooseExportFile 
-         Caption         =   "..."
-         BeginProperty Font 
-            Name            =   "Arial"
-            Size            =   9
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   375
-         Left            =   9000
-         TabIndex        =   115
-         Top             =   2160
-         Width           =   495
-      End
-      Begin VB.Label lblExportLayerTips 
-         Caption         =   "Only for OpenSCAD and SVG"
-         Height          =   375
-         Left            =   4680
-         TabIndex        =   123
-         Top             =   3000
-         Width           =   4815
-      End
-      Begin VB.Label lblExportLayer 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Layer"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   121
-         Top             =   3000
-         Width           =   1215
-      End
-      Begin VB.Label lblExportTips 
-         Caption         =   "Currently supports:\n1. Kicad PCB file : *.kicad_pcb\n2. OpenSCAD file : *.scad\n3. SVG file : *.svg"
-         Height          =   1575
-         Left            =   1560
-         TabIndex        =   120
-         Top             =   360
-         Width           =   7815
-      End
-      Begin VB.Label lblExportFile 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Output"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   119
-         Top             =   2160
-         Width           =   1215
       End
    End
    Begin VB.Frame tabStrip__Tab5 

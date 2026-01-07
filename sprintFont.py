@@ -37,8 +37,7 @@ __Version__ = "1.8.1"
 __DATE__ = "20251225"
 __AUTHOR__ = "cdhigh"
 
-#DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
-DEBUG_IN_FILE = ""
+DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
 
 #在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
 WIN_DIR = os.getenv('WINDIR')
@@ -139,7 +138,7 @@ class Application(Application_ui):
         self.configManager.restoreConfig()
         
         #TODO
-        if DEBUG_IN_FILE and not self.inFileName:
+        if globals().get('DEBUG_IN_FILE') and not self.inFileName:
             self.inFileName = DEBUG_IN_FILE
         
         self.setWidgetsState()
@@ -625,7 +624,8 @@ class Application(Application_ui):
             generator = SVGGenerator(textIo, layers=layer)
         else:
             layer = self.cmbExportLayer.current()
-            generator = OpenSCADGenerator(textIo, layers=layer)
+            layered = self.chkLayeredScad.value()
+            generator = OpenSCADGenerator(textIo, layers=layer, layered=layered)
         errStr = generator.generate(outFileName)
         if errStr:
             showwarning(_('info'), errStr)
