@@ -7,6 +7,7 @@ Author: cdhigh <https://github.com/cdhigh>
 import datetime, uuid
 from .kicad_definitions import *
 from sprint_struct.sprint_textio import *
+from .netlist_builder import NetlistBuilder
 
 def uuid4():
     return str(uuid.uuid4())
@@ -23,6 +24,8 @@ class KicadGenerator:
     def __init__(self, textIo):
         self.textIo = textIo
         self._componentNo = 0
+        builder = NetlistBuilder(textIo)
+        self.netlist = builder.build()
 
     def compNo(self):
         self._componentNo += 1
@@ -66,6 +69,8 @@ class KicadGenerator:
     def writeLayers(self, f):
         f.write('  (layers\n')
         f.write('    (0 "F.Cu" signal)\n')
+        f.write('    (1 "In1.Cu" signal)\n')
+        f.write('    (2 "In2.Cu" signal)\n')
         f.write('    (31 "B.Cu" signal)\n')
         f.write('    (32 "B.Adhes" user "B.Adhesive")\n')
         f.write('    (33 "F.Adhes" user "F.Adhesive")\n')
@@ -135,6 +140,8 @@ class KicadGenerator:
 
     def writeNetlist(self, f):
         f.write('  (net 0 "")\n')
+        for net in self.netlist['nets']:
+            f.write(f'  (net {net["number"]} "{net["name"]}")\n')
         f.write('  (embedded_fonts no)\n')
 
     def writeElements(self, f):
@@ -186,7 +193,8 @@ class KicadGenerator:
         else:
             name = 'segment'
             width = f'(width {r2(track.width)})'
-            net = '(net 0) '
+            netNum = self.netlist['element_net_map'].get(id(track), 0)
+            net = f'(net {netNum}) '
 
         for i in range(len(points) - 1):
             p1 = points[i]
@@ -252,12 +260,16 @@ class KicadGenerator:
             f.write(f'    (property "Footprint" "" (at 0 0 0) (unlocked yes) (layer "{layer.replace(".Cu", ".Fab")}") (hide yes) (uuid {uuid4()}) (effects (font (size 1 1) (thickness 0.15))))\n')
             f.write('    (attr smd)\n' if padType == "smd" else '    (attr through_hole)\n')
             #rotation写在外层会导致旋转失效
+            netNum = self.netlist['element_net_map'].get(id(pad), 0)
+            netName = f"Net-{netNum}" if netNum > 0 else ""
             f.write(f'    (pad "1" {padType} {shape} (at 0 0 {rotation}) (size {sizeX} {sizeY}) '
-                   f'{drillDef} (layers {padLayers}) (net 0 "") (uuid {uuid4()}))\n')
+                   f'{drillDef} (layers {padLayers}) (net {netNum} "{netName}") (uuid {uuid4()}))\n')
             f.write(f'  )\n')
         else:
+            netNum = self.netlist['element_net_map'].get(id(pad), 0)
+            netName = f"Net-{netNum}" if netNum > 0 else ""
             f.write(f'    (pad "{padNo}" {padType} {shape} (at {x} {y} {rotation}) (size {sizeX} {sizeY}) '
-                   f'{drillDef} (layers {padLayers}) (net 0 "") (uuid {uuid4()}))\n')
+                   f'{drillDef} (layers {padLayers}) (net {netNum} "{netName}") (uuid {uuid4()}))\n')
 
     #转换多边形区域
     #格式: (zone (net 0) (net_name "") (layer LayerName) (uuid UUID) (hatch edge 0.5)...)
@@ -266,7 +278,9 @@ class KicadGenerator:
     def _writeZone(self, f, zone, centroid=(0,0)):
         layer = self.getLayerName(zone.layerIdx)
         if centroid == (0,0):
-            f.write(f'  (zone (net 0) (net_name "") (layer {layer}) (uuid {uuid4()}) (hatch edge 0.5)\n')
+            netNum = self.netlist['element_net_map'].get(id(zone), 0)
+            netName = f"Net-{netNum}" if netNum > 0 else ""
+            f.write(f'  (zone (net {netNum}) (net_name "{netName}") (layer {layer}) (uuid {uuid4()}) (hatch edge 0.5)\n')
             f.write(f'    (connect_pads (clearance {zone.clearance}))\n')
             if zone.cutout: #禁止铺铜区
                 f.write('    (min_thickness 0.1) (filled_areas_thickness no)\n')
