@@ -122,6 +122,7 @@ class SprintTextIoParser:
         self.containers[-1].add(component)
         self.containers.append(component)
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'COMMENT'):
                 component.comment = value.replace('|', '')
             elif (key == 'USE_PICKPLACE'):
@@ -145,6 +146,7 @@ class SprintTextIoParser:
             return
 
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'VISIBLE'):
                 component.nameVisible = self.parseBooleanStr(value)
             elif (key == 'LAYER'):
@@ -174,6 +176,7 @@ class SprintTextIoParser:
             return
 
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'VISIBLE'):
                 component.valueVisible = self.parseBooleanStr(value)
             elif (key == 'LAYER'):
@@ -201,6 +204,7 @@ class SprintTextIoParser:
         track = SprintTrack()
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'LAYER'):
                 track.layerIdx = self.parseLayerStr(value)
             elif (key == 'WIDTH'):
@@ -232,6 +236,7 @@ class SprintTextIoParser:
     def handlePad(self, elems: list):
         pad = SprintPad(padType=elems[0].strip())
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'LAYER'):
                 pad.layerIdx = self.parseLayerStr(value)
             elif (key == 'POS'):
@@ -275,6 +280,7 @@ class SprintTextIoParser:
         poly = SprintPolygon()
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'LAYER'):
                 poly.layerIdx = self.parseLayerStr(value)
             elif (key == 'WIDTH'):
@@ -310,6 +316,7 @@ class SprintTextIoParser:
     def handleText(self, elems: list):
         text = SprintText()
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'LAYER'):
                 text.layerIdx = self.parseLayerStr(value)
             elif (key == 'POS'):
@@ -344,6 +351,7 @@ class SprintTextIoParser:
     def handleCircle(self, elems: list):
         cir = SprintCircle()
         for key, value in elems[1:]:
+            key = key.upper()
             if (key == 'LAYER'):
                 cir.layerIdx = self.parseLayerStr(value)
             elif (key == 'CENTER'):

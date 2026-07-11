@@ -17,9 +17,47 @@ def str_to_int(txt: str, defaultValue: int=0):
 #字符串转浮点数，出错则返回defaultValue
 def str_to_float(txt: str, defaultValue: float=0.0):
     try:
-        return float(str(txt).strip())
+        return float(str(txt).replace(',', '.').strip())
     except:
         return defaultValue
+
+#根据运算符判断两个数值的关系是否成立
+#比如 evalCondition(1, '<', 2) = True
+def evalCondition(val1, op, val2):
+    try:
+        v1 = float(val1)
+        v2 = float(val2)
+        if op == '=' or op == '==':
+            return math.isclose(v1, v2, abs_tol=1e-5)
+        elif op == '>=':
+            return v1 >= v2 or math.isclose(v1, v2, abs_tol=1e-5)
+        elif op == '<=':
+            return v1 <= v2 or math.isclose(v1, v2, abs_tol=1e-5)
+        elif op == '>':
+            return v1 > v2 and not math.isclose(v1, v2, abs_tol=1e-5)
+        elif op == '<':
+            return v1 < v2 and not math.isclose(v1, v2, abs_tol=1e-5)
+        elif op == '!=':
+            return not math.isclose(v1, v2, abs_tol=1e-5)
+    except (ValueError, TypeError):
+        pass
+
+    s1 = str(val1)
+    s2 = str(val2)
+    if op == '=' or op == '==':
+        return s1 == s2
+    elif op == '!=':
+        return s1 != s2
+    elif op == '>=':
+        return s1 >= s2
+    elif op == '<=':
+        return s1 <= s2
+    elif op == '>':
+        return s1 > s2
+    elif op == '<':
+        return s1 < s2
+    
+    return s1 == s2
 
 #判断一个字符串是否是十六进制字符串
 def isHexString(txt: str):

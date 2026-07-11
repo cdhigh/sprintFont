@@ -77,7 +77,7 @@ class SprintTextIO(SprintElement):
         self.yMax = max(elem.yMax, self.yMax)
         
     #获取所有焊盘
-    #padType: 'PAD'/'SMDPAD'/none
+    #padType: 'PAD'/'SMDPAD'/None
     #layerIdx: 为空则仅返回导电焊盘, 输入参数可以是整数或一个列表
     def getPads(self, padType: str=None, layerIdx=None):
         if not layerIdx:
@@ -111,6 +111,17 @@ class SprintTextIO(SprintElement):
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintTrack) and (elem.layerIdx in layers))]
 
+    #获取所有文本，参数为空则返回所有板层, 输入参数可以是整数或一个列表
+    def getTexts(self, layerIdx=None):
+        if not layerIdx:
+            layers = list(range(1, 8))
+        elif isinstance(layerIdx, (list, tuple)):
+            layers = layerIdx
+        else:
+            layers = (layerIdx,)
+        return [elem for elem in self.baseDrawElements() 
+            if (isinstance(elem, SprintText) and (elem.layerIdx in layers))]
+
     #获取所有多边形, 参数为空则仅返回导电多边形, 输入参数可以是整数或一个列表
     def getPolygons(self, layerIdx=None):
         if not layerIdx:
@@ -122,7 +133,7 @@ class SprintTextIO(SprintElement):
         return [elem for elem in self.baseDrawElements() 
             if (isinstance(elem, SprintPolygon) and (elem.layerIdx in layers))]
 
-    #获取所有圆形或圆环, 参数为空则仅返回所有板层, 输入参数可以是整数或一个列表
+    #获取所有圆形或圆环, 参数为空则返回所有板层, 输入参数可以是整数或一个列表
     def getCircles(self, layerIdx=None):
         if not layerIdx:
             layers = list(range(1, 8))

@@ -22,6 +22,8 @@ import os, sys, locale, json, threading, queue, datetime, pickle, math, gettext,
 from functools import partial
 from fontTools.ttLib import ttFont, ttCollection
 from ui.sprint_font_ui import *
+from tkinter import filedialog
+from tkinter import simpledialog
 from utils.comm_utils import *
 from utils.widget_right_click import rightClicker
 import sprint_struct.sprint_textio as sprint_textio
@@ -33,8 +35,8 @@ from app.footprint_svg_handler import FootprintSvgHandler
 from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
 
-__Version__ = "1.8.1"
-__DATE__ = "20251225"
+__Version__ = "1.9"
+__DATE__ = "20260710"
 __AUTHOR__ = "cdhigh"
 
 DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
@@ -199,6 +201,8 @@ class Application(Application_ui):
             self.cmdOpenWirePairTuner.configure(state='disabled')
             self.cmdOkWirePair.configure(state='disabled')
             self.lblSaveAsWirePair.configure(state='disabled')
+            self.cmdBulkEditOk.configure(state='disabled')
+            self.lblBulkEditSaveAs.configure(state='disabled')
         
     #多页控件的当前页面发生改变，初始化对应页面的控件
     def tabStrip_NotebookTabChanged(self, event):
@@ -210,6 +214,7 @@ class Application(Application_ui):
         TAB_TEARDROP = 5
         TAB_ROUNDEDTRACK = 6
         TAB_WIREPAIR = 7
+        TAB_BULKEDIT = 8
         try:
             tabNo = self.getCurrentTabStripTab()
             if tabNo == TAB_FONT:
@@ -239,6 +244,8 @@ class Application(Application_ui):
             elif tabNo == TAB_WIREPAIR:
                 self.initWirePair()
                 self.cmbWirePairType.focus_set()
+            elif tabNo == TAB_BULKEDIT:
+                self.cmbBulkEditTarget.focus_set()
         except Exception as e:
             print(str(e))
             #pass
@@ -415,6 +422,63 @@ class Application(Application_ui):
         self.cmbWirePairTypeList = [_("Single-sided"), _("Double-sided")]
         self.cmbWirePairType.configure(values=self.cmbWirePairTypeList)
         self.cmbWirePairType.current(0)
+
+        #批量修改
+        self.cmbBulkEditTargetList = [_("Text"), _("Track"), _("Pad"), _("SMD pad")]
+        self.cmbBulkEditTarget.configure(values=self.cmbBulkEditTargetList)
+        self.cmbBulkEditTarget.current(0)
+        self.cmbBulkTextLayerIf.configure(values=self.cmbLayerList)
+        self.cmbBulkTextLayerThen.configure(values=self.cmbLayerList)
+        self.cmbBulkTextLayerIf.current(0)
+        self.cmbBulkTextLayerThen.current(0)
+        self.cmbBulkEditIfOpList = ["==", ">=", "<=", ">", "<", "!="]
+        self.cmbBulkTextHeightIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkTextHeightIfOp.current(0)
+        self.cmbBulkTextThicknessList = [_("Thin"), _("Normal"), _("Bold")]
+        self.cmbBulkTextThicknessIf.configure(values=self.cmbBulkTextThicknessList)
+        self.cmbBulkTextThicknessThen.configure(values=self.cmbBulkTextThicknessList)
+        self.cmbBulkTextThicknessIf.current(1)
+        self.cmbBulkTextThicknessThen.current(1)
+        self.cmbBulkTextStyleList = [_("Narrow"), _("Normal"), _("Wide")]
+        self.cmbBulkTextStyleIf.configure(values=self.cmbBulkTextStyleList)
+        self.cmbBulkTextStyleThen.configure(values=self.cmbBulkTextStyleList)
+        self.cmbBulkTextStyleIf.current(1)
+        self.cmbBulkTextStyleThen.current(1)
+        self.cmbBulkTrackLayerIf.configure(values=self.cmbLayerList)
+        self.cmbBulkTrackLayerThen.configure(values=self.cmbLayerList)
+        self.cmbBulkTrackLayerIf.current(0)
+        self.cmbBulkTrackLayerThen.current(0)
+        self.cmbBulkTrackWidthIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkTrackWidthIfOp.current(0)
+        self.cmbBulkPadLayerIf.configure(values=self.cmbLayerList)
+        self.cmbBulkPadLayerThen.configure(values=self.cmbLayerList)
+        self.cmbBulkPadLayerIf.current(0)
+        self.cmbBulkPadLayerThen.current(0)
+        self.cmbBulkPadSizeIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkPadSizeIfOp.current(0)
+        self.cmbBulkPadDrillIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkPadDrillIfOp.current(0)
+        self.cmbBulkPadFormIfList = [_("Round"), _("Octagon"), _("Square"),
+            _("Round, horizontal"), _("Octagon, horizontal"), _("Rectangle, horizontal"),
+            _("Round, vertical"), _("Octagon, vertical"), _("Rectangle, vertical")]
+        self.cmbBulkPadFormIf.configure(values=self.cmbBulkPadFormIfList)
+        self.cmbBulkPadFormThen.configure(values=self.cmbBulkPadFormIfList)
+        self.cmbBulkPadFormIf.current(0)
+        self.cmbBulkPadFormThen.current(0)
+        self.cmbBulkSmdPadLayerIf.configure(values=self.cmbLayerList)
+        self.cmbBulkSmdPadLayerThen.configure(values=self.cmbLayerList)
+        self.cmbBulkSmdPadLayerIf.current(0)
+        self.cmbBulkSmdPadLayerThen.current(0)
+        self.cmbBulkSmdPadSizeXIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkSmdPadSizeYIfOp.configure(values=self.cmbBulkEditIfOpList)
+        self.cmbBulkSmdPadSizeXIfOp.current(0)
+        self.cmbBulkSmdPadSizeYIfOp.current(0)
+
+        # 记录批量修改面板的基础坐标
+        self.bulkEditPlaceInfo = self.frmBulkEditText.place_info()
+        self.frmBulkEditTrack.place_forget()
+        self.frmBulkEditPad.place_forget()
+        self.frmBulkEditSmdPad.place_forget()
         
     #更新字体列表组合框 - 委托给FontOperations
     def populateFontCombox(self, fontMap=None):
@@ -508,6 +572,9 @@ class Application(Application_ui):
         self.cmdCancel_Cmd(event)
 
     def cmdCancelWirePair_Cmd(self, event=None):
+        self.cmdCancel_Cmd(event)
+
+    def cmdCancelBulkEdit_Cmd(self, event=None):
         self.cmdCancel_Cmd(event)
 
     #点击翻转字体背景
@@ -1025,6 +1092,196 @@ class Application(Application_ui):
         image = self.singleWirePairImage if self.cmbWirePairType.current() == 0 else self.doubleWirePairImage
         self.picWirePair.delete('all')
         self.picWirePair.create_image(0, 0, image=image, anchor=NW)
+
+    #批量修改选择一个目标
+    def cmbBulkEditTarget_ComboboxSelected(self, event=None):
+        index = self.cmbBulkEditTarget.current()
+        if index == 0: #Text
+            self.frmBulkEditTrack.place_forget()
+            self.frmBulkEditPad.place_forget()
+            self.frmBulkEditSmdPad.place_forget()
+            self.frmBulkEditText.place(**self.bulkEditPlaceInfo)
+        elif index == 1: #track
+            self.frmBulkEditText.place_forget()
+            self.frmBulkEditPad.place_forget()
+            self.frmBulkEditSmdPad.place_forget()
+            self.frmBulkEditTrack.place(**self.bulkEditPlaceInfo)
+        elif index == 2: #pad
+            self.frmBulkEditText.place_forget()
+            self.frmBulkEditTrack.place_forget()
+            self.frmBulkEditSmdPad.place_forget()
+            self.frmBulkEditPad.place(**self.bulkEditPlaceInfo)
+        else: #smd pad
+            self.frmBulkEditText.place_forget()
+            self.frmBulkEditTrack.place_forget()
+            self.frmBulkEditPad.place_forget()
+            self.frmBulkEditSmdPad.place(**self.bulkEditPlaceInfo)
+
+    #将界面元素打包为一个批量修改的词典
+    def getBulkEditConfig(self):
+        targetName = {0: 'Text', 1: 'Track', 2: 'Pad', 3: 'SmdPad'}.get(
+            self.cmbBulkEditTarget.current(), 'Text')
+        
+        cfg = {
+            'targetName': targetName,
+            'applyToAll': self.chkBulkEditApplyToAll.value(),
+            'If': {},
+            'Then': {}
+        }
+        
+        if targetName == 'Text':
+            cfg['If'] = {
+                'Layer': (self.chkBulkTextLayerIf.value(), self.cmbBulkTextLayerIf.current() + 1),
+                'Thickness': (self.chkBulkTextThicknessIf.value(), self.cmbBulkTextThicknessIf.current()),
+                'Style': (self.chkBulkTextStyleIf.value(), self.cmbBulkTextStyleIf.current()),
+                'Height': (self.chkBulkTextHeightIf.value(), self.cmbBulkTextHeightIfOp.text(), str_to_float(self.txtBulkTextHeightIfValue.text(), 1.3)),
+                'Rotation': (self.chkBulkTextRotationIf.value(), str_to_float(self.txtBulkTextRotationIf.text()))
+            }
+            cfg['Then'] = {
+                'Layer': (self.chkBulkTextLayerThen.value(), self.cmbBulkTextLayerThen.current() + 1),
+                'Thickness': (self.chkBulkTextThicknessThen.value(), self.cmbBulkTextThicknessThen.current()),
+                'Style': (self.chkBulkTextStyleThen.value(), self.cmbBulkTextStyleThen.current()),
+                'Height': (self.chkBulkTextHeightThen.value(), str_to_float(self.txtBulkTextHeightThen.text(), 1.3)),
+                'Rotation': (self.chkBulkTextRotationThen.value(), str_to_float(self.txtBulkTextRotationThen.text()))
+            }
+        elif targetName == 'Track':
+            cfg['If'] = {
+                'Layer': (self.chkBulkTrackLayerIf.value(), self.cmbBulkTrackLayerIf.current() + 1),
+                'Width': (self.chkBulkTrackWidthIf.value(), self.cmbBulkTrackWidthIfOp.text(), str_to_float(self.txtBulkTrackWidthIfValue.text()))
+            }
+            cfg['Then'] = {
+                'Layer': (self.chkBulkTrackLayerThen.value(), self.cmbBulkTrackLayerThen.current() + 1),
+                'Width': (self.chkBulkTrackWidthThen.value(), str_to_float(self.txtBulkTrackWidthThen.text()))
+            }
+        elif targetName == 'Pad':
+            cfg['If'] = {
+                'Layer': (self.chkBulkPadLayerIf.value(), self.cmbBulkPadLayerIf.current() + 1),
+                'Size': (self.chkBulkPadSizeIf.value(), self.cmbBulkPadSizeIfOp.text(), str_to_float(self.txtBulkPadSizeIfValue.text())),
+                'Drill': (self.chkBulkPadDrillIf.value(), self.cmbBulkPadDrillIfOp.text(), str_to_float(self.txtBulkPadDrillIfValue.text())),
+                'Form': (self.chkBulkPadFormIf.value(), self.cmbBulkPadFormIf.current() + 1),
+                'Rotation': (self.chkBulkPadRotationIf.value(), str_to_float(self.txtBulkPadRotationIf.text()))
+            }
+            cfg['Then'] = {
+                'Layer': (self.chkBulkPadLayerThen.value(), self.cmbBulkPadLayerThen.current() + 1),
+                'Size': (self.chkBulkPadSizeThen.value(), str_to_float(self.txtBulkPadSizeThen.text())),
+                'Drill': (self.chkBulkPadDrillThen.value(), str_to_float(self.txtBulkPadDrillThen.text())),
+                'Form': (self.chkBulkPadFormThen.value(), self.cmbBulkPadFormThen.current() + 1),
+                'Rotation': (self.chkBulkPadRotationThen.value(), str_to_float(self.txtBulkPadRotationThen.text()))
+            }
+        elif targetName == 'SmdPad':
+            cfg['If'] = {
+                'Layer': (self.chkBulkSmdPadLayerIf.value(), self.cmbBulkSmdPadLayerIf.current() + 1),
+                'SizeX': (self.chkBulkSmdPadSizeXIf.value(), self.cmbBulkSmdPadSizeXIfOp.text(), str_to_float(self.txtBulkSmdPadSizeXIfValue.text())),
+                'SizeY': (self.chkBulkSmdPadSizeYIf.value(), self.cmbBulkSmdPadSizeYIfOp.text(), str_to_float(self.txtBulkSmdPadSizeYIfValue.text())),
+                'Rotation': (self.chkBulkSmdPadRotationIf.value(), str_to_float(self.txtBulkSmdPadRotationIf.text()))
+            }
+            cfg['Then'] = {
+                'Layer': (self.chkBulkSmdPadLayerThen.value(), self.cmbBulkSmdPadLayerThen.current() + 1),
+                'SizeX': (self.chkBulkSmdPadSizeXThen.value(), str_to_float(self.txtBulkSmdPadSizeXThen.text())),
+                'SizeY': (self.chkBulkSmdPadSizeYThen.value(), str_to_float(self.txtBulkSmdPadSizeYThen.text())),
+                'Rotation': (self.chkBulkSmdPadRotationThen.value(), str_to_float(self.txtBulkSmdPadRotationThen.text()))
+            }
+            
+        return cfg
+
+    #调用下层批量修改接口, 返回字符串
+    def bulkEdit(self):
+        textIo = self.createTextIoFromInFile()
+        cfg = self.getBulkEditConfig()
+
+        #至少需要一个If和一个Then
+        if not [item for item in cfg['Then'].values() if item[0]]:
+            showwarning(_('info'), _('At least one override (Then) entry must be enabled.'))
+            return ''
+        elif not cfg['applyToAll']:
+            if not [item for item in cfg['If'].values() if item[0]]:
+                showwarning(_('info'), _('Enable at least one search condition (If).'))
+                return ''
+
+        outStr, cnt = self.pcbEnhancements.doBulkEdit(textIo, cfg)
+        if cnt == 0:
+            showwarning(_('info'), _('No elements were modified.'))
+            return ''
+        else:
+            showinfo(_('info'), _('Found and successfully modified {} element(s).').format(cnt))
+            return outStr
+
+    #应用批量修改按钮事件
+    def cmdBulkEditOk_Cmd(self, event=None):
+        self.saveConfig()
+        outStr = self.bulkEdit()
+        if outStr:
+            self.saveOutputFile(outStr)
+            self.safeExit(RETURN_CODE_REPLACE_ALL)
+
+    #将批量修改结果保存为文本文件按钮事件
+    def lblBulkEditSaveAs_Button_1(self, event=None):
+        self.saveConfig()
+        outStr = self.bulkEdit()
+        if outStr:
+            self.saveTextFile(outStr)
+
+    #是否批量修改为所有target, 是否忽略条件选择
+    def chkBulkEditApplyToAll_Cmd(self, event=None):
+        state = "disabled" if self.chkBulkEditApplyToAll.value() else "normal"
+        self.chkBulkTextLayerIf.setValue(0)
+        self.chkBulkTextHeightIf.setValue(0)
+        self.chkBulkTextThicknessIf.setValue(0)
+        self.chkBulkTextStyleIf.setValue(0)
+        self.chkBulkTextRotationIf.setValue(0)
+        self.chkBulkTextLayerIf.config(state=state)
+        self.chkBulkTextHeightIf.config(state=state)
+        self.chkBulkTextThicknessIf.config(state=state)
+        self.chkBulkTextStyleIf.config(state=state)
+        self.chkBulkTextRotationIf.config(state=state)
+        self.cmbBulkTextLayerIf.config(state=state)
+        self.cmbBulkTextHeightIfOp.config(state=state)
+        self.txtBulkTextHeightIfValue.config(state=state)
+        self.cmbBulkTextThicknessIf.config(state=state)
+        self.cmbBulkTextStyleIf.config(state=state)
+        self.txtBulkTextRotationIf.config(state=state)
+
+        self.chkBulkTrackLayerIf.setValue(0)
+        self.chkBulkTrackWidthIf.setValue(0)
+        self.chkBulkTrackLayerIf.config(state=state)
+        self.cmbBulkTrackLayerIf.config(state=state)
+        self.chkBulkTrackWidthIf.config(state=state)
+        self.cmbBulkTrackWidthIfOp.config(state=state)
+        self.txtBulkTrackWidthIfValue.config(state=state)
+
+        self.chkBulkPadLayerIf.setValue(0)
+        self.chkBulkPadSizeIf.setValue(0)
+        self.chkBulkPadDrillIf.setValue(0)
+        self.chkBulkPadFormIf.setValue(0)
+        self.chkBulkPadRotationIf.setValue(0)
+        self.chkBulkPadLayerIf.config(state=state)
+        self.cmbBulkPadLayerIf.config(state=state)
+        self.chkBulkPadSizeIf.config(state=state)
+        self.cmbBulkPadSizeIfOp.config(state=state)
+        self.txtBulkPadSizeIfValue.config(state=state)
+        self.chkBulkPadDrillIf.config(state=state)
+        self.cmbBulkPadDrillIfOp.config(state=state)
+        self.txtBulkPadDrillIfValue.config(state=state)
+        self.chkBulkPadFormIf.config(state=state)
+        self.cmbBulkPadFormIf.config(state=state)
+        self.chkBulkPadRotationIf.config(state=state)
+        self.txtBulkPadRotationIf.config(state=state)
+
+        self.chkBulkSmdPadLayerIf.setValue(0)
+        self.chkBulkSmdPadSizeXIf.setValue(0)
+        self.chkBulkSmdPadSizeYIf.setValue(0)
+        self.chkBulkSmdPadRotationIf.setValue(0)
+        self.chkBulkSmdPadLayerIf.config(state=state)
+        self.cmbBulkSmdPadLayerIf.config(state=state)
+        self.chkBulkSmdPadSizeXIf.config(state=state)
+        self.cmbBulkSmdPadSizeXIfOp.config(state=state)
+        self.txtBulkSmdPadSizeXIfValue.config(state=state)
+        self.chkBulkSmdPadSizeYIf.config(state=state)
+        self.cmbBulkSmdPadSizeYIfOp.config(state=state)
+        self.txtBulkSmdPadSizeYIfValue.config(state=state)
+        self.chkBulkSmdPadRotationIf.config(state=state)
+        self.txtBulkSmdPadRotationIf.config(state=state)
+
 
 if __name__ == "__main__":
     top = Tk()
