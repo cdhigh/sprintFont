@@ -26,6 +26,7 @@ class ConfigManager:
         self.cfg = {}
         self.sysLanguge = locale.getdefaultlocale()[0]
         self.language = ''
+        self.backupNum = 5
     
     #获取用户配置数据目录
     #appName: 应用名称
@@ -78,6 +79,8 @@ class ConfigManager:
                     self.cfg = {}
             except Exception as e:
                 print(str(e))
+                
+        self.backupNum = str_to_int(self.cfg.get('backupNum', '5'), 5)
     
     #保存当前配置数据
     #lastCheckUpdate: 上次检查更新时间
@@ -85,6 +88,7 @@ class ConfigManager:
         app = self.app
         cfg = {
             'language': self.language, 
+            'backupNum': str(self.backupNum),
             'font': app.cmbFont.text(), 
             'txtFontSize': str(app.txtFontSize), 
             'height': app.cmbFontHeight.text(), 
@@ -128,6 +132,7 @@ class ConfigManager:
             'wirePairAmax': app.txtWirePairAmax.text(), 
             'wirePairSpacing': app.txtWirePairSpacing.text(),
             'wirePairSkew': app.txtWirePairSkew.text(),
+            'bulkEditTarget': str(app.cmbBulkEditTarget.current()),
         }
         
         if cfg != self.cfg:  # 有变化再写配置文件
@@ -291,3 +296,9 @@ class ConfigManager:
         if s > 0:
             app.txtWirePairSpacing.setText('{:.1f}'.format(s))
         app.txtWirePairSkew.setText('{:.1f}'.format(str_to_float(cfg.get('wirePairSkew', ''))))
+
+        #批量修改
+        target = str_to_int(cfg.get('bulkEditTarget', '0'))
+        if 0 <= target < 4:
+            app.cmbBulkEditTarget.current(target)
+            app.cmbBulkEditTarget.event_generate("<<ComboboxSelected>>")

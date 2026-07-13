@@ -6,6 +6,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import locale
+from functools import partial
 from operator import itemgetter
 from utils.comm_utils import *
 from .sprint_element import *
@@ -30,13 +31,13 @@ class SprintTextIoParser:
             'END_GROUP': self.handleEndGroup,
             'BEGIN_COMPONENT': self.handleComponent,
             'END_COMPONENT': self.handleEndComponent,
-            'ID_TEXT': self.handleIdText,
-            'VALUE_TEXT': self.handleValueText,
             'TRACK': self.handleTrack,
             'PAD': self.handlePad,
             'SMDPAD': self.handlePad,
             'ZONE': self.handleZone,
-            'TEXT': self.handleText,
+            'TEXT': partial(self.handleText, type_='TEXT'),
+            'ID_TEXT': partial(self.handleText, type_='ID_TEXT'),
+            'VALUE_TEXT': partial(self.handleText, type_='VALUE_TEXT'),
             'CIRCLE': self.handleCircle,
         }
 
@@ -123,13 +124,13 @@ class SprintTextIoParser:
         self.containers.append(component)
         for key, value in elems[1:]:
             key = key.upper()
-            if (key == 'COMMENT'):
+            if key == 'COMMENT':
                 component.comment = value.replace('|', '')
-            elif (key == 'USE_PICKPLACE'):
+            elif key == 'USE_PICKPLACE':
                 component.usePickplace = True if value.lower() == 'true' else False
-            elif (key == 'PACKAGE'):
+            elif key == 'PACKAGE':
                 component.package = value.replace('|', '')
-            elif (key == 'ROTATION'):
+            elif key == 'ROTATION':
                 component.pickRotation = str_to_int(value)
 
     #结束新元件
@@ -138,66 +139,6 @@ class SprintTextIoParser:
             comp = self.containers.pop(-1)
             #comp.updateSelfBbox()
 
-    #元件的名字
-    #ID_TEXT,LAYER=2,CLEAR=0,POS=9176/111689,HEIGHT=13000,THICKNESS=2,STYLE=2,TEXT=|r1|;
-    def handleIdText(self, elems: list):
-        component = self.containers[-1] if self.containers else None
-        if not isinstance(component, SprintComponent):
-            return
-
-        for key, value in elems[1:]:
-            key = key.upper()
-            if (key == 'VISIBLE'):
-                component.nameVisible = self.parseBooleanStr(value)
-            elif (key == 'LAYER'):
-                component.nameLayer = self.parseLayerStr(value)
-            elif (key == 'POS'):
-                component.namePos = self.parsePosStr(value)
-            elif (key == 'HEIGHT'):
-                component.txtHeight = str_to_int(value) / 10000
-            elif (key == 'THICKNESS'):
-                component.txtThickness = str_to_int(value)
-            elif (key == 'STYLE'):
-                component.txtStyle = str_to_int(value)
-            elif (key == 'TEXT'):
-                component.compName = value.replace('|', '')
-            elif (key == 'NAME'):
-                component.name = value.replace('|', '')
-            elif (key == 'ROTATION'): #文本的旋转单位是0.001度
-                component.nameRotation = int(str_to_int(value) / 1000)
-            #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
-            #    pass
-
-    #元件的数值
-    #VALUE_TEXT,VISIBLE=false,LAYER=2,CLEAR=0,POS=9176/111689,HEIGHT=13000,THICKNESS=2,STYLE=2,TEXT=|10k|;
-    def handleValueText(self, elems: list):
-        component = self.containers[-1] if self.containers else None
-        if not isinstance(component, SprintComponent):
-            return
-
-        for key, value in elems[1:]:
-            key = key.upper()
-            if (key == 'VISIBLE'):
-                component.valueVisible = self.parseBooleanStr(value)
-            elif (key == 'LAYER'):
-                component.valueLayer = self.parseLayerStr(value)
-            elif (key == 'POS'):
-                component.valuePos = self.parsePosStr(value)
-            elif (key == 'HEIGHT'):
-                component.txtHeight = str_to_int(value) / 10000
-            elif (key == 'THICKNESS'):
-                component.txtThickness = str_to_int(value)
-            elif (key == 'STYLE'):
-                component.txtStyle = str_to_int(value)
-            elif (key == 'TEXT'):
-                component.value = value.replace('|', '')
-            elif (key == 'NAME'):
-                component.name = value.replace('|', '')
-            elif (key == 'ROTATION'): #文本的旋转单位是0.001度
-                component.valueRotation = int(str_to_int(value) / 1000)
-            #elif (key == 'MIRROR_HORZ') #这个是自动的，在底层板层自动镜像
-            #    pass
-
     #分析Track
     #TRACK,LAYER=2,WIDTH=1500,P0=9900/167100,P1=58200/215400;
     def handleTrack(self, elems: list):
@@ -205,23 +146,23 @@ class SprintTextIoParser:
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
             key = key.upper()
-            if (key == 'LAYER'):
+            if key == 'LAYER':
                 track.layerIdx = self.parseLayerStr(value)
-            elif (key == 'WIDTH'):
+            elif key == 'WIDTH':
                 track.width = str_to_int(value) / 10000
-            elif (key == 'CLEAR'):
+            elif key == 'CLEAR':
                 track.clearance = str_to_int(value) / 10000
-            elif (key == 'CUTOUT'):
+            elif key == 'CUTOUT':
                 track.cutout = self.parseBooleanStr(value)
-            elif (key == 'SOLDERMASK'):
+            elif key == 'SOLDERMASK':
                 track.soldermask = self.parseBooleanStr(value)
-            elif (key == 'FLATSTART'):
+            elif key == 'FLATSTART':
                 track.flatstart = self.parseBooleanStr(value)
-            elif (key == 'FLATEND'):
+            elif key == 'FLATEND':
                 track.flatend = self.parseBooleanStr(value)
-            elif (key == 'NAME'):
+            elif key == 'NAME':
                 track.name = value.replace('|', '')
-            elif (key.startswith('P') and (len(key) > 1)): #点列表
+            elif key.startswith('P') and (len(key) > 1): #点列表
                 ptIdx = str_to_int(key[1:])
                 pointsList.append((ptIdx, self.parsePosStr(value)))
 
@@ -237,41 +178,41 @@ class SprintTextIoParser:
         pad = SprintPad(padType=elems[0].strip())
         for key, value in elems[1:]:
             key = key.upper()
-            if (key == 'LAYER'):
+            if key == 'LAYER':
                 pad.layerIdx = self.parseLayerStr(value)
-            elif (key == 'POS'):
+            elif key == 'POS':
                 pad.pos = self.parsePosStr(value)
-            elif (key == 'SIZE'):
+            elif key == 'SIZE':
                 pad.size = str_to_int(value) / 10000
-            elif (key == 'SIZE_X'):
+            elif key == 'SIZE_X':
                 pad.sizeX = str_to_int(value) / 10000
-            elif (key == 'SIZE_Y'):
+            elif key == 'SIZE_Y':
                 pad.sizeY = str_to_int(value) / 10000
-            elif (key == 'DRILL'):
+            elif key == 'DRILL':
                 pad.drill = str_to_int(value) / 10000
-            elif (key == 'FORM'):
+            elif key == 'FORM':
                 pad.form = str_to_int(value)
-            elif (key == 'CLEAR'):
+            elif key == 'CLEAR':
                 pad.clearance = str_to_int(value) / 10000
-            elif (key == 'SOLDERMASK'):
+            elif key == 'SOLDERMASK':
                 pad.soldermask = self.parseBooleanStr(value)
-            elif (key == 'ROTATION'): #焊盘的旋转单位是0.01度
+            elif key == 'ROTATION': #焊盘的旋转单位是0.01度
                 pad.rotation = int(str_to_int(value) / 100)
-            elif (key == 'VIA'):
+            elif key == 'VIA':
                 pad.via = self.parseBooleanStr(value)
-            elif (key == 'THERMAL'):
+            elif key == 'THERMAL':
                 pad.thermal = self.parseBooleanStr(value)
-            elif (key == 'THERMAL_TRACKS_WIDTH'):
+            elif key == 'THERMAL_TRACKS_WIDTH':
                 pad.thermalTracksWidth = str_to_int(value) / 10000
-            elif (key == 'THERMAL_TRACKS_INDIVIDUAL'):
+            elif key == 'THERMAL_TRACKS_INDIVIDUAL':
                 pad.thermalTracksIndividual = self.parseBooleanStr(value)
-            elif (key == 'THERMAL_TRACKS'):
+            elif key == 'THERMAL_TRACKS':
                 pad.thermalTracks = str_to_int(value)
-            elif (key == 'PAD_ID'):
+            elif key == 'PAD_ID':
                 pad.padId = str_to_int(value)
-            elif (key == 'NAME'):
+            elif key == 'NAME':
                 pad.name = value.replace('|', '')
-            elif (key.startswith('CON') and (len(key) > 3)): #网络连接
+            elif key.startswith('CON') and (len(key) > 3): #网络连接
                 pad.connectToOtherPads.append(str_to_int(value))
         self.containers[-1].add(pad)
 
@@ -281,27 +222,27 @@ class SprintTextIoParser:
         pointsList = [] #每个点的定义 (idx, (x, y))
         for key, value in elems[1:]:
             key = key.upper()
-            if (key == 'LAYER'):
+            if key == 'LAYER':
                 poly.layerIdx = self.parseLayerStr(value)
-            elif (key == 'WIDTH'):
+            elif key == 'WIDTH':
                 poly.width = str_to_int(value) / 10000
-            elif (key == 'CLEAR'):
+            elif key == 'CLEAR':
                 poly.clearance = str_to_int(value) / 10000
-            elif (key == 'CUTOUT'):
+            elif key == 'CUTOUT':
                 poly.cutout = self.parseBooleanStr(value)
-            elif (key == 'SOLDERMASK'):
+            elif key == 'SOLDERMASK':
                 poly.soldermask = self.parseBooleanStr(value)
-            elif (key == 'SOLDERMASK_CUTOUT'):
+            elif key == 'SOLDERMASK_CUTOUT':
                 poly.soldermaskCutout = self.parseBooleanStr(value)
-            elif (key == 'HATCH'):
+            elif key == 'HATCH':
                 poly.hatch = self.parseBooleanStr(value)
-            elif (key == 'HATCH_AUTO'):
+            elif key == 'HATCH_AUTO':
                 poly.hatchAuto = self.parseBooleanStr(value)
-            elif (key == 'HATCH_WIDTH'):
+            elif key == 'HATCH_WIDTH':
                 poly.hatchWidth = str_to_int(value) / 10000
-            elif (key == 'NAME'):
+            elif key == 'NAME':
                 poly.name = value.replace('|', '')
-            elif (key.startswith('P') and (len(key) > 1)): #点列表
+            elif key.startswith('P') and (len(key) > 1): #点列表
                 ptIdx = str_to_int(key[1:])
                 pointsList.append((ptIdx, self.parsePosStr(value)))
         
@@ -313,39 +254,52 @@ class SprintTextIoParser:
         self.containers[-1].add(poly)
 
     #Text
-    def handleText(self, elems: list):
+    def handleText(self, elems: list, type_: str="TEXT"):
+        component = self.containers[-1] #调用到这个函数，containers至少有一个元素
+        if type_ != "TEXT" and not isinstance(component, SprintComponent):
+            return
+
         text = SprintText()
         for key, value in elems[1:]:
             key = key.upper()
-            if (key == 'LAYER'):
+            if key == 'LAYER':
                 text.layerIdx = self.parseLayerStr(value)
-            elif (key == 'POS'):
+            elif key == 'POS':
                 text.pos = self.parsePosStr(value)
-            elif (key == 'HEIGHT'):
+            elif key == 'HEIGHT':
                 text.height = str_to_int(value) / 10000
-            elif (key == 'TEXT'):
+            elif key == 'TEXT':
                 text.text = value.replace('|', '')
-            elif (key == 'CLEAR'):
+            elif key == 'CLEAR':
                 text.clearance = str_to_int(value) / 10000
-            elif (key == 'CUTOUT'):
+            elif key == 'CUTOUT':
                 text.cutout = self.parseBooleanStr(value)
-            elif (key == 'SOLDERMASK'):
+            elif key == 'SOLDERMASK':
                 text.soldermask = self.parseBooleanStr(value)
-            elif (key == 'STYLE'):
+            elif key == 'STYLE':
                 text.style = str_to_int(value)
-            elif (key == 'THICKNESS'):
+            elif key == 'THICKNESS':
                 text.thickness = str_to_int(value)
-            elif (key == 'ROTATION'): #文本的旋转好像很奇怪, 不同版本单位不同
-                rotation = int(str_to_int(value) / 100)
+            elif key == 'ROTATION': #文本的旋转好像很奇怪, 不同版本单位不同
+                #IDTEXT/VALUETEXT旋转单位是0.001度, 单独文本的旋转单位为0.01度
+                unit = 100 if type_ == 'TEXT' else 1000
+                rotation = int(str_to_int(value) / unit)
                 text.rotation = int(rotation / 10) if rotation > 359 else rotation
-            elif (key == 'MIRROR_HORZ'):
+            elif key == 'MIRROR_HORZ':
                 text.mirrorH = self.parseBooleanStr(value)
-            elif (key == 'MIRROR_VERT'):
+            elif key == 'MIRROR_VERT':
                 text.mirrorV = self.parseBooleanStr(value)
-            elif (key == 'NAME'):
+            elif key == 'NAME':
                 text.name = value.replace('|', '')
+            elif key == 'VISIBLE':
+                text.visible = self.parseBooleanStr(value)
 
-        self.containers[-1].add(text)
+        if type_ == 'ID_TEXT':
+            component.idText = text
+        elif type_ == 'VALUE_TEXT':
+            component.valueText = text
+        else:
+            component.add(text)
             
     #Circle
     def handleCircle(self, elems: list):

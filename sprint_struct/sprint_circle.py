@@ -89,7 +89,7 @@ class SprintCircle(SprintElement):
         if self.fill is not None:
             outStr.append('FILL={}'.format(self.booleanStr(self.fill)))
         if self.name:
-            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+            outStr.append('NAME=|{}|'.format(self.sanitizeText(self.name)))
         
         return ','.join(outStr) + ';'
 

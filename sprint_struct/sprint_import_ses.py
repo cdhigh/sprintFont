@@ -67,7 +67,7 @@ class SprintImportSes:
                 x = self.scale(place[2])
                 y = -self.scale(place[3])
                 for comp in compList:
-                    if ((comp.name == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
+                    if ((comp.idText.text == name) and (abs(x - round(comp.pos[0], 3)) > 0.01)
                         and (abs(y - round(comp.pos[1], 3)) > 0.01)):
                         #print(f'{name}, {x}, {comp.pos[0]}, {y}, {comp.pos[1]}') #TODO
                         comp.moveByOffset(x - comp.pos[0], y - comp.pos[1])
@@ -126,9 +126,9 @@ class SprintImportSes:
         #将自动命名的元件的名字恢复为空
         components = [elem for elem in textIo.children() if isinstance(elem, SprintComponent)]
         for comp in components:
-            name = comp.name
+            name = comp.idText.text
             if ((len(name) > 8) and name.startswith('unnamed_') and name[8:].isdigit()):
-                comp.name = ''
+                comp.idText.text = ''
             
         return textIo
 

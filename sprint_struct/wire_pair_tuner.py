@@ -91,49 +91,62 @@ class WirePairTuner(Toplevel):
     def showInfo(self, msg):
         self.after(10, lambda: showinfo(_("info"), msg))
         
-    #减小长度偏差
+    #减小长度偏差 (使用二分查找自动微调)
     def subDeviation(self, event):
         if self.trackIndex == 0:
             self.showInfo(_("Please click on a track first to add a serpentine trace"))
             return
-        if -0.01 <= self.deviation <= 0.01:
+        if -0.005 <= self.deviation <= 0.005:
             self.showInfo(_("The deviation is already small enough"))
             return
 
         self.lblTips.configure(text='')
-        if self.deviation < 0:
-            values = [x / 10 for x in range(-1, int((self.deviation - 5.0) * 10) - 1, -1)]
-        else:
-            values = [x / 10 for x in range(1, int((self.deviation + 5.0) * 10) + 1)]
+        self.autoTuneDeviation()
 
-        #遍历这些数值，找到一个偏差最小的
-        prevDeviation = self.deviation
-        minDeviation = 99999999999
-        minValue = 0
-        for idx, value in enumerate(values):
+    #自动通过二分查找寻找最佳deviation补偿值
+    def autoTuneDeviation(self):
+        if self.trackIndex == 0:
+            return
+
+        low = -50.0
+        high = 50.0
+        best_dev = 0
+        min_err = 999999
+        
+        for _ in range(40):
+            mid = (low + high) / 2
+            
             if self.wpType == 0:
-                self.adjustSingleSidedLen(value, draw=False)
+                success = self.adjustSingleSidedLen(mid, draw=False)
             else:
-                self.adjustDoubleSidedLen(value, draw=False)
-            if abs(self.deviation) <= 0.01: #偏差足够小了，提前退出
-                minDeviation = self.deviation
-                minValue = value
+                success = self.adjustDoubleSidedLen(mid, draw=False)
+                
+            if not success:
+                # If it failed (delta too small), we need a larger deviation
+                low = mid
+                continue
+                
+            err = self.deviation
+            if abs(err) < abs(min_err):
+                min_err = err
+                best_dev = mid
+                
+            if abs(err) <= 0.001:
                 break
-            elif abs(self.deviation) < abs(minDeviation):
-                minDeviation = self.deviation
-                minValue = value
-        
-        if abs(minDeviation) < abs(prevDeviation):
-            if self.wpType == 0:
-                self.adjustSingleSidedLen(minValue)
+                
+            if err > 0:
+                # Still too short, need larger deviation
+                low = mid
             else:
-                self.adjustDoubleSidedLen(minValue)
+                # Too long, need smaller deviation
+                high = mid
+                
+        # Final apply and draw
+        if self.wpType == 0:
+            self.adjustSingleSidedLen(best_dev, draw=True)
         else:
-            if self.wpType == 0:
-                self.adjustSingleSidedLen()
-            else:
-                self.adjustDoubleSidedLen()
-        
+            self.adjustDoubleSidedLen(best_dev, draw=True)
+
     #增加宽度/间隔
     def addSpacing(self, event):
         if event.state & MODIFIER_SHIFT:
@@ -157,10 +170,7 @@ class WirePairTuner(Toplevel):
         self.lblTips.configure(text='')
         self.ridgeDelta = 0
         self.spacingDelta += delta
-        if self.wpType == 0:
-            self.adjustSingleSidedLen()
-        else:
-            self.adjustDoubleSidedLen()
+        self.autoTuneDeviation()
 
     #增加幅度
     def addAmplitude(self, event):
@@ -175,10 +185,7 @@ class WirePairTuner(Toplevel):
         self.lblTips.configure(text='')
         self.spacingDelta = 0
         self.ridgeDelta += delta
-        if self.wpType == 0:
-            self.adjustSingleSidedLen()
-        else:
-            self.adjustDoubleSidedLen()
+        self.autoTuneDeviation()
 
     #确认返回
     def confirm(self, event=None):
@@ -316,10 +323,7 @@ class WirePairTuner(Toplevel):
         self.trackIndex = trackIndex
         self.segIndex = segIndex
         self.projPt = projPt
-        if self.wpType == 0: #单侧隆起线
-            self.adjustSingleSidedLen()
-        else: #蛇形线
-            self.adjustDoubleSidedLen()
+        self.autoTuneDeviation()
 
     #使用单侧隆起方式调整导线对的长度
     def adjustSingleSidedLen(self, deviation=0, draw=True):
@@ -329,7 +333,7 @@ class WirePairTuner(Toplevel):
         mousePt = self.mousePt #鼠标点击点，已经转化为PCB坐标
         if (tIndex == 0 or tIndex >= len(self.orgTracks) or segIndex >= len(self.cavOrgPoints[tIndex])
             or not projPt or not mousePt):
-            return
+            return False
 
         #计算需要添加的长度
         delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew + deviation
@@ -350,7 +354,7 @@ class WirePairTuner(Toplevel):
         if delta < minRidgeLen:
             if draw:
                 self.showInfo(_("The difference is smaller than the minimum length of a ridge"))
-            return
+            return False
         
         maxRidgeNum = int(delta // minRidgeLen)
         ridgeNum = math.ceil(delta / maxRidgeLen) + self.ridgeDelta
@@ -442,6 +446,7 @@ class WirePairTuner(Toplevel):
         #print(track.points)
         if draw:
             self.refreshDraw()
+        return True
 
     #调整双侧蛇形线，保持和第一根导线一样长
     def adjustDoubleSidedLen(self, deviation=0, draw=True):
@@ -451,7 +456,7 @@ class WirePairTuner(Toplevel):
         mousePt = self.mousePt #鼠标点击点，已经转化为PCB坐标
         if (tIndex == 0 or tIndex >= len(self.orgTracks) or segIndex >= len(self.cavOrgPoints[tIndex])
             or not projPt or not mousePt):
-            return
+            return False
 
         #计算需要添加的长度
         delta = self.orgTracks[0].length - self.orgTracks[tIndex].length + self.skew + deviation
@@ -478,7 +483,7 @@ class WirePairTuner(Toplevel):
         if delta < (minEndLen * 2):
             if draw:
                 self.showInfo(_("The difference is smaller than the minimum length of a ridge"))
-            return
+            return False
         
         #每个蛇形线需要两个端点隆起和零或若干个中间隆起
         maxMidBumpNum = int((delta - (minEndLen * 2)) // minMidBumpLen)
@@ -624,4 +629,4 @@ class WirePairTuner(Toplevel):
         #print(track.points)
         if draw:
             self.refreshDraw()
-        
+        return True

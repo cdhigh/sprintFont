@@ -220,12 +220,13 @@ class SprintTextIO(SprintElement):
         idx = 0
         for elem in self.children():
             if isinstance(elem, SprintComponent):
-                if elem.name:
-                    elem.name = elem.name.replace('"', '_').replace("'", '_') #避免freerouting解析出错
-                    elem.value = elem.value.replace('"', '_').replace("'", '_') #避免freerouting解析出错
+                #避免freerouting解析出错
+                elem.valueText.text = self.sanitizeText(elem.valueText.text)
+                if elem.idText.text:
+                    elem.idText.text = self.sanitizeText(elem.idText.text)
                 else:
-                    elem.name = f'unnamed_{idx}'
-                idx += 1
+                    elem.idText.text = f'unnamed_{idx}'
+                    idx += 1
     
     #将所有的元件分类，同样的元件存为一个列表，坐标为左下角，名字格式为 Footprint0
     #includeFreePads: 是否包含游离的焊盘，如果包含，则将游离的焊盘生成一个临时元件包装起来，元件名已PadComp开头
@@ -236,7 +237,7 @@ class SprintTextIO(SprintElement):
         #if includeGroups: #将内部不包含元件的Group当作元件
         #    for elem in children:
 
-        if includeFreePads: #包含游离焊盘
+        if includeFreePads: #如果需要游离焊盘，将这些焊盘包装为一个元件
             pads = [elem for elem in children if isinstance(elem, SprintPad)]
             idx = 0
             for pad in pads:

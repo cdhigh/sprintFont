@@ -64,7 +64,7 @@ class SprintPolygon(SprintElement):
             outStr.append('P{}={}/{}'.format(idx, self.mm2um01(x), self.mm2um01(y)))
 
         if self.name:
-            outStr.append('NAME=|{}|'.format(self.justifiedText(self.name)))
+            outStr.append('NAME=|{}|'.format(self.sanitizeText(self.name)))
 
         return ','.join(outStr) + ';'
 

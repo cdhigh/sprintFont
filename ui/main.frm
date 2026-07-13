@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Begin VB.Form frmMain 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "sprintFont"
-   ClientHeight    =   6225
+   ClientHeight    =   6135
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   10335
@@ -19,7 +19,7 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6225
+   ScaleHeight     =   6135
    ScaleWidth      =   10335
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
@@ -119,10 +119,112 @@ Begin VB.Form frmMain
    Begin VB.Frame tabStrip__Tab9 
       Caption         =   " BulkEdit "
       Height          =   5055
-      Left            =   8760
+      Left            =   9480
       TabIndex        =   126
-      Top             =   3480
+      Top             =   3840
       Width           =   9895
+      Begin VB.Frame frmBulkEditTrack 
+         Height          =   3015
+         Left            =   120
+         TabIndex        =   163
+         Top             =   1440
+         Width           =   9615
+         Begin VB.CheckBox chkBulkTrackLayerIf 
+            Height          =   375
+            Left            =   2160
+            TabIndex        =   172
+            TabStop         =   0   'False
+            Top             =   120
+            Width           =   320
+         End
+         Begin VB.ComboBox cmbBulkTrackLayerIf 
+            Height          =   420
+            Left            =   2520
+            Style           =   2  'Dropdown List
+            TabIndex        =   171
+            Top             =   120
+            Width           =   2415
+         End
+         Begin VB.CheckBox chkBulkTrackLayerThen 
+            Height          =   375
+            Left            =   6720
+            TabIndex        =   170
+            TabStop         =   0   'False
+            Top             =   120
+            Width           =   320
+         End
+         Begin VB.ComboBox cmbBulkTrackLayerThen 
+            Height          =   420
+            Left            =   7080
+            Style           =   2  'Dropdown List
+            TabIndex        =   169
+            Top             =   120
+            Width           =   2415
+         End
+         Begin VB.TextBox txtBulkTrackWidthIfValue 
+            Height          =   420
+            Left            =   4080
+            TabIndex        =   168
+            Text            =   "0.3"
+            Top             =   720
+            Width           =   855
+         End
+         Begin VB.ComboBox cmbBulkTrackWidthIfOp 
+            Height          =   420
+            Left            =   2520
+            Style           =   2  'Dropdown List
+            TabIndex        =   167
+            Top             =   720
+            Width           =   1335
+         End
+         Begin VB.CheckBox chkBulkTrackWidthIf 
+            Height          =   375
+            Left            =   2160
+            TabIndex        =   166
+            TabStop         =   0   'False
+            Top             =   720
+            Width           =   320
+         End
+         Begin VB.TextBox txtBulkTrackWidthThen 
+            Height          =   420
+            Left            =   7080
+            TabIndex        =   165
+            Text            =   "0.3"
+            Top             =   720
+            Width           =   2415
+         End
+         Begin VB.CheckBox chkBulkTrackWidthThen 
+            Height          =   375
+            Left            =   6720
+            TabIndex        =   164
+            TabStop         =   0   'False
+            Top             =   720
+            Width           =   320
+         End
+         Begin VB.Label lblBulkTrackLayer 
+            Caption         =   "Layer"
+            Height          =   375
+            Left            =   120
+            TabIndex        =   174
+            Top             =   120
+            Width           =   1815
+         End
+         Begin VB.Line Line3 
+            BorderColor     =   &H00808080&
+            X1              =   5640
+            X2              =   5640
+            Y1              =   120
+            Y2              =   1100
+         End
+         Begin VB.Label lblBulkTrackWidth 
+            Caption         =   "Width"
+            Height          =   375
+            Left            =   120
+            TabIndex        =   173
+            Top             =   720
+            Width           =   1815
+         End
+      End
       Begin VB.Frame frmBulkEditText 
          Height          =   3015
          Left            =   120
@@ -342,108 +444,6 @@ Begin VB.Form frmMain
             Left            =   120
             TabIndex        =   142
             Top             =   120
-            Width           =   1815
-         End
-      End
-      Begin VB.Frame frmBulkEditTrack 
-         Height          =   3015
-         Left            =   120
-         TabIndex        =   163
-         Top             =   1440
-         Width           =   9615
-         Begin VB.CheckBox chkBulkTrackLayerIf 
-            Height          =   375
-            Left            =   2160
-            TabIndex        =   172
-            TabStop         =   0   'False
-            Top             =   120
-            Width           =   320
-         End
-         Begin VB.ComboBox cmbBulkTrackLayerIf 
-            Height          =   420
-            Left            =   2520
-            Style           =   2  'Dropdown List
-            TabIndex        =   171
-            Top             =   120
-            Width           =   2415
-         End
-         Begin VB.CheckBox chkBulkTrackLayerThen 
-            Height          =   375
-            Left            =   6720
-            TabIndex        =   170
-            TabStop         =   0   'False
-            Top             =   120
-            Width           =   320
-         End
-         Begin VB.ComboBox cmbBulkTrackLayerThen 
-            Height          =   420
-            Left            =   7080
-            Style           =   2  'Dropdown List
-            TabIndex        =   169
-            Top             =   120
-            Width           =   2415
-         End
-         Begin VB.TextBox txtBulkTrackWidthIfValue 
-            Height          =   420
-            Left            =   4080
-            TabIndex        =   168
-            Text            =   "0.3"
-            Top             =   720
-            Width           =   855
-         End
-         Begin VB.ComboBox cmbBulkTrackWidthIfOp 
-            Height          =   420
-            Left            =   2520
-            Style           =   2  'Dropdown List
-            TabIndex        =   167
-            Top             =   720
-            Width           =   1335
-         End
-         Begin VB.CheckBox chkBulkTrackWidthIf 
-            Height          =   375
-            Left            =   2160
-            TabIndex        =   166
-            TabStop         =   0   'False
-            Top             =   720
-            Width           =   320
-         End
-         Begin VB.TextBox txtBulkTrackWidthThen 
-            Height          =   420
-            Left            =   7080
-            TabIndex        =   165
-            Text            =   "0.3"
-            Top             =   720
-            Width           =   2415
-         End
-         Begin VB.CheckBox chkBulkTrackWidthThen 
-            Height          =   375
-            Left            =   6720
-            TabIndex        =   164
-            TabStop         =   0   'False
-            Top             =   720
-            Width           =   320
-         End
-         Begin VB.Label lblBulkTrackLayer 
-            Caption         =   "Layer"
-            Height          =   375
-            Left            =   120
-            TabIndex        =   174
-            Top             =   120
-            Width           =   1815
-         End
-         Begin VB.Line Line3 
-            BorderColor     =   &H00808080&
-            X1              =   5640
-            X2              =   5640
-            Y1              =   120
-            Y2              =   1080
-         End
-         Begin VB.Label lblBulkTrackWidth 
-            Caption         =   "Width"
-            Height          =   375
-            Left            =   120
-            TabIndex        =   173
-            Top             =   720
             Width           =   1815
          End
       End
@@ -2107,7 +2107,7 @@ Begin VB.Form frmMain
       Height          =   345
       Left            =   0
       TabIndex        =   0
-      Top             =   5880
+      Top             =   5790
       Width           =   10335
       _ExtentX        =   18230
       _ExtentY        =   609

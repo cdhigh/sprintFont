@@ -372,36 +372,40 @@ class KicadGenerator:
                  f'(layer {layer}) (uuid {uuid4()}))\n')
 
     #元件, 生成一个footprint
+    #f: file对象
+    #comp: SprintComponent实例
     def _writeComponent(self, f, comp):
         centroid = comp.centroid()
-        layer = self.getLayerName(comp.getLayer())
+        layer = self.getLayerName(comp.layerIdx)
         compNo = self.compNo()
         fpId = f"FP_{int(centroid[0] * 100)}_{int(centroid[1] * 100)}_{compNo}"
         f.write(f'  (footprint "{fpId}" (layer "{layer}")\n')
         f.write(f'    (at {r2(centroid[0])} {r2(centroid[1])} 0) (uuid {uuid4()})\n')
 
         #元件名字
-        if comp.namePos:
-            nameX, nameY = r2(comp.namePos[0] - centroid[0]), r2(comp.namePos[1] - centroid[1])
-        else:
+        namePos = comp.idText.pos
+        if not namePos or namePos == (0,0):
             nameX = nameY = 0
-        nameRotation = sprintAngleToKicad(comp.nameRotation) if comp.nameRotation else 0
-        nameLayer = self.getLayerName(comp.nameLayer)
-        hide = 'no' if comp.nameVisible and comp.compName else 'yes'
-        height = r2(comp.txtHeight)
-        name = comp.compName if comp.compName else f'CMP{compNo}'
-        f.write(f'    (property "Reference" "{name}" (at {nameX} {nameY} {nameRotation})'
-            f' (layer "{nameLayer}") (hide {hide}) (uuid {uuid4()}) (effects (font (size {height} {height}) (thickness 0.15))))\n')
+        else:
+            nameX, nameY = r2(namePos[0] - centroid[0]), r2(namePos[1] - centroid[1])
+        nRotation = sprintAngleToKicad(comp.idText.rotation)
+        nLayer = self.getLayerName(comp.idText.layerIdx)
+        hide = 'no' if comp.idText.visible and comp.idText.text else 'yes'
+        height = r2(comp.idText.height)
+        name = comp.idText.text if comp.idText.text else f'CMP{compNo}'
+        f.write(f'    (property "Reference" "{name}" (at {nameX} {nameY} {nRotation})'
+            f' (layer "{nLayer}") (hide {hide}) (uuid {uuid4()}) (effects (font (size {height} {height}) (thickness 0.15))))\n')
 
         #元件值
-        if comp.valuePos:
-            valueX, valueY = r2(comp.valuePos[0] - centroid[0]), r2(comp.valuePos[1] - centroid[1])
-        else:
+        valuePos = comp.valueText.pos
+        if not valuePos or valuePos == (0,0):
             valueX = valueY = 0
-        valueRotation = sprintAngleToKicad(comp.valueRotation) if comp.valueRotation else 0
-        valueLayer = self.getLayerName(comp.valueLayer)
-        hide = 'no' if comp.valueVisible and comp.value else 'yes'
-        f.write(f'    (property "Value" "{comp.value}" (at {valueX} {valueY} {valueRotation}) (layer "{valueLayer}")'
+        else:
+            valueX, valueY = r2(valuePos[0] - centroid[0]), r2(valuePos[1] - centroid[1])
+        vRotation = sprintAngleToKicad(comp.valueText.rotation)
+        vLayer = self.getLayerName(comp.valueText.layerIdx)
+        hide = 'no' if comp.valueText.visible and comp.valueText.text else 'yes'
+        f.write(f'    (property "Value" "{comp.valueText.text}" (at {valueX} {valueY} {vRotation}) (layer "{vLayer}")'
             f' (hide {hide}) (uuid {uuid4()}) (effects (font (size {height} {height}) (thickness 0.15))))\n')
 
         #Footprint (封装源)：表示是从哪个库里的哪个封装来的。比如:Package_SO:SOIC-8_3.9x4.9mm_P1.27mm

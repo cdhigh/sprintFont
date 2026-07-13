@@ -50,4 +50,4 @@ kicadPadShapeMap = {
 
 #Sprint-Layout的角度转换为Kicad的角度
 def sprintAngleToKicad(angle):
-    return int((360 - angle) % 360)
+    return int((360 - angle) % 360) if angle else 0

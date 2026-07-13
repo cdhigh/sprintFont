@@ -66,8 +66,8 @@ class Application_ui(Frame):
         ws = self.master.winfo_screenwidth()
         hs = self.master.winfo_screenheight()
         x = (ws / 2) - (689 / 2)
-        y = (hs / 2) - (415 / 2)
-        self.master.geometry('%dx%d+%d+%d' % (689,415,x,y))
+        y = (hs / 2) - (409 / 2)
+        self.master.geometry('%dx%d+%d+%d' % (689,409,x,y))
         self.master.title('sprintFont')
         self.master.resizable(0,0)
         self.icondata = """
@@ -109,7 +109,7 @@ class Application_ui(Frame):
         self.style = Style()
 
         self.tabStrip = Notebook(self.top)
-        self.tabStrip.place(relx=0.023, rely=0.039, relwidth=0.957, relheight=0.87)
+        self.tabStrip.place(relx=0.023, rely=0.039, relwidth=0.957, relheight=0.883)
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
@@ -1083,7 +1083,7 @@ class Application_ui(Frame):
         self.lblBulkTrackLayer.place(relx=0.012, rely=0.04, relwidth=0.189, relheight=0.124)
         self.style.configure('TLine3.TSeparator', background='#808080')
         self.Line3 = Separator(self.frmBulkEditTrack, orient='vertical', style='TLine3.TSeparator')
-        self.Line3.place(relx=0.587, rely=0.04, relwidth=0.0016, relheight=0.318)
+        self.Line3.place(relx=0.587, rely=0.04, relwidth=0.0016, relheight=0.325)
         self.lblBulkTrackWidthVar = StringVar(value='Width')
         self.style.configure('TlblBulkTrackWidth.TLabel', anchor='w', font=('微软雅黑',10))
         self.lblBulkTrackWidth = Label(self.frmBulkEditTrack, text='Width', textvariable=self.lblBulkTrackWidthVar, style='TlblBulkTrackWidth.TLabel')

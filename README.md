@@ -320,11 +320,12 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 1. Sprint-Layout通过临时文件和插件通讯，如果启动插件时你什么元件都没有选中，则Sprint-Layout会导出PCB中所有元件到临时文件，否则只会导出被选择的元件。     
 2. 除了使用Sprint-Layout通过插件模式调用外，也可以单独执行，单独执行后“确定”按钮无效，可以使用“另存为”按钮将生成的符号文件保存到一个文本文件，之后可以使用Sprint-Layout的 **“导入：文本设计格式文件”** 功能单独导入，效果一样   
 3. 软件支持中英文界面，启动时自动识别系统语种，如果需要手动切换，可以在config.json里面修改 ("language":"en/zh-ch/de/es/pt/fr/ru/tr")    
-4. 如果插件无法执行，请下载安装VC运行库2015/2017/2019/2022（任意一个版本均可），如果还不行，可能还需要“Windows 通用 C 运行库（Universal C Runtime）”，下载链接可以自己搜索，或者直接使用下面的链接：    
+4. 软件自动将最近5个操作的输入文件备份到 `Users\name\AppData\Roaming\sprintFont` 目录，如果中间出现什么错误，可以使用Sprint-Layout直接导入对应的备份文件即可恢复你之前的工作。
+5. 如果插件无法执行，请下载安装VC运行库2015/2017/2019/2022（任意一个版本均可），如果还不行，可能还需要“Windows 通用 C 运行库（Universal C Runtime）”，下载链接可以自己搜索，或者直接使用下面的链接：    
 * [VC运行库 32位](https://aka.ms/vs/17/release/vc_redist.x86.exe)
 * [VC运行库 64位](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 * [Windows通用C运行库（Universal C Runtime）](https://support.microsoft.com/en-us/topic/update-for-universal-c-runtime-in-windows-c0514201-7fe6-95a3-b0a5-287930f3560c)
-5. 关于防病毒软件误报，因为这个程序是使用Python开发然后打包而成，这个打包机制容易导致部分特别敏感的防病毒软件产生误报，如果你有疑虑的话，可以将文件上传到 [VirusTotal](https://www.virustotal.com/) 或类似网站上查毒确认，或自己安装Python然后直接执行源码。    
+6. 关于防病毒软件误报，因为这个程序是使用Python开发然后打包而成，这个打包机制容易导致部分特别敏感的防病毒软件产生误报，如果你有疑虑的话，可以将文件上传到 [VirusTotal](https://www.virustotal.com/) 或类似网站上查毒确认，或自己安装Python然后直接执行源码。    
 
 
 <a href="https://www.buymeacoffee.com/cdhigh" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
@@ -332,6 +333,12 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 ## 4. 版本更新日志
+
+### v1.9
+  1. 添加 "批处理修改" 功能
+  2. 导出到kicad支持网表
+  3. 精确的差分线对匹配功能，现在一次点击就可以自动匹配差分线长度偏差到0.001mm
+  4. 保留历史备份文件（默认最近5个）到配置目录
 
 ### v1.8.1
   1. 添加导出为SVG功能

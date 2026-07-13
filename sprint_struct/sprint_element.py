@@ -38,11 +38,26 @@ sprintLayerMapSes = {
 }
 
 class SprintElement:
+    invalidStrTable = str.maketrans({
+        ';': '_',
+        ',': '_',
+        '|': '_',
+        '"': '_',
+        "'": '_',
+    })
+
     def __init__(self, layerIdx: int=1):
-        self.layerIdx = layerIdx
+        self._layerIdx = layerIdx
         self.xMin = self.yMin = float('inf')
         self.xMax = self.yMax = float('-inf')
         self.name = ''
+
+    @property
+    def layerIdx(self):
+        return self._layerIdx
+    @layerIdx.setter
+    def layerIdx(self, value):
+        self._layerIdx = value
     
     #子类实现是否有效的函数
     def isValid(self):
@@ -73,8 +88,8 @@ class SprintElement:
 
     #去除名字中的非法字符
     @classmethod
-    def justifiedText(cls, txt):
-        return str(txt).replace(';', '_').replace(',', '_').replace('|', '_') if txt else ''
+    def sanitizeText(cls, txt):
+        return str(txt).translate(cls.invalidStrTable) if txt else ''
 
     #毫米浮点数转换为0.1微米整数
     @classmethod

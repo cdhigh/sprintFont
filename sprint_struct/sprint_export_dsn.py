@@ -73,13 +73,13 @@ class SprintExportDsn:
         #并且目前仅允许元件放在正面
         names = set()
         for comp in self.compList:
-            if comp.name in names:
-                return _("There are some components with the same name: {}").format(comp.name)
+            name = comp.idText.text
+            if name in names:
+                return _("There are some components with the same name: {}").format(name)
             else:
-                names.add(comp.name)
-            if (comp.getLayer() == LAYER_C2):
-                name = comp.name
-                if (name.startswith('PadComp')): #游离焊盘临时组成的元件
+                names.add(name)
+            if comp.layerIdx == LAYER_C2:
+                if name.startswith('PadComp'): #游离焊盘临时组成的元件
                     pads = comp.getPads()
                     if pads:
                         name = '{} at x{:0.2f} y{:0.2f}'.format(pads[0].padType, pads[0].pos[0], pads[0].pos[1])
@@ -232,7 +232,7 @@ class SprintExportDsn:
             se.addItem(name, newline=False)
             compIndent = True
             for comp in compList:
-                if (comp.getLayer() == LAYER_C1):
+                if comp.layerIdx == LAYER_C1:
                     compLayer = 'front'
                     rotation = 0
                     #x = comp.xMin
@@ -240,8 +240,8 @@ class SprintExportDsn:
                     compLayer = 'back'
                     rotation = 0 #180
                     #x = comp.xMax
-                #pn = {'PN': comp.value if comp.value else ''}
-                se.addItem({'place': [comp.name, mm2um(comp.pos[0]), 
+                #pn = {'PN': comp.valueText.text if comp.valueText.text else ''}
+                se.addItem({'place': [comp.idText.text, mm2um(comp.pos[0]), 
                     self.umY(comp.pos[1]), compLayer, rotation, {'PN': ''}]}, indent=compIndent)
                 compIndent = False
             se.endGroup(newline=True) #component end
@@ -471,7 +471,7 @@ class SprintExportDsn:
         for comp in self.compList:
             pads = comp.getPads()
             for idx, pad in enumerate(pads, 1):
-                padIdSeqDict[pad.padId] = {'compName': comp.name, 'seqNum': idx}
+                padIdSeqDict[pad.padId] = {'compName': comp.idText.text, 'seqNum': idx}
 
         return padIdSeqDict
 

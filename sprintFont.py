@@ -18,7 +18,8 @@ pyinstaller.exe -F -w -i app.ico sprintFont.py
 python -m nuitka --standalone --onefile --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico  sprintFont.py
 python -m nuitka --standalone --windows-disable-console --show-progress --plugin-enable=tk-inter --windows-icon-from-ico=./app.ico sprintFont.py
 """
-import os, sys, locale, json, threading, queue, datetime, pickle, math, gettext, itertools
+import os, sys, locale, json, threading, queue, datetime, pickle
+import math, gettext, itertools, glob
 from functools import partial
 from fontTools.ttLib import ttFont, ttCollection
 from ui.sprint_font_ui import *
@@ -36,10 +37,10 @@ from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
 
 __Version__ = "1.9"
-__DATE__ = "20260710"
+__DATE__ = "20260713"
 __AUTHOR__ = "cdhigh"
 
-DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
+#DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
 
 #在Windows10及以上系统，用户字体目录为：C:\Users\%USERNAME%\AppData\Local\Microsoft\Windows\Fonts
 WIN_DIR = os.getenv('WINDIR')
@@ -90,6 +91,7 @@ class Application(Application_ui):
         self.cfg = self.configManager.cfg
         self.language = self.configManager.language
         self.sysLanguge = self.configManager.sysLanguge
+        self.backupNum = self.configManager.backupNum
         
         self.retranslateUi()
         self.master.title('sprintFont v{}'.format(__Version__))
@@ -410,10 +412,10 @@ class Application(Application_ui):
         self.cmbRoundedTrackType.current(0)
         self.cmbRoundedTrackBigDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.cmbRoundedTrackBigDistance.configure(values=self.cmbRoundedTrackBigDistanceList)
-        self.cmbRoundedTrackBigDistance.current(3) #默认3mm
-        self.cmbRoundedTrackSmallDistanceList = [0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        self.cmbRoundedTrackBigDistance.current(2) #默认2mm
+        self.cmbRoundedTrackSmallDistanceList = [0.3, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.cmbRoundedTrackSmallDistance.configure(values=self.cmbRoundedTrackSmallDistanceList)
-        self.cmbRoundedTrackSmallDistance.current(0) #默认0.5mm
+        self.cmbRoundedTrackSmallDistance.current(0) #默认0.3mm
         self.cmbRoundedTrackSegsList = [3, 4, 5, 6, 7, 8, 9, 10, 20]
         self.cmbRoundedTrackSegs.configure(values=self.cmbRoundedTrackSegsList)
         self.cmbRoundedTrackSegs.current(7) #默认10个线段
@@ -739,7 +741,7 @@ class Application(Application_ui):
             retStr = self.footprintSvgHandler.generateFromSvg(fileName, layerIdx, svgHeight, 
                 svgSmooth, svgMode, isQrcode)
         except Exception as e:
-            showwarning(_('info'), str(e))
+            showwarning(_('info'), f'{type(e)}\n{str(e)}')
             return
         
         if not retStr:
@@ -767,11 +769,58 @@ class Application(Application_ui):
         
         return True
 
+    #备份输入文件
+    def backupInputFile(self, newTxtStr):
+        if self.backupNum <= 0:
+            return
+
+        if not self.inFileName or not os.path.isfile(self.inFileName):
+            return
+            
+        try:
+            with open(self.inFileName, 'r', encoding='utf-8', errors='ignore') as f:
+                origTxt = f.read()
+        except:
+            return
+        
+        if origTxt == newTxtStr:
+            return
+            
+        backupDir = self.configManager.appDataDir
+        if not backupDir:
+            return
+            
+        try:
+            if not os.path.exists(backupDir):
+                os.makedirs(backupDir)
+            
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            backupFile = os.path.join(backupDir, f"backup_{timestamp}.txt")
+            
+            with open(backupFile, 'w', encoding='utf-8') as f:
+                f.write(origTxt)
+        except:
+            pass
+            
+        try:
+            backups = glob.glob(os.path.join(backupDir, "backup_*.txt"))
+            backups.sort(key=os.path.getmtime)
+            if len(backups) > self.backupNum:
+                for oldFile in backups[:-self.backupNum]:
+                    try:
+                        os.remove(oldFile)
+                    except:
+                        pass
+        except:
+            pass
+
     #将字符串写到输出文件
     def saveOutputFile(self, txt):
+        outStr = str(txt)
+        self.backupInputFile(outStr)
         try:
             with open(self.outFileName, 'w', encoding='utf-8') as f:
-                f.write(str(txt))
+                f.write(outStr)
         except:
             pass
 
