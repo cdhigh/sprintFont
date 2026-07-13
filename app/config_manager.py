@@ -79,8 +79,6 @@ class ConfigManager:
                     self.cfg = {}
             except Exception as e:
                 print(str(e))
-                
-        self.backupNum = str_to_int(self.cfg.get('backupNum', '5'), 5)
     
     #保存当前配置数据
     #lastCheckUpdate: 上次检查更新时间
@@ -133,6 +131,8 @@ class ConfigManager:
             'wirePairSpacing': app.txtWirePairSpacing.text(),
             'wirePairSkew': app.txtWirePairSkew.text(),
             'bulkEditTarget': str(app.cmbBulkEditTarget.current()),
+            'history': app.history,
+            'historyNum': str(app.historyNum),
         }
         
         if cfg != self.cfg:  # 有变化再写配置文件
@@ -302,3 +302,4 @@ class ConfigManager:
         if 0 <= target < 4:
             app.cmbBulkEditTarget.current(target)
             app.cmbBulkEditTarget.event_generate("<<ComboboxSelected>>")
+

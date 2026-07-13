@@ -23,6 +23,307 @@ Begin VB.Form frmMain
    ScaleWidth      =   10335
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab1 
+      Caption         =   " Font "
+      Height          =   5055
+      Left            =   9360
+      TabIndex        =   2
+      Top             =   1800
+      Width           =   9895
+      Begin VB.CommandButton cmdLastText 
+         Appearance      =   0  'Flat
+         Caption         =   "¡î"
+         Height          =   440
+         Left            =   9360
+         TabIndex        =   227
+         TabStop         =   0   'False
+         Top             =   775
+         Width           =   375
+      End
+      Begin VB.CommandButton cmdSymbol 
+         Appearance      =   0  'Flat
+         Caption         =   "@"
+         Height          =   440
+         Left            =   9360
+         TabIndex        =   226
+         TabStop         =   0   'False
+         Top             =   240
+         Width           =   375
+      End
+      Begin VB.Frame frmInvertedBg 
+         BackColor       =   &H00C0C0C0&
+         Height          =   1335
+         Left            =   0
+         TabIndex        =   87
+         Top             =   3000
+         Width           =   9975
+         Begin VB.CheckBox chkInvertedBackground 
+            BackColor       =   &H00C0C0C0&
+            Caption         =   "Inverted Background"
+            BeginProperty Font 
+               Name            =   "Î¢ÈíÑÅºÚ"
+               Size            =   10.5
+               Charset         =   134
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            ForeColor       =   &H00000000&
+            Height          =   375
+            Left            =   1440
+            TabIndex        =   91
+            Top             =   120
+            Width           =   3495
+         End
+         Begin VB.ComboBox cmbPadding 
+            BackColor       =   &H00808080&
+            Height          =   420
+            Left            =   1560
+            TabIndex        =   90
+            Top             =   720
+            Width           =   3015
+         End
+         Begin VB.ComboBox cmbCapLeft 
+            BackColor       =   &H00808080&
+            BeginProperty Font 
+               Name            =   "Times New Roman"
+               Size            =   12
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   405
+            Left            =   8040
+            Style           =   2  'Dropdown List
+            TabIndex        =   89
+            Top             =   120
+            Width           =   1575
+         End
+         Begin VB.ComboBox cmbCapRight 
+            BackColor       =   &H00808080&
+            BeginProperty Font 
+               Name            =   "Times New Roman"
+               Size            =   12
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   405
+            Left            =   8040
+            Style           =   2  'Dropdown List
+            TabIndex        =   88
+            Top             =   720
+            Width           =   1575
+         End
+         Begin VB.Label lblBkPadding 
+            Alignment       =   1  'Right Justify
+            BackColor       =   &H00C0C0C0&
+            Caption         =   "Padding"
+            ForeColor       =   &H00000000&
+            Height          =   375
+            Left            =   240
+            TabIndex        =   94
+            Top             =   720
+            Width           =   1215
+         End
+         Begin VB.Label lblCapLeft 
+            Alignment       =   1  'Right Justify
+            BackColor       =   &H00C0C0C0&
+            Caption         =   "Cap left"
+            ForeColor       =   &H00000000&
+            Height          =   375
+            Left            =   5280
+            TabIndex        =   93
+            Top             =   120
+            Width           =   2655
+         End
+         Begin VB.Label lblCapRight 
+            Alignment       =   1  'Right Justify
+            BackColor       =   &H00C0C0C0&
+            Caption         =   "Cap right"
+            ForeColor       =   &H00000000&
+            Height          =   375
+            Left            =   5280
+            TabIndex        =   92
+            Top             =   720
+            Width           =   2655
+         End
+      End
+      Begin VB.TextBox txtMain 
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   14.25
+            Charset         =   134
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   975
+         Left            =   1560
+         MultiLine       =   -1  'True
+         TabIndex        =   12
+         Top             =   240
+         Width           =   7425
+      End
+      Begin VB.ComboBox cmbLayer 
+         Height          =   420
+         ItemData        =   "main.frx":0000
+         Left            =   1560
+         List            =   "main.frx":0002
+         Style           =   2  'Dropdown List
+         TabIndex        =   11
+         Top             =   1920
+         Width           =   3015
+      End
+      Begin VB.VScrollBar VScroll1 
+         Height          =   975
+         Left            =   9000
+         TabIndex        =   10
+         Top             =   240
+         Width           =   255
+      End
+      Begin VB.ComboBox cmbSmooth 
+         Height          =   420
+         Left            =   1560
+         Style           =   2  'Dropdown List
+         TabIndex        =   9
+         Top             =   2520
+         Width           =   3015
+      End
+      Begin VB.CommandButton cmdOk 
+         Caption         =   "Ok"
+         Height          =   450
+         Left            =   1200
+         TabIndex        =   8
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.CommandButton cmdCancel 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   4440
+         TabIndex        =   7
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.ComboBox cmbWordSpacing 
+         Height          =   420
+         Left            =   8040
+         TabIndex        =   6
+         Top             =   1920
+         Width           =   1575
+      End
+      Begin VB.ComboBox cmbLineSpacing 
+         Height          =   420
+         Left            =   8040
+         TabIndex        =   5
+         Top             =   2520
+         Width           =   1575
+      End
+      Begin VB.ComboBox cmbFontHeight 
+         Height          =   420
+         Left            =   8040
+         TabIndex        =   4
+         Top             =   1320
+         Width           =   1575
+      End
+      Begin VB.ComboBox cmbFont 
+         Height          =   420
+         Left            =   1560
+         Style           =   2  'Dropdown List
+         TabIndex        =   3
+         Top             =   1320
+         Width           =   3015
+      End
+      Begin VB.Label lblTxt 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Text"
+         Height          =   375
+         Left            =   480
+         TabIndex        =   20
+         Top             =   240
+         Width           =   975
+      End
+      Begin VB.Label lblLayer 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Layer"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   19
+         Top             =   1920
+         Width           =   1215
+      End
+      Begin VB.Label lblSmooth 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Smooth"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   18
+         Top             =   2520
+         Width           =   1215
+      End
+      Begin VB.Label lblWordSpacing 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Word spacing (mm)"
+         Height          =   375
+         Left            =   5040
+         TabIndex        =   17
+         Top             =   1920
+         Width           =   2895
+      End
+      Begin VB.Label LblLineSpacing 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Line spacing (mm)"
+         Height          =   375
+         Left            =   5040
+         TabIndex        =   16
+         Top             =   2520
+         Width           =   2895
+      End
+      Begin VB.Label lblSaveAs 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Save as"
+         BeginProperty Font 
+            Name            =   "Î¢ÈíÑÅºÚ"
+            Size            =   10.5
+            Charset         =   134
+            Weight          =   400
+            Underline       =   -1  'True
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         ForeColor       =   &H00FF0000&
+         Height          =   375
+         Left            =   6960
+         TabIndex        =   15
+         Top             =   4560
+         Width           =   1815
+      End
+      Begin VB.Label lblFont 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Font"
+         Height          =   375
+         Left            =   240
+         TabIndex        =   14
+         Top             =   1320
+         Width           =   1215
+      End
+      Begin VB.Label lblFontHeight 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Height (mm)"
+         Height          =   375
+         Left            =   5040
+         TabIndex        =   13
+         Top             =   1320
+         Width           =   2895
+      End
+   End
    Begin VB.Frame tabStrip__Tab2 
       Caption         =   " Footprint "
       Height          =   5055
@@ -1144,9 +1445,9 @@ Begin VB.Form frmMain
       End
       Begin VB.ComboBox cmbExportLayer 
          Height          =   420
-         ItemData        =   "main.frx":0000
+         ItemData        =   "main.frx":0004
          Left            =   1560
-         List            =   "main.frx":0002
+         List            =   "main.frx":0006
          Style           =   2  'Dropdown List
          TabIndex        =   122
          Top             =   2760
@@ -1225,287 +1526,6 @@ Begin VB.Form frmMain
          TabIndex        =   119
          Top             =   2040
          Width           =   1215
-      End
-   End
-   Begin VB.Frame tabStrip__Tab1 
-      Caption         =   " Font "
-      Height          =   5055
-      Left            =   10200
-      TabIndex        =   2
-      Top             =   1200
-      Width           =   9895
-      Begin VB.Frame frmInvertedBg 
-         BackColor       =   &H00C0C0C0&
-         Height          =   1335
-         Left            =   0
-         TabIndex        =   87
-         Top             =   3000
-         Width           =   9975
-         Begin VB.CheckBox chkInvertedBackground 
-            BackColor       =   &H00C0C0C0&
-            Caption         =   "Inverted Background"
-            BeginProperty Font 
-               Name            =   "Î¢ÈíÑÅºÚ"
-               Size            =   10.5
-               Charset         =   134
-               Weight          =   700
-               Underline       =   0   'False
-               Italic          =   0   'False
-               Strikethrough   =   0   'False
-            EndProperty
-            ForeColor       =   &H00000000&
-            Height          =   375
-            Left            =   1440
-            TabIndex        =   91
-            Top             =   120
-            Width           =   3495
-         End
-         Begin VB.ComboBox cmbPadding 
-            BackColor       =   &H00808080&
-            Height          =   420
-            Left            =   1560
-            TabIndex        =   90
-            Top             =   720
-            Width           =   3015
-         End
-         Begin VB.ComboBox cmbCapLeft 
-            BackColor       =   &H00808080&
-            BeginProperty Font 
-               Name            =   "Times New Roman"
-               Size            =   12
-               Charset         =   0
-               Weight          =   700
-               Underline       =   0   'False
-               Italic          =   0   'False
-               Strikethrough   =   0   'False
-            EndProperty
-            Height          =   405
-            Left            =   8040
-            Style           =   2  'Dropdown List
-            TabIndex        =   89
-            Top             =   120
-            Width           =   1575
-         End
-         Begin VB.ComboBox cmbCapRight 
-            BackColor       =   &H00808080&
-            BeginProperty Font 
-               Name            =   "Times New Roman"
-               Size            =   12
-               Charset         =   0
-               Weight          =   700
-               Underline       =   0   'False
-               Italic          =   0   'False
-               Strikethrough   =   0   'False
-            EndProperty
-            Height          =   405
-            Left            =   8040
-            Style           =   2  'Dropdown List
-            TabIndex        =   88
-            Top             =   720
-            Width           =   1575
-         End
-         Begin VB.Label lblBkPadding 
-            Alignment       =   1  'Right Justify
-            BackColor       =   &H00C0C0C0&
-            Caption         =   "Padding"
-            ForeColor       =   &H00000000&
-            Height          =   375
-            Left            =   240
-            TabIndex        =   94
-            Top             =   720
-            Width           =   1215
-         End
-         Begin VB.Label lblCapLeft 
-            Alignment       =   1  'Right Justify
-            BackColor       =   &H00C0C0C0&
-            Caption         =   "Cap left"
-            ForeColor       =   &H00000000&
-            Height          =   375
-            Left            =   5280
-            TabIndex        =   93
-            Top             =   120
-            Width           =   2655
-         End
-         Begin VB.Label lblCapRight 
-            Alignment       =   1  'Right Justify
-            BackColor       =   &H00C0C0C0&
-            Caption         =   "Cap right"
-            ForeColor       =   &H00000000&
-            Height          =   375
-            Left            =   5280
-            TabIndex        =   92
-            Top             =   720
-            Width           =   2655
-         End
-      End
-      Begin VB.TextBox txtMain 
-         BeginProperty Font 
-            Name            =   "Î¢ÈíÑÅºÚ"
-            Size            =   14.25
-            Charset         =   134
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   855
-         Left            =   1560
-         MultiLine       =   -1  'True
-         TabIndex        =   12
-         Top             =   360
-         Width           =   7785
-      End
-      Begin VB.ComboBox cmbLayer 
-         Height          =   420
-         ItemData        =   "main.frx":0004
-         Left            =   1560
-         List            =   "main.frx":0006
-         Style           =   2  'Dropdown List
-         TabIndex        =   11
-         Top             =   1920
-         Width           =   3015
-      End
-      Begin VB.VScrollBar VScroll1 
-         Height          =   855
-         Left            =   9360
-         TabIndex        =   10
-         Top             =   360
-         Width           =   255
-      End
-      Begin VB.ComboBox cmbSmooth 
-         Height          =   420
-         Left            =   1560
-         Style           =   2  'Dropdown List
-         TabIndex        =   9
-         Top             =   2520
-         Width           =   3015
-      End
-      Begin VB.CommandButton cmdOk 
-         Caption         =   "Ok"
-         Height          =   450
-         Left            =   1200
-         TabIndex        =   8
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.CommandButton cmdCancel 
-         Caption         =   "Cancel"
-         Height          =   450
-         Left            =   4440
-         TabIndex        =   7
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.ComboBox cmbWordSpacing 
-         Height          =   420
-         Left            =   8040
-         TabIndex        =   6
-         Top             =   1920
-         Width           =   1575
-      End
-      Begin VB.ComboBox cmbLineSpacing 
-         Height          =   420
-         Left            =   8040
-         TabIndex        =   5
-         Top             =   2520
-         Width           =   1575
-      End
-      Begin VB.ComboBox cmbFontHeight 
-         Height          =   420
-         Left            =   8040
-         TabIndex        =   4
-         Top             =   1320
-         Width           =   1575
-      End
-      Begin VB.ComboBox cmbFont 
-         Height          =   420
-         Left            =   1560
-         Style           =   2  'Dropdown List
-         TabIndex        =   3
-         Top             =   1320
-         Width           =   3015
-      End
-      Begin VB.Label lblTxt 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Text"
-         Height          =   375
-         Left            =   480
-         TabIndex        =   20
-         Top             =   360
-         Width           =   975
-      End
-      Begin VB.Label lblLayer 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Layer"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   19
-         Top             =   1920
-         Width           =   1215
-      End
-      Begin VB.Label lblSmooth 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Smooth"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   18
-         Top             =   2520
-         Width           =   1215
-      End
-      Begin VB.Label lblWordSpacing 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Word spacing (mm)"
-         Height          =   375
-         Left            =   5040
-         TabIndex        =   17
-         Top             =   1920
-         Width           =   2895
-      End
-      Begin VB.Label LblLineSpacing 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Line spacing (mm)"
-         Height          =   375
-         Left            =   5040
-         TabIndex        =   16
-         Top             =   2520
-         Width           =   2895
-      End
-      Begin VB.Label lblSaveAs 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Save as"
-         BeginProperty Font 
-            Name            =   "Î¢ÈíÑÅºÚ"
-            Size            =   10.5
-            Charset         =   134
-            Weight          =   400
-            Underline       =   -1  'True
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         ForeColor       =   &H00FF0000&
-         Height          =   375
-         Left            =   6960
-         TabIndex        =   15
-         Top             =   4560
-         Width           =   1815
-      End
-      Begin VB.Label lblFont 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Font"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   14
-         Top             =   1320
-         Width           =   1215
-      End
-      Begin VB.Label lblFontHeight 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Height (mm)"
-         Height          =   375
-         Left            =   5040
-         TabIndex        =   13
-         Top             =   1320
-         Width           =   2895
       End
    End
    Begin VB.Frame tabStrip__Tab5 
@@ -1819,9 +1839,9 @@ Begin VB.Form frmMain
    Begin VB.Frame tabStrip__Tab6 
       Caption         =   " Teardrop "
       Height          =   5055
-      Left            =   10080
+      Left            =   9720
       TabIndex        =   61
-      Top             =   840
+      Top             =   3720
       Width           =   9895
       Begin VB.ComboBox cmbTeardropPadType 
          Height          =   420

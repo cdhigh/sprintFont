@@ -91,7 +91,11 @@ class Application(Application_ui):
         self.cfg = self.configManager.cfg
         self.language = self.configManager.language
         self.sysLanguge = self.configManager.sysLanguge
-        self.backupNum = self.configManager.backupNum
+        self.backupNum = str_to_int(self.configManager.cfg.get('backupNum', '5'), 5)
+        self.historyNum = str_to_int(self.configManager.cfg.get('historyNum', '5'), 5)
+        self.history = self.configManager.cfg.get('history', [])
+        if not isinstance(self.history, list):
+            self.history = []
         
         self.retranslateUi()
         self.master.title('sprintFont v{}'.format(__Version__))
@@ -627,8 +631,12 @@ class Application(Application_ui):
         elif isinstance(textIo, str): #出错，返回的是错误提示文本
             showwarning(_('info'), textIo)
         elif saveas:
+            self.addHistoryText(txt)
+            self.saveConfig()
             self.saveTextFile(str(textIo))
         else: #写输出文件
+            self.addHistoryText(txt)
+            self.saveConfig()
             self.saveOutputFile(str(textIo))
             self.safeExit(RETURN_CODE_INSERT_STICKY)
 
@@ -1331,6 +1339,79 @@ class Application(Application_ui):
         self.chkBulkSmdPadRotationIf.config(state=state)
         self.txtBulkSmdPadRotationIf.config(state=state)
 
+    #显示一些特殊符号
+    def cmdSymbol_Cmd(self, event=None):
+        top = Toplevel(self.master)
+        top.overrideredirect(True)
+        top.attributes('-topmost', True)
+        
+        x = self.master.winfo_pointerx()
+        y = self.master.winfo_pointery()
+        top.geometry(f"+{x}+{y}")
+        
+        symbols = [
+            '©', '®', '™', '°', '±', '×',
+            '÷', 'µ', 'Ω', 'α', 'β', 'π',
+            'Ø', '⌀', '⚠', '⚡', '⏚', '⏛',
+            '⏘', '⊕', '⊖', '⎓', '⏦', '⏢',
+            '←', '↑', '→', '↓', '↔', '↕',
+            '≈', '≠', '≤', '≥', '∞', '∆',
+            '∑', '√', '‰', '§', '¶', '†',
+            '▲', '▼', '▶', '◀', '△', '▽',
+            '●', '◯', '◼', '◻', '✓', '✗',
+            '℃', '℉', '♻', '★', '☆', '♥'
+        ]
+        
+        def insert_symbol(sym):
+            self.txtMain.insert(END, sym)
+            top.destroy()
+            
+        for i, sym in enumerate(symbols):
+            r, c = divmod(i, 6)
+            btn = Button(top, text=sym, width=3, takefocus=0, command=lambda s=sym: insert_symbol(s))
+            btn.grid(row=r, column=c, padx=1, pady=1)
+            
+        def on_focusout(e):
+            if e.widget == top:
+                top.destroy()
+                
+        top.bind('<FocusOut>', on_focusout)
+        top.focus_set()
+
+    #添加一个文本到历史记录
+    def addHistoryText(self, txt):
+        if self.historyNum <= 0:
+            self.history = []
+            return
+
+        if txt in self.history:
+            self.history.remove(txt)
+        self.history.insert(0, txt)
+        self.history = self.history[:self.historyNum]
+
+    #显示一个历史输入的列表
+    def cmdLastText_Cmd(self, event=None):
+        if self.historyNum <= 0:
+            return
+            
+        menu = Menu(self.master, tearoff=0)
+        
+        def insert_history(txt):
+            # 将对应的字符串插入txtMain，清空旧内容
+            self.txtMain.delete('1.0', END)
+            self.txtMain.insert('1.0', txt)
+            self.addHistoryText(txt)
+            self.saveConfig()
+            
+        for txt in self.history:
+            disp = txt.replace('\n', ' ')
+            if len(disp) > 30:
+                disp = disp[:27] + '...'
+            menu.add_command(label=disp, command=lambda t=txt: insert_history(t))
+            
+        x = self.master.winfo_pointerx()
+        y = self.master.winfo_pointery()
+        menu.post(x, y)
 
 if __name__ == "__main__":
     top = Tk()
