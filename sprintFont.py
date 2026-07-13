@@ -94,8 +94,7 @@ class Application(Application_ui):
         self.backupNum = str_to_int(self.configManager.cfg.get('backupNum', '5'), 5)
         self.historyNum = str_to_int(self.configManager.cfg.get('historyNum', '5'), 5)
         self.history = self.configManager.cfg.get('history', [])
-        if not isinstance(self.history, list):
-            self.history = []
+        self.history = list(self.history) if isinstance(self.history, list) else []
         
         self.retranslateUi()
         self.master.title('sprintFont v{}'.format(__Version__))
@@ -605,7 +604,6 @@ class Application(Application_ui):
     #开始转换文本为多边形
     #saveas: 是否保存到其他文件
     def cmdOk_Cmd(self, event=None, saveas=False):
-        self.saveConfig()
         txt = self.txtMain.get('1.0', END).strip()
         if not txt:
             showwarning(_('info'), _('Text is empty'))

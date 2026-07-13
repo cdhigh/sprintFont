@@ -131,10 +131,10 @@ class ConfigManager:
             'wirePairSpacing': app.txtWirePairSpacing.text(),
             'wirePairSkew': app.txtWirePairSkew.text(),
             'bulkEditTarget': str(app.cmbBulkEditTarget.current()),
-            'history': app.history,
+            'history': list(app.history),
             'historyNum': str(app.historyNum),
         }
-        
+
         if cfg != self.cfg:  # 有变化再写配置文件
             self.cfg = cfg
             cfgFile = os.path.join(self.appDataDir, self.cfgFilename)
