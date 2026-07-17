@@ -513,13 +513,17 @@ class Application(Application_ui):
     def cmdChooseExportFile_Cmd(self, event=None):
         selectedFilter = StringVar()
         FILE_TYPES_MAP = {
+            _("All supported files"): "",
             _("KiCad PCB files"): ".kicad_pcb",
+            _("EasyEDA JSON files"): ".json",
             _("OpenSCAD files"): ".scad",
             _("SVG files"): ".svg",
+            _("All files"): ""
         }
         ret = filedialog.asksaveasfilename(filetypes=[
-            (_("All supported files"), "*.kicad_pcb;*.scad;*.svg"),
+            (_("All supported files"), "*.kicad_pcb;*.json;*.scad;*.svg"),
             (_("KiCad PCB files"), "*.kicad_pcb"),
+            (_("EasyEDA JSON files"), "*.json"),
             (_("OpenSCAD files"), "*.scad"),
             (_("SVG files"), "*.svg"),
             (_("All files"), "*.*")
@@ -676,6 +680,7 @@ class Application(Application_ui):
     #点击了导出按钮
     def cmdExport_Cmd(self, event=None):
         from conversion.sprint_to_kicad import KicadGenerator
+        from conversion.sprint_to_lceda import LcedaGenerator
         from conversion.sprint_to_openscad import OpenSCADGenerator
         from conversion.sprint_to_svg import SVGGenerator
 
@@ -684,7 +689,7 @@ class Application(Application_ui):
         if not outFileName:
             showwarning(_('info'), _('Input is empty'))
             return
-        elif not outFileName.lower().endswith(('.kicad_pcb', '.scad', '.svg')):
+        elif not outFileName.lower().endswith(('.kicad_pcb', '.json', '.scad', '.svg')):
             showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
             return
 
@@ -694,6 +699,10 @@ class Application(Application_ui):
 
         if outFileName.lower().endswith('.kicad_pcb'):
             generator = KicadGenerator(textIo)
+        elif outFileName.lower().endswith('.json'):
+            generator = LcedaGenerator(textIo)
+        elif outFileName.lower().endswith('.scad'):
+            generator = OpenSCADGenerator(textIo)
         elif outFileName.lower().endswith('.svg'):
             layer = self.cmbExportLayer.current()
             generator = SVGGenerator(textIo, layers=layer)
