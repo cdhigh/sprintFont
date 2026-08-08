@@ -47,6 +47,7 @@ Begin VB.Form frmMain
          Left            =   9360
          TabIndex        =   226
          TabStop         =   0   'False
+         ToolTipText     =   "Recommend fonts: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola"
          Top             =   240
          Width           =   375
       End

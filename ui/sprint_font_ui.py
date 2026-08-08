@@ -59,6 +59,65 @@ class Statusbar(Frame):
             panel.config(text='')
             panel.update_idletasks()
 
+class Tooltip:
+    def __init__(self, widget, text, bg='#FFFFEA', pad=(5, 3, 5, 3), waittime=500, wraplength=300):
+        self.waittime = waittime
+        self.wraplength = wraplength
+        self.widget = widget
+        self.text = text
+        self.widget.bind('<Enter>', self.onEnter)
+        self.widget.bind('<Leave>', self.onLeave)
+        self.widget.bind('<ButtonPress>', self.onLeave)
+        self.bg = bg
+        self.pad = pad
+        self.id_ = None
+        self.tw = None
+
+    def onEnter(self, event=None):
+        self.schedule()
+
+    def onLeave(self, event=None):
+        self.unschedule()
+        self.Hide()
+
+    def schedule(self):
+        self.unschedule()
+        self.id_ = self.widget.after(self.waittime, self.Show)
+
+    def unschedule(self):
+        id_ = self.id_
+        self.id_ = None
+        if id_:
+            self.widget.after_cancel(id_)
+
+    def Show(self):
+        def tip_pos_calculator(widget, label, pad=(5, 3, 5, 3), tip_delta=(15, 10)):
+            s_width, s_height = widget.winfo_screenwidth(), widget.winfo_screenheight()
+            width, height = (pad[0] + label.winfo_reqwidth() + pad[2], pad[1] + label.winfo_reqheight() + pad[3])
+            mouse_x, mouse_y = widget.winfo_pointerxy()
+            x1, y1 = mouse_x + tip_delta[0], mouse_y + tip_delta[1]
+            if x1 + width > s_width:
+                x1 = mouse_x - tip_delta[0] - width
+            if y1 + height > s_height - 30:
+                y1 = mouse_y - tip_delta[1] - height
+                if y1 < 0:
+                    Y1 = 0
+            return x1, y1
+
+        self.Hide()
+        self.tw = Toplevel(self.widget)
+        self.tw.wm_overrideredirect(True)
+        label = Label(self.tw, text=self.text, justify=LEFT, background=self.bg, relief=RAISED, borderwidth=1, wraplength=self.wraplength)
+        label.pack(ipadx=1)
+        x, y = tip_pos_calculator(self.widget, label, self.pad)
+        self.tw.wm_geometry('+%d+%d' % (x, y))
+
+    def Hide(self):
+        tw = self.tw
+        if tw:
+            tw.destroy()
+        self.tw = None
+        
 class Application_ui(Frame):
     def __init__(self, master):
         super().__init__(master)
@@ -113,6 +172,19 @@ class Application_ui(Frame):
         self.tabStrip.bind('<<NotebookTabChanged>>', self.tabStrip_NotebookTabChanged)
 
         self.tabStrip__Tab1 = Frame(self.tabStrip)
+        self.cmdLastTextVar = StringVar(value='☆')
+        self.style.configure('TcmdLastText.TButton', font=('微软雅黑',10))
+        self.cmdLastText = Button(self.tabStrip__Tab1, text='☆', takefocus=0, textvariable=self.cmdLastTextVar, command=self.cmdLastText_Cmd, style='TcmdLastText.TButton')
+        self.cmdLastText.setText = lambda x: self.cmdLastTextVar.set(x)
+        self.cmdLastText.text = lambda : self.cmdLastTextVar.get()
+        self.cmdLastText.place(relx=0.946, rely=0.153, relwidth=0.038, relheight=0.087)
+        self.cmdSymbolVar = StringVar(value='@')
+        self.style.configure('TcmdSymbol.TButton', font=('微软雅黑',10))
+        self.cmdSymbol = Button(self.tabStrip__Tab1, text='@', takefocus=0, textvariable=self.cmdSymbolVar, command=self.cmdSymbol_Cmd, style='TcmdSymbol.TButton')
+        self.cmdSymbol.setText = lambda x: self.cmdSymbolVar.set(x)
+        self.cmdSymbol.text = lambda : self.cmdSymbolVar.get()
+        self.cmdSymbolTooltip = Tooltip(self.cmdSymbol, 'Recommend fonts: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola')
+        self.cmdSymbol.place(relx=0.946, rely=0.047, relwidth=0.038, relheight=0.087)
         self.style.configure('TfrmInvertedBg.TFrame', background='#C0C0C0')
         self.frmInvertedBg = Frame(self.tabStrip__Tab1, style='TfrmInvertedBg.TFrame')
         self.frmInvertedBg.place(relx=0., rely=0.593, relwidth=1.008, relheight=0.264)
@@ -269,18 +341,6 @@ class Application_ui(Frame):
         self.lblFontHeight.setText = lambda x: self.lblFontHeightVar.set(x)
         self.lblFontHeight.text = lambda : self.lblFontHeightVar.get()
         self.lblFontHeight.place(relx=0.509, rely=0.261, relwidth=0.293, relheight=0.074)
-        self.cmdSymbolVar = StringVar(value='@')
-        self.style.configure('TcmdSymbol.TButton', font=('微软雅黑',10))
-        self.cmdSymbol = Button(self.tabStrip__Tab1, text='@', takefocus=0, textvariable=self.cmdSymbolVar, command=self.cmdSymbol_Cmd, style='TcmdSymbol.TButton')
-        self.cmdSymbol.setText = lambda x: self.cmdSymbolVar.set(x)
-        self.cmdSymbol.text = lambda : self.cmdSymbolVar.get()
-        self.cmdSymbol.place(relx=0.946, rely=0.047, relwidth=0.038, relheight=0.087)
-        self.cmdLastTextVar = StringVar(value='☆')
-        self.style.configure('TcmdLastText.TButton', font=('微软雅黑',10))
-        self.cmdLastText = Button(self.tabStrip__Tab1, text='☆', takefocus=0, textvariable=self.cmdLastTextVar, command=self.cmdLastText_Cmd, style='TcmdLastText.TButton')
-        self.cmdLastText.setText = lambda x: self.cmdLastTextVar.set(x)
-        self.cmdLastText.text = lambda : self.cmdLastTextVar.get()
-        self.cmdLastText.place(relx=0.946, rely=0.153, relwidth=0.038, relheight=0.087)
         self.tabStrip.add(self.tabStrip__Tab1, text=' Font ')
 
         self.tabStrip__Tab2 = Frame(self.tabStrip)
@@ -1517,6 +1577,9 @@ class Application_ui(Frame):
 
     def retranslateUi(self):
         self.master.title(_('sprintFont'))
+        self.cmdLastText.setText(_('☆'))
+        self.cmdSymbol.setText(_('@'))
+        self.cmdSymbolTooltip.text = _('Recommend fonts: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola')
         self.chkInvertedBackground.setText(_('Inverted Background'))
         self.lblBkPadding.setText(_('Padding'))
         self.lblCapLeft.setText(_('Cap left'))
@@ -1531,8 +1594,6 @@ class Application_ui(Frame):
         self.lblSaveAs.setText(_('Save as'))
         self.lblFont.setText(_('Font'))
         self.lblFontHeight.setText(_('Height (mm)'))
-        self.cmdSymbol.setText(_('@'))
-        self.cmdLastText.setText(_('☆'))
         self.tabStrip.tab(0, text=_(' Font '))
         self.chkImportFootprintText.setText(_('Import text'))
         self.cmdFootprintFile.setText(_('...'))
