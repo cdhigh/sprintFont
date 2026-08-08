@@ -1407,8 +1407,8 @@ class Application(Application_ui):
             # 将对应的字符串插入txtMain，清空旧内容
             self.txtMain.delete('1.0', END)
             self.txtMain.insert('1.0', txt)
-            self.addHistoryText(txt)
-            self.saveConfig()
+            #self.addHistoryText(txt)
+            #self.saveConfig()
             
         for txt in self.history:
             disp = txt.replace('\n', ' ')
