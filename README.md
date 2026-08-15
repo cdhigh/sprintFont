@@ -336,7 +336,9 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 7. 关于防病毒软件误报，因为这个程序是使用Python开发然后打包而成，这个打包机制容易导致部分特别敏感的防病毒软件产生误报，如果你有疑虑的话，可以将文件上传到 [VirusTotal](https://www.virustotal.com/) 或类似网站上查毒确认，或自己安装Python然后直接执行源码。    
 
 
-<a href="https://www.buymeacoffee.com/cdhigh" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+8. Windows10及以上操作系统启动插件并返回后任何按键都导致Sprint Layout锁死?
+  * 技术分析: 这个问题的出现是因为旧版Win32进程阻塞等待机制与 Windows 10/11 现代安全/输入法框架（TSF） 之间不可调和的底层冲突。只要Sprint Layout继续采用“拉起子进程并同步阻塞等待其退出”的老逻辑，这个问题就无解，不管Sprint Layout后续有多少次升级。
+  * 临时解决方案：在启动插件前，将Windows10的输入法切换回英文输入键盘（注意：不是中文输入法的英文输入模式）。根据设置不同，一般快捷键是Alt+Shift或Ctrl+Shift。
 
 
 
