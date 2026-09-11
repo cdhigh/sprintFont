@@ -15,7 +15,7 @@ Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelea
 * 插入泪滴焊盘
 * 生成圆弧走线
 * 差分线长度匹配
-* 导出到Kicad/SVG/OpenSCAD
+* 导出到Kicad/EasyEDA/OpenSCAD/SVG/DXF
 
 
 
@@ -343,6 +343,9 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 ## 4. 版本更新日志
+
+### v1.10
+  1. 添加导出到DXF功能
 
 ### v1.9
   1. 添加 "批处理修改" 功能

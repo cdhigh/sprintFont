@@ -23,6 +23,101 @@ Begin VB.Form frmMain
    ScaleWidth      =   10335
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.Frame tabStrip__Tab3 
+      Caption         =   " Export "
+      Height          =   5055
+      Left            =   8880
+      TabIndex        =   114
+      Top             =   2880
+      Width           =   9895
+      Begin VB.ComboBox cmbExportFormat 
+         Height          =   420
+         ItemData        =   "main.frx":0000
+         Left            =   1800
+         List            =   "main.frx":0002
+         Style           =   2  'Dropdown List
+         TabIndex        =   226
+         Top             =   1080
+         Width           =   3375
+      End
+      Begin VB.ComboBox cmbExportLayer 
+         Height          =   420
+         ItemData        =   "main.frx":0004
+         Left            =   1800
+         List            =   "main.frx":0006
+         Style           =   2  'Dropdown List
+         TabIndex        =   121
+         Top             =   2640
+         Width           =   3375
+      End
+      Begin VB.CommandButton cmdCancelExport 
+         Caption         =   "Cancel"
+         Height          =   450
+         Left            =   4440
+         TabIndex        =   118
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.CommandButton cmdExport 
+         Caption         =   "Export"
+         Height          =   450
+         Left            =   1200
+         TabIndex        =   117
+         Top             =   4440
+         Width           =   2175
+      End
+      Begin VB.TextBox txtExportFile 
+         Height          =   420
+         Left            =   1800
+         TabIndex        =   116
+         Top             =   1920
+         Width           =   7095
+      End
+      Begin VB.CommandButton cmdChooseExportFile 
+         Caption         =   "..."
+         BeginProperty Font 
+            Name            =   "Arial"
+            Size            =   9
+            Charset         =   0
+            Weight          =   400
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   375
+         Left            =   9000
+         TabIndex        =   115
+         Top             =   1920
+         Width           =   495
+      End
+      Begin VB.Label lblExportFile 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Filename"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   225
+         Top             =   1920
+         Width           =   1575
+      End
+      Begin VB.Label lblExportLayer 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Layer"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   120
+         Top             =   2640
+         Width           =   1575
+      End
+      Begin VB.Label lblExportFormat 
+         Alignment       =   1  'Right Justify
+         Caption         =   "Format"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   119
+         Top             =   1080
+         Width           =   1575
+      End
+   End
    Begin VB.Frame tabStrip__Tab1 
       Caption         =   " Font "
       Height          =   5055
@@ -35,7 +130,7 @@ Begin VB.Form frmMain
          Caption         =   "¡î"
          Height          =   440
          Left            =   9360
-         TabIndex        =   227
+         TabIndex        =   224
          TabStop         =   0   'False
          Top             =   775
          Width           =   375
@@ -45,7 +140,7 @@ Begin VB.Form frmMain
          Caption         =   "@"
          Height          =   440
          Left            =   9360
-         TabIndex        =   226
+         TabIndex        =   223
          TabStop         =   0   'False
          ToolTipText     =   "Recommend fonts: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola"
          Top             =   240
@@ -174,9 +269,9 @@ Begin VB.Form frmMain
       End
       Begin VB.ComboBox cmbLayer 
          Height          =   420
-         ItemData        =   "main.frx":0000
+         ItemData        =   "main.frx":0008
          Left            =   1560
-         List            =   "main.frx":0002
+         List            =   "main.frx":000A
          Style           =   2  'Dropdown List
          TabIndex        =   11
          Top             =   1920
@@ -422,19 +517,19 @@ Begin VB.Form frmMain
       Caption         =   " BulkEdit "
       Height          =   5055
       Left            =   9480
-      TabIndex        =   126
+      TabIndex        =   123
       Top             =   3840
       Width           =   9895
       Begin VB.Frame frmBulkEditTrack 
          Height          =   3015
          Left            =   120
-         TabIndex        =   163
+         TabIndex        =   160
          Top             =   1440
          Width           =   9615
          Begin VB.CheckBox chkBulkTrackLayerIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   172
+            TabIndex        =   169
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -443,14 +538,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   171
+            TabIndex        =   168
             Top             =   120
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkTrackLayerThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   170
+            TabIndex        =   167
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -459,14 +554,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   169
+            TabIndex        =   166
             Top             =   120
             Width           =   2415
          End
          Begin VB.TextBox txtBulkTrackWidthIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   168
+            TabIndex        =   165
             Text            =   "0.3"
             Top             =   720
             Width           =   855
@@ -475,14 +570,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   167
+            TabIndex        =   164
             Top             =   720
             Width           =   1335
          End
          Begin VB.CheckBox chkBulkTrackWidthIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   166
+            TabIndex        =   163
             TabStop         =   0   'False
             Top             =   720
             Width           =   320
@@ -490,7 +585,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkTrackWidthThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   165
+            TabIndex        =   162
             Text            =   "0.3"
             Top             =   720
             Width           =   2415
@@ -498,7 +593,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTrackWidthThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   164
+            TabIndex        =   161
             TabStop         =   0   'False
             Top             =   720
             Width           =   320
@@ -507,7 +602,7 @@ Begin VB.Form frmMain
             Caption         =   "Layer"
             Height          =   375
             Left            =   120
-            TabIndex        =   174
+            TabIndex        =   171
             Top             =   120
             Width           =   1815
          End
@@ -522,7 +617,7 @@ Begin VB.Form frmMain
             Caption         =   "Width"
             Height          =   375
             Left            =   120
-            TabIndex        =   173
+            TabIndex        =   170
             Top             =   720
             Width           =   1815
          End
@@ -530,13 +625,13 @@ Begin VB.Form frmMain
       Begin VB.Frame frmBulkEditText 
          Height          =   3015
          Left            =   120
-         TabIndex        =   132
+         TabIndex        =   129
          Top             =   1440
          Width           =   9615
          Begin VB.TextBox txtBulkTextRotationThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   158
+            TabIndex        =   155
             Text            =   "0"
             Top             =   2400
             Width           =   2415
@@ -544,7 +639,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextRotationThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   157
+            TabIndex        =   154
             TabStop         =   0   'False
             Top             =   2400
             Width           =   320
@@ -552,7 +647,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkTextRotationIf 
             Height          =   420
             Left            =   2520
-            TabIndex        =   155
+            TabIndex        =   152
             Text            =   "0"
             Top             =   2400
             Width           =   2415
@@ -560,7 +655,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextRotationIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   154
+            TabIndex        =   151
             TabStop         =   0   'False
             Top             =   2400
             Width           =   320
@@ -568,7 +663,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextStyleThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   153
+            TabIndex        =   150
             TabStop         =   0   'False
             Top             =   1830
             Width           =   320
@@ -577,14 +672,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   152
+            TabIndex        =   149
             Top             =   1830
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkTextThicknessThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   151
+            TabIndex        =   148
             TabStop         =   0   'False
             Top             =   1260
             Width           =   320
@@ -592,7 +687,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextHeightThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   150
+            TabIndex        =   147
             TabStop         =   0   'False
             Top             =   690
             Width           =   320
@@ -601,7 +696,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   149
+            TabIndex        =   146
             Top             =   120
             Width           =   2415
          End
@@ -609,14 +704,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   148
+            TabIndex        =   145
             Top             =   1260
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkTextLayerThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   147
+            TabIndex        =   144
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -624,7 +719,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkTextHeightThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   146
+            TabIndex        =   143
             Text            =   "1.0"
             Top             =   690
             Width           =   2415
@@ -632,7 +727,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextStyleIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   141
+            TabIndex        =   138
             TabStop         =   0   'False
             Top             =   1830
             Width           =   320
@@ -641,14 +736,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   140
+            TabIndex        =   137
             Top             =   1830
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkTextThicknessIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   139
+            TabIndex        =   136
             TabStop         =   0   'False
             Top             =   1260
             Width           =   320
@@ -656,7 +751,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkTextHeightIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   138
+            TabIndex        =   135
             TabStop         =   0   'False
             Top             =   690
             Width           =   320
@@ -665,7 +760,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   137
+            TabIndex        =   134
             Top             =   120
             Width           =   2415
          End
@@ -673,7 +768,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   136
+            TabIndex        =   133
             Top             =   1260
             Width           =   2415
          End
@@ -681,14 +776,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   135
+            TabIndex        =   132
             Top             =   690
             Width           =   1335
          End
          Begin VB.CheckBox chkBulkTextLayerIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   134
+            TabIndex        =   131
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -696,7 +791,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkTextHeightIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   133
+            TabIndex        =   130
             Text            =   "1.0"
             Top             =   690
             Width           =   855
@@ -712,7 +807,7 @@ Begin VB.Form frmMain
             Caption         =   "Rotation"
             Height          =   375
             Left            =   120
-            TabIndex        =   156
+            TabIndex        =   153
             Top             =   2400
             Width           =   1815
          End
@@ -720,7 +815,7 @@ Begin VB.Form frmMain
             Caption         =   "Style"
             Height          =   375
             Left            =   120
-            TabIndex        =   145
+            TabIndex        =   142
             Top             =   1830
             Width           =   1815
          End
@@ -728,7 +823,7 @@ Begin VB.Form frmMain
             Caption         =   "Thickness"
             Height          =   375
             Left            =   120
-            TabIndex        =   144
+            TabIndex        =   141
             Top             =   1260
             Width           =   1815
          End
@@ -736,7 +831,7 @@ Begin VB.Form frmMain
             Caption         =   "Height"
             Height          =   375
             Left            =   120
-            TabIndex        =   143
+            TabIndex        =   140
             Top             =   690
             Width           =   1815
          End
@@ -744,7 +839,7 @@ Begin VB.Form frmMain
             Caption         =   "Layer"
             Height          =   375
             Left            =   120
-            TabIndex        =   142
+            TabIndex        =   139
             Top             =   120
             Width           =   1815
          End
@@ -752,13 +847,13 @@ Begin VB.Form frmMain
       Begin VB.Frame frmBulkEditPad 
          Height          =   3015
          Left            =   120
-         TabIndex        =   175
+         TabIndex        =   172
          Top             =   1440
          Width           =   9615
          Begin VB.TextBox txtBulkPadDrillThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   202
+            TabIndex        =   199
             Text            =   "0.8"
             Top             =   1200
             Width           =   2415
@@ -766,7 +861,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkPadDrillIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   201
+            TabIndex        =   198
             Text            =   "0.8"
             Top             =   1200
             Width           =   855
@@ -774,7 +869,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkPadSizeIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   195
+            TabIndex        =   192
             Text            =   "1.5"
             Top             =   690
             Width           =   855
@@ -782,7 +877,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadLayerIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   194
+            TabIndex        =   191
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -791,7 +886,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   193
+            TabIndex        =   190
             Top             =   690
             Width           =   1335
          End
@@ -799,7 +894,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   192
+            TabIndex        =   189
             Top             =   1260
             Width           =   1335
          End
@@ -807,14 +902,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   191
+            TabIndex        =   188
             Top             =   120
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkPadSizeIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   190
+            TabIndex        =   187
             TabStop         =   0   'False
             Top             =   690
             Width           =   320
@@ -822,7 +917,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadDrillIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   189
+            TabIndex        =   186
             TabStop         =   0   'False
             Top             =   1260
             Width           =   320
@@ -831,14 +926,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   188
+            TabIndex        =   185
             Top             =   1830
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkPadFormIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   187
+            TabIndex        =   184
             TabStop         =   0   'False
             Top             =   1830
             Width           =   320
@@ -846,7 +941,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkPadSizeThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   186
+            TabIndex        =   183
             Text            =   "1.5"
             Top             =   690
             Width           =   2415
@@ -854,7 +949,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadLayerThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   185
+            TabIndex        =   182
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -863,14 +958,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   184
+            TabIndex        =   181
             Top             =   120
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkPadSizeThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   183
+            TabIndex        =   180
             TabStop         =   0   'False
             Top             =   690
             Width           =   320
@@ -878,7 +973,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadDrillThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   182
+            TabIndex        =   179
             TabStop         =   0   'False
             Top             =   1260
             Width           =   320
@@ -887,14 +982,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   181
+            TabIndex        =   178
             Top             =   1830
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkPadFormThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   180
+            TabIndex        =   177
             TabStop         =   0   'False
             Top             =   1830
             Width           =   320
@@ -902,7 +997,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadRotationIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   179
+            TabIndex        =   176
             TabStop         =   0   'False
             Top             =   2400
             Width           =   320
@@ -910,7 +1005,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkPadRotationIf 
             Height          =   420
             Left            =   2520
-            TabIndex        =   178
+            TabIndex        =   175
             Text            =   "0"
             Top             =   2400
             Width           =   2415
@@ -918,7 +1013,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkPadRotationThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   177
+            TabIndex        =   174
             TabStop         =   0   'False
             Top             =   2400
             Width           =   320
@@ -926,7 +1021,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkPadRotationThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   176
+            TabIndex        =   173
             Text            =   "0"
             Top             =   2400
             Width           =   2415
@@ -935,7 +1030,7 @@ Begin VB.Form frmMain
             Caption         =   "Layer"
             Height          =   375
             Left            =   120
-            TabIndex        =   200
+            TabIndex        =   197
             Top             =   120
             Width           =   1815
          End
@@ -943,7 +1038,7 @@ Begin VB.Form frmMain
             Caption         =   "Size"
             Height          =   375
             Left            =   120
-            TabIndex        =   199
+            TabIndex        =   196
             Top             =   690
             Width           =   1815
          End
@@ -951,7 +1046,7 @@ Begin VB.Form frmMain
             Caption         =   "Drill"
             Height          =   375
             Left            =   120
-            TabIndex        =   198
+            TabIndex        =   195
             Top             =   1260
             Width           =   1815
          End
@@ -959,7 +1054,7 @@ Begin VB.Form frmMain
             Caption         =   "Form"
             Height          =   375
             Left            =   120
-            TabIndex        =   197
+            TabIndex        =   194
             Top             =   1830
             Width           =   1815
          End
@@ -967,7 +1062,7 @@ Begin VB.Form frmMain
             Caption         =   "Rotation"
             Height          =   375
             Left            =   120
-            TabIndex        =   196
+            TabIndex        =   193
             Top             =   2400
             Width           =   1815
          End
@@ -982,13 +1077,13 @@ Begin VB.Form frmMain
       Begin VB.Frame frmBulkEditSmdPad 
          Height          =   3015
          Left            =   120
-         TabIndex        =   203
+         TabIndex        =   200
          Top             =   1440
          Width           =   9615
          Begin VB.TextBox txtBulkSmdPadRotationThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   221
+            TabIndex        =   218
             Text            =   "0"
             Top             =   1800
             Width           =   2415
@@ -996,7 +1091,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadRotationThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   220
+            TabIndex        =   217
             TabStop         =   0   'False
             Top             =   1800
             Width           =   320
@@ -1004,7 +1099,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkSmdPadRotationIf 
             Height          =   420
             Left            =   2520
-            TabIndex        =   219
+            TabIndex        =   216
             Text            =   "0"
             Top             =   1800
             Width           =   2415
@@ -1012,7 +1107,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadRotationIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   218
+            TabIndex        =   215
             TabStop         =   0   'False
             Top             =   1800
             Width           =   320
@@ -1020,7 +1115,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadSizeYThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   217
+            TabIndex        =   214
             TabStop         =   0   'False
             Top             =   1240
             Width           =   320
@@ -1028,7 +1123,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadSizeXThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   216
+            TabIndex        =   213
             TabStop         =   0   'False
             Top             =   680
             Width           =   320
@@ -1037,14 +1132,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   7080
             Style           =   2  'Dropdown List
-            TabIndex        =   215
+            TabIndex        =   212
             Top             =   120
             Width           =   2415
          End
          Begin VB.CheckBox chkBulkSmdPadLayerThen 
             Height          =   375
             Left            =   6720
-            TabIndex        =   214
+            TabIndex        =   211
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -1052,7 +1147,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkSmdPadSizeXThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   213
+            TabIndex        =   210
             Text            =   "1.5"
             Top             =   680
             Width           =   2415
@@ -1060,7 +1155,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadSizeYIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   212
+            TabIndex        =   209
             TabStop         =   0   'False
             Top             =   1240
             Width           =   320
@@ -1068,7 +1163,7 @@ Begin VB.Form frmMain
          Begin VB.CheckBox chkBulkSmdPadSizeXIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   211
+            TabIndex        =   208
             TabStop         =   0   'False
             Top             =   680
             Width           =   320
@@ -1077,7 +1172,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   210
+            TabIndex        =   207
             Top             =   120
             Width           =   2415
          End
@@ -1085,7 +1180,7 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   209
+            TabIndex        =   206
             Top             =   1240
             Width           =   1335
          End
@@ -1093,14 +1188,14 @@ Begin VB.Form frmMain
             Height          =   420
             Left            =   2520
             Style           =   2  'Dropdown List
-            TabIndex        =   208
+            TabIndex        =   205
             Top             =   680
             Width           =   1335
          End
          Begin VB.CheckBox chkBulkSmdPadLayerIf 
             Height          =   375
             Left            =   2160
-            TabIndex        =   207
+            TabIndex        =   204
             TabStop         =   0   'False
             Top             =   120
             Width           =   320
@@ -1108,7 +1203,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkSmdPadSizeXIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   206
+            TabIndex        =   203
             Text            =   "1.5"
             Top             =   680
             Width           =   855
@@ -1116,7 +1211,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkSmdPadSizeYIfValue 
             Height          =   420
             Left            =   4080
-            TabIndex        =   205
+            TabIndex        =   202
             Text            =   "0.8"
             Top             =   1240
             Width           =   855
@@ -1124,7 +1219,7 @@ Begin VB.Form frmMain
          Begin VB.TextBox txtBulkSmdPadSizeYThen 
             Height          =   420
             Left            =   7080
-            TabIndex        =   204
+            TabIndex        =   201
             Text            =   "0.8"
             Top             =   1240
             Width           =   2415
@@ -1140,7 +1235,7 @@ Begin VB.Form frmMain
             Caption         =   "Rotation"
             Height          =   375
             Left            =   120
-            TabIndex        =   225
+            TabIndex        =   222
             Top             =   1800
             Width           =   1815
          End
@@ -1148,7 +1243,7 @@ Begin VB.Form frmMain
             Caption         =   "Size Y"
             Height          =   375
             Left            =   120
-            TabIndex        =   224
+            TabIndex        =   221
             Top             =   1240
             Width           =   1815
          End
@@ -1156,7 +1251,7 @@ Begin VB.Form frmMain
             Caption         =   "Size X"
             Height          =   375
             Left            =   120
-            TabIndex        =   223
+            TabIndex        =   220
             Top             =   680
             Width           =   1815
          End
@@ -1164,7 +1259,7 @@ Begin VB.Form frmMain
             Caption         =   "Layer"
             Height          =   375
             Left            =   120
-            TabIndex        =   222
+            TabIndex        =   219
             Top             =   120
             Width           =   1815
          End
@@ -1173,7 +1268,7 @@ Begin VB.Form frmMain
          Caption         =   "Apply to all items (Ignore conditions)"
          Height          =   375
          Left            =   4800
-         TabIndex        =   162
+         TabIndex        =   159
          Top             =   240
          Width           =   4935
       End
@@ -1181,7 +1276,7 @@ Begin VB.Form frmMain
          Caption         =   "Cancel"
          Height          =   450
          Left            =   4440
-         TabIndex        =   129
+         TabIndex        =   126
          Top             =   4440
          Width           =   2175
       End
@@ -1189,7 +1284,7 @@ Begin VB.Form frmMain
          Caption         =   "Ok"
          Height          =   450
          Left            =   1200
-         TabIndex        =   128
+         TabIndex        =   125
          Top             =   4440
          Width           =   2175
       End
@@ -1197,7 +1292,7 @@ Begin VB.Form frmMain
          Height          =   420
          Left            =   1920
          Style           =   2  'Dropdown List
-         TabIndex        =   127
+         TabIndex        =   124
          Top             =   240
          Width           =   1575
       End
@@ -1222,7 +1317,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00808080&
          Height          =   375
          Left            =   6840
-         TabIndex        =   161
+         TabIndex        =   158
          Top             =   840
          Width           =   2775
       End
@@ -1240,7 +1335,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00808080&
          Height          =   375
          Left            =   2280
-         TabIndex        =   160
+         TabIndex        =   157
          Top             =   840
          Width           =   2895
       End
@@ -1258,7 +1353,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00808080&
          Height          =   375
          Left            =   240
-         TabIndex        =   159
+         TabIndex        =   156
          Top             =   840
          Width           =   1335
       End
@@ -1277,7 +1372,7 @@ Begin VB.Form frmMain
          ForeColor       =   &H00FF0000&
          Height          =   375
          Left            =   6960
-         TabIndex        =   131
+         TabIndex        =   128
          Top             =   4560
          Width           =   1695
       End
@@ -1286,7 +1381,7 @@ Begin VB.Form frmMain
          Caption         =   "Target"
          Height          =   375
          Left            =   240
-         TabIndex        =   130
+         TabIndex        =   127
          Top             =   240
          Width           =   1455
       End
@@ -1302,7 +1397,7 @@ Begin VB.Form frmMain
          Caption         =   "Merge Connected Tracks"
          Height          =   375
          Left            =   840
-         TabIndex        =   124
+         TabIndex        =   122
          Top             =   3600
          Width           =   4095
       End
@@ -1427,106 +1522,6 @@ Begin VB.Form frmMain
          TabIndex        =   79
          Top             =   360
          Width           =   9375
-      End
-   End
-   Begin VB.Frame tabStrip__Tab3 
-      Caption         =   " Export "
-      Height          =   5055
-      Left            =   9840
-      TabIndex        =   114
-      Top             =   2640
-      Width           =   9895
-      Begin VB.CheckBox chkLayeredScad 
-         Caption         =   "Export as Layered OpenSCAD"
-         Height          =   375
-         Left            =   960
-         TabIndex        =   125
-         Top             =   3360
-         Width           =   3615
-      End
-      Begin VB.ComboBox cmbExportLayer 
-         Height          =   420
-         ItemData        =   "main.frx":0004
-         Left            =   1560
-         List            =   "main.frx":0006
-         Style           =   2  'Dropdown List
-         TabIndex        =   122
-         Top             =   2760
-         Width           =   3015
-      End
-      Begin VB.CommandButton cmdCancelExport 
-         Caption         =   "Cancel"
-         Height          =   450
-         Left            =   4440
-         TabIndex        =   118
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.CommandButton cmdExport 
-         Caption         =   "Export"
-         Height          =   450
-         Left            =   1200
-         TabIndex        =   117
-         Top             =   4440
-         Width           =   2175
-      End
-      Begin VB.TextBox txtExportFile 
-         Height          =   420
-         Left            =   1560
-         TabIndex        =   116
-         Top             =   2040
-         Width           =   7335
-      End
-      Begin VB.CommandButton cmdChooseExportFile 
-         Caption         =   "..."
-         BeginProperty Font 
-            Name            =   "Arial"
-            Size            =   9
-            Charset         =   0
-            Weight          =   400
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   375
-         Left            =   9000
-         TabIndex        =   115
-         Top             =   2040
-         Width           =   495
-      End
-      Begin VB.Label lblExportLayerTips 
-         Caption         =   "Only for OpenSCAD and SVG"
-         Height          =   375
-         Left            =   4680
-         TabIndex        =   123
-         Top             =   2760
-         Width           =   4815
-      End
-      Begin VB.Label lblExportLayer 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Layer"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   121
-         Top             =   2760
-         Width           =   1215
-      End
-      Begin VB.Label lblExportTips 
-         Caption         =   "Currently supports:\n1. Kicad PCB file : *.kicad_pcb\n2. OpenSCAD file : *.scad\n3. SVG file : *.svg"
-         Height          =   1335
-         Left            =   1560
-         TabIndex        =   120
-         Top             =   360
-         Width           =   7815
-      End
-      Begin VB.Label lblExportFile 
-         Alignment       =   1  'Right Justify
-         Caption         =   "Output"
-         Height          =   375
-         Left            =   240
-         TabIndex        =   119
-         Top             =   2040
-         Width           =   1215
       End
    End
    Begin VB.Frame tabStrip__Tab5 

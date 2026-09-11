@@ -59,6 +59,7 @@
 | sprint_to_lceda.py | TextIO → EasyEDA JSON（LcedaGenerator）；画布字段用新名 `CA~`（旧名 CANVAS~ 已废弃） |
 | sprint_to_openscad.py | TextIO → OpenSCAD 脚本（OpenSCADGenerator，merged/layered 两模式） |
 | sprint_to_svg.py | TextIO → SVG（SVGGenerator，多边形去重、Y 镜像） |
+| sprint_to_dxf.py | TextIO → AutoCAD DXF 文件（DXFGenerator，AC1015/AutoCAD 2000，纯标准库无依赖，支持焊盘/钻孔/走线/圆弧/多边形/文本） |
 | svg_to_polygon.py | SVG → TextIO（svgToPolygon）：线条模式(Track 描线) / 多边形模式(Polygon 填充)，fontTools 解析 path |
 | netlist_builder.py | `NetlistBuilder` + `UnionFind`：铜层元素几何相交 → 网表（v1.9 新增，kicad/lceda 导出共用） |
 
@@ -97,6 +98,7 @@
 | test_base.py | 通用 unittest 基类（日志/断言工具） |
 | test_kicad_to_sprint.py | kicad_mod 批量转换冒烟测试 |
 | test_svg_export.py | SVG 导出独立脚本，**当前是坏的**（调用了不存在的 textIo.parse()，见 pitfalls.md） |
+| test_dxf_export.py | DXF 导出单元测试（焊盘/钻孔/走线/圆弧/覆铜/文字/单层与全层） |
 
 ## 其他目录
 

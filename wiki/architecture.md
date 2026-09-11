@@ -51,7 +51,7 @@ Sprint-Layout 通过"命令行参数 + 临时文本文件 + 进程退出码"三�
 - **字体文本**：fontTools 读 ttf/otf/ttc/otc 字形 → `font_to_polygon.singleWordPolygon` 按平滑度拍平成多边形（Y 翻转 + 背面水平镜像 + 内孔 devour 合并）→ 装入 SprintTextIO；负像背景由 `FontOperations.invertFontBackground` 生成镂空外框。
 - **封装导入**：`.kicad_mod` → kicad_pcb 解析（v5/v6），遇 v7/v8 抛 FootPrint8NotSupported 降级 kicad_pcb8；立创封装 → 在线 API（商城编号→uuid→JSON）或本地 json → `LcComponent` 按 shape 类型（TRACK/PAD/ARC/CIRCLE/VIA/RECT）分发解析。
 - **导出网表**（v1.9）：`NetlistBuilder` 用并查集对铜层（C1/C2/I1/I2）元素做几何相交判定（过孔连通两面，公差 0.01mm）提取连通性 → Kicad/Lceda 导出器给走线/焊盘标注 net 号。
-- **导出**：KicadGenerator 输出完整 `(kicad_pcb ...)` 板文件；LcedaGenerator 输出 EasyEDA JSON；OpenSCADGenerator（merged/layered 两模式）；SVGGenerator。
+- **导出**：KicadGenerator 输出完整 `(kicad_pcb ...)` 板文件；LcedaGenerator 输出 EasyEDA JSON；OpenSCADGenerator（merged/layered 两模式）；SVGGenerator；DXFGenerator（输出标准 AC1015/AutoCAD 2000 DXF，纯标准库无外部依赖，支持焊盘/钻孔/走线/圆弧/多边形/文本）。
 - **泪滴/弧线/差分线**：`sprint_struct/teardrop.py`（切线几何+贝塞尔拟合）、`rounded_track.py`（切线内切圆/三点圆/贝塞尔三种）、`wire_pair_tuner.py`（独立 Toplevel 窗口，蛇形线振幅反解 + 40 轮二分查找消除长度残差）。
 
 ## 5. 双 KiCad 解析器决策
@@ -62,6 +62,7 @@ Sprint-Layout 通过"命令行参数 + 临时文本文件 + 进程退出码"三�
 
 ## 6. 架构决策记录（日期 + 结论 + 原因）
 
+- 2026-09-11: DXF 导出采用纯 Python 生成标准 AC1015 (AutoCAD 2000) ASCII 格式——无需额外第三方依赖(ezdxf)，保证 cx_Freeze 打包体积小且最大兼容各类 CAD 软件(AutoCAD, SolidWorks, FreeCAD, Fusion360)。
 - 2026-09-02: 初始整理。app/ 层是从 sprintFont.py 拆出的业务 handler（UI 与逻辑分离的重构产物），后续新功能应放进 app/ 或 conversion/，不要继续膨胀 sprintFont.py。
 - 2026-09-02: DSN 导出附带 pickle 整个 exporter 实例而非单独数据文件——为了 SES 导入时能原样恢复 textIo/元件表/焊盘映射；代价是 Python 版本或类结构变化会导致旧 pickle 失效。
 - 2026-09-02: 双 KiCad 解析器并存而非原地升级 kicad_pcb/——两版格式差异大，fork 降级切换改动最小。

@@ -3,7 +3,7 @@
 > 本文件由 AI Agent 自动维护，是 wiki 的索引入口。最后整理：2026-09-02
 
 ## 项目一句话
-sprintFont 是 Sprint-Layout v6.0 (2022+) 的外部插件（Python + Tkinter，cx_Freeze 打包为 exe），通过"临时文件 + 进程退出码"协议与 Sprint-Layout 通讯，提供：字体文本插入（含中文/特殊符号）、KiCad/立创EDA封装导入、SVG/二维码插入、Freerouting 自动布线（DSN/SES）、泪滴焊盘、弧形走线、差分线长度匹配、批量修改、多格式导出（KiCad/立创/OpenSCAD/SVG）。
+sprintFont 是 Sprint-Layout v6.0 (2022+) 的外部插件（Python + Tkinter，cx_Freeze 打包为 exe），通过"临时文件 + 进程退出码"协议与 Sprint-Layout 通讯，提供：字体文本插入（含中文/特殊符号）、KiCad/立创EDA封装导入、SVG/二维码插入、Freerouting 自动布线（DSN/SES）、泪滴焊盘、弧形走线、差分线长度匹配、批量修改、多格式导出（KiCad/立创/OpenSCAD/SVG/DXF）。
 
 ## Wiki 文件列表
 | 文件 | 内容 | 何时读 |

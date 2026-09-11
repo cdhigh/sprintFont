@@ -36,8 +36,8 @@ from app.footprint_svg_handler import FootprintSvgHandler
 from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
 
-__Version__ = "1.9"
-__DATE__ = "20260713"
+__Version__ = "1.10"
+__DATE__ = "20260911"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
@@ -374,6 +374,13 @@ class Application(Application_ui):
             _("S2 (Back silkscreen)"), _("I1 (Inner copper1)"), _("I2 (Inner copper2)"), _("U (Edge.cuts)"), ]
         self.cmbExportLayer.configure(values=self.cmbExportLayerList)
         self.cmbExportLayer.current(0)
+        self.lblExportFormat.setText(_('Format'))
+        self.supportedExportFormats = {_("Kicad PCB File"): "*.kicad_pcb", _("EasyEDA JSON File"): "*.json",
+            _("OpenSCAD File"): "*.scad", _("Layered OpenSCAD File"): "*.scad", 
+            _("SVG File"): "*.svg", _("DXF File"): "*.dxf"}
+        self.cmbExportFormatList = list(self.supportedExportFormats.keys())
+        self.cmbExportFormat.config(values=self.cmbExportFormatList)
+        self.cmbExportFormat.current(0)
 
         #SVG/QRCODE选择
         self.cmbSvgQrcodeList = [_("SVG"), _("Qrcode")]
@@ -511,30 +518,25 @@ class Application(Application_ui):
 
     #选择一个导出文件
     def cmdChooseExportFile_Cmd(self, event=None):
-        selectedFilter = StringVar()
-        FILE_TYPES_MAP = {
-            _("All supported files"): "",
-            _("KiCad PCB files"): ".kicad_pcb",
-            _("EasyEDA JSON files"): ".json",
-            _("OpenSCAD files"): ".scad",
-            _("SVG files"): ".svg",
-            _("All files"): ""
-        }
+        allExt = dict.fromkeys(self.supportedExportFormats.values()) #去重
+        currFmt = self.cmbExportFormat.text()
+        currExt = self.supportedExportFormats.get(currFmt, "*.*")
         ret = filedialog.asksaveasfilename(filetypes=[
-            (_("All supported files"), "*.kicad_pcb;*.json;*.scad;*.svg"),
-            (_("KiCad PCB files"), "*.kicad_pcb"),
-            (_("EasyEDA JSON files"), "*.json"),
-            (_("OpenSCAD files"), "*.scad"),
-            (_("SVG files"), "*.svg"),
+            (currFmt, currExt),
+            (_("All supported files"), ";".join(allExt)),
             (_("All files"), "*.*")
-        ], typevariable=selectedFilter)
+        ])
         if ret:
             rootName, ext = os.path.splitext(ret)
-            if not ext:
-                choiceName = selectedFilter.get()
-                targetExt = FILE_TYPES_MAP.get(choiceName)
-                if targetExt:
-                    ret = rootName + targetExt
+            if ext:
+                ext = "*" + ext.lower()
+                if (ext != currExt) and (ext in allExt): #自动根据后缀名选择下拉框对应格式
+                    realFmt = next((k for k, v in self.supportedExportFormats.items() if v == ext),
+                        self.cmbExportFormatList[0])
+                    self.cmbExportFormat.current(self.cmbExportFormatList.index(realFmt))
+            else: #自动添加后缀名
+                ret += self.supportedExportFormats.get(self.cmbExportFormat.text(), "").replace("*", "")
+
             self.txtExportFile.setText(ret)
 
     #选择一个SVG文件
@@ -683,13 +685,15 @@ class Application(Application_ui):
         from conversion.sprint_to_lceda import LcedaGenerator
         from conversion.sprint_to_openscad import OpenSCADGenerator
         from conversion.sprint_to_svg import SVGGenerator
+        from conversion.sprint_to_dxf import DXFGenerator
 
         self.saveConfig()
         outFileName = self.txtExportFile.text().strip()
+        outFmt = self.supportedExportFormats.get(self.cmbExportFormat.text(), "")
         if not outFileName:
             showwarning(_('info'), _('Input is empty'))
             return
-        elif not outFileName.lower().endswith(('.kicad_pcb', '.json', '.scad', '.svg')):
+        elif not outFmt:
             showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
             return
 
@@ -697,19 +701,24 @@ class Application(Application_ui):
         if not textIo:
             return False
 
-        if outFileName.lower().endswith('.kicad_pcb'):
+        layer = self.cmbExportLayer.current()
+        if outFmt == '*.kicad_pcb':
             generator = KicadGenerator(textIo)
-        elif outFileName.lower().endswith('.json'):
+        elif outFmt == '*.json':
             generator = LcedaGenerator(textIo)
-        elif outFileName.lower().endswith('.scad'):
-            generator = OpenSCADGenerator(textIo)
-        elif outFileName.lower().endswith('.svg'):
+        elif outFmt == '*.scad':
+            layered = self.cmbExportFormat.text() == _("Layered OpenSCAD File")
+            generator = OpenSCADGenerator(textIo, layers=layer, layered=layered)
+        elif outFmt == '*.svg':
             layer = self.cmbExportLayer.current()
             generator = SVGGenerator(textIo, layers=layer)
-        else:
+        elif outFmt == '*.dxf':
             layer = self.cmbExportLayer.current()
-            layered = self.chkLayeredScad.value()
-            generator = OpenSCADGenerator(textIo, layers=layer, layered=layered)
+            generator = DXFGenerator(textIo, layers=layer)
+        else:
+            showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
+            return
+
         errStr = generator.generate(outFileName)
         if errStr:
             showwarning(_('info'), errStr)

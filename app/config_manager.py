@@ -99,8 +99,8 @@ class ConfigManager:
             'capLeft': str(app.cmbCapLeft.current()), 
             'capRight': str(app.cmbCapRight.current()),
             'importFootprintText': str(app.chkImportFootprintText.value()),
+            'exportFormat': str(app.cmbExportFormat.current()),
             'exportLayer': str(app.cmbExportLayer.current()),
-            'exportLayeredScad': str(app.chkLayeredScad.value()),
             'svgQrcode': str(app.cmbSvgQrcode.current()),
             'svgMode': str(app.cmbSvgMode.current()), 
             'svgLayer': str(app.cmbSvgLayer.current()),
@@ -194,10 +194,12 @@ class ConfigManager:
             app.chkImportFootprintText.setValue(1)
 
         # 导出页面
+        lastExportFormat = str_to_int(cfg.get('exportFormat', '0'), 100)
+        if 0 <= lastExportFormat < len(app.cmbExportFormatList):
+            app.cmbExportFormat.current(lastExportFormat)
         lastExportLayer = str_to_int(cfg.get('exportLayer', '0'), 100)
         if 0 <= lastExportLayer < len(app.cmbExportLayerList):
             app.cmbExportLayer.current(lastExportLayer)
-        app.chkLayeredScad.setValue(cfg.get('exportLayeredScad', '0') != '0')
         
         # SVG页面
         svgQrcode = str_to_int(cfg.get('svgQrcode', '0'), 100)

@@ -8,6 +8,7 @@
 - 2026-09-02: 旋转角单位在不同元素上不统一——焊盘 0.01°（sprint_pad.py）、TEXT 输出 0.001°，且解析时 TEXT/ID_TEXT 单位不同，还有 `>359 则 /10` 的修正补丁（sprint_textio_parser.py:283-287）。做角度相关改动时必须逐元素核对，不能假设统一单位。
 - 2026-09-02: 输入文件编码回退链 latin-1 → utf-8 → locale 中 latin-1 永不抛 UnicodeDecodeError，utf-8/locale 分支实际是死代码；utf-8 文件中的非 ASCII 字符会变 mojibake（sprint_textio_parser.py:47-58）。[待确认] 是否要改成 utf-8 优先。
 - 2026-09-02: Sprint 坐标原点左下 Y 向上，KiCad/SVG/freerouting 原点左上 Y 向下——所有格式转换都要 Y 取负（sprint_export_dsn.py、sprint_import_ses.py、svg_to_polygon.py、font_to_polygon.py 各自处理）。
+- 2026-09-11: DXF 导出必须默认翻转 Y 轴 (mirrorY=True)——Sprint-Layout 屏幕视图中原点在左上且 Y 向下，AutoCAD DXF 遵循标准笛卡尔坐标系（原点左下、Y 向上），若不翻转会导致导出图元在 CAD/Viewer 中上下颠倒（sprint_to_dxf.py）。
 - 2026-09-02: Sprint 文本绕左下角旋转，KiCad 文本绕中心对齐旋转，且 Sprint-Layout 无法计算文本实际宽度——导入封装后文本位置可能需要手工调整（README 注2），代码不做补偿。
 - 2026-09-02: 角度正方向相反——KiCad 逆时针为正，Sprint 顺时针为正（kicad_definitions.py 头部注释）；freerouting 中 PTH 与 SMD 焊盘旋转方向也相反，DSN 导出统一用 `360-rotation`（sprint_export_dsn.py:302-304）。
 
