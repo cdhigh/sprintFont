@@ -3,6 +3,7 @@ Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\Windows\SysWOW64\st
 Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0; MSCOMCTL.OCX
 Form=main.frm
 Form=frmNewVersion.frm
+Form=frmSettings.frm
 Startup="Sub Main"
 Command32=""
 Name="Vb¹¤³Ì1"

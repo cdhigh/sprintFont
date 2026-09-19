@@ -5,7 +5,7 @@
 <https://docs.easyeda.com/cn/DocumentFormat/EasyEDA-Format-Standard/>
 Author: cdhigh <https://github.com/cdhigh>
 """
-import datetime, uuid, json
+import datetime, uuid, json, math
 from sprint_struct.sprint_textio import *
 from .netlist_builder import NetlistBuilder
 
@@ -46,7 +46,7 @@ class LcedaGenerator:
         self.netlist = builder.build()
 
     def generate(self, outputFile):
-        #try:
+        try:
             self.shapeList = []
             self.writeElements()
             
@@ -168,8 +168,8 @@ class LcedaGenerator:
             with open(outputFile, 'w', encoding='utf-8') as f:
                 json.dump(lcedaData, f, separators=(',', ':'), indent=2)
             return ''
-        #except Exception as e:
-        #    return str(e)
+        except Exception as e:
+            return str(e)
 
     def writeElements(self):
         self._processGroup(self.textIo)
@@ -297,16 +297,50 @@ class LcedaGenerator:
         shape_str = f"TEXT~{text_type}~{r2(x)}~{r2(y)}~{strokeWidth}~{r2(rotation)}~{mirror}~{layer}~~{fontSize}~{val}~"
         self.shapeList.append(shape_str)
 
+    #输出圆形或圆弧
     def _writeCircle(self, circle, centroid=(0,0)):
-        # CIRCLE~cx~cy~radius~strokeWidth~layerid~gId~locked
+        if circle.radius <= 0:
+            return
+
         layer = sprintToLcedaLayerMap.get(circle.layerIdx, '1')
         x = mm2lceda(circle.center[0] - centroid[0]) + 4000
         y = mm2lceda(circle.center[1] - centroid[1]) + 3000
         r = mm2lceda(circle.radius)
         w = mm2lceda(circle.width)
-        
-        shape_str = f"CIRCLE~{r2(x)}~{r2(y)}~{r}~{w}~{layer}~{uuid4()}~0"
-        self.shapeList.append(shape_str)
+
+        # 判断是否为圆弧 (非实心填充、且存在有效起止角跨度)
+        isArc = False
+        if not circle.fill and circle.start is not None and circle.stop is not None:
+            try:
+                startDeg = float(circle.start)
+                stopDeg = float(circle.stop)
+                sweepAngle = (stopDeg - startDeg) % 360
+                if abs(startDeg - stopDeg) >= 1e-4 and abs(sweepAngle) >= 1e-4:
+                    isArc = True
+            except (TypeError, ValueError):
+                pass
+
+        if isArc:
+            # ARC~strokeWidth~layerid~net~pathStr~helperDots~gId~locked
+            largeArc = 1 if sweepAngle > 180 else 0
+            sweepFlag = 0  # Sprint圆弧逆时针为正，在Y向下坐标系中对应SVG sweep-flag 0
+            
+            startRad = math.radians(startDeg)
+            stopRad = math.radians(stopDeg)
+            startX = round(x + r * math.cos(startRad), 4)
+            startY = round(y - r * math.sin(startRad), 4)
+            endX = round(x + r * math.cos(stopRad), 4)
+            endY = round(y - r * math.sin(stopRad), 4)
+            
+            pathStr = f"M {startX} {startY} A {r} {r} 0 {largeArc} {sweepFlag} {endX} {endY}"
+            netNum = self.netlist['element_net_map'].get(id(circle), '') if hasattr(self, 'netlist') and self.netlist else ""
+            netName = f"Net-{netNum}" if netNum else ""
+            shapeStr = f"ARC~{w}~{layer}~{netName}~{pathStr}~~{uuid4()}~0"
+        else:
+            # CIRCLE~cx~cy~radius~strokeWidth~layerid~gId~locked
+            shapeStr = f"CIRCLE~{r2(x)}~{r2(y)}~{r}~{w}~{layer}~{uuid4()}~0"
+
+        self.shapeList.append(shapeStr)
 
     def _writeComponent(self, comp):
         # 写入Component作为一个整体 (LIB)

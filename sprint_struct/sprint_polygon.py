@@ -4,7 +4,7 @@
 多边形数据结构和算法
 Author: cdhigh <https://github.com/cdhigh>
 """
-from utils.comm_utils import ComputePolygonArea
+from utils.comm_utils import ComputePolygonArea, pointAfterRotated
 from .sprint_element import *
 
 #里面的长度单位都是mm
@@ -209,7 +209,23 @@ class SprintPolygon(SprintElement):
         for idx in range(len(self.points)):
             self.points[idx] = (round(self.points[idx][0] + offsetX, 4), round(self.points[idx][1] + offsetY, 4))
         self.updateSelfBbox()
-        
+
+    #绕指定中心旋转自身，angle为顺时针为正的度数
+    #注意pointAfterRotated必须用默认的clockwise=0分支：内部坐标Y向下，该分支的旋转矩阵
+    #才是屏幕视觉顺时针(与焊盘/文本ROTATION一致)，函数本身的注释按Y向上坐标书写
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        self.points = [pointAfterRotated(pt[0], pt[1], cx, cy, angle) for pt in self.points]
+        self.updateSelfBbox()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)
+    def mirrorHorzBy(self, cx: float):
+        self.points = [(round(2 * cx - pt[0], 4), pt[1]) for pt in self.points]
+        self.updateSelfBbox()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)
+    def mirrorVertBy(self, cy: float):
+        self.points = [(pt[0], round(2 * cy - pt[1], 4)) for pt in self.points]
+        self.updateSelfBbox()
 
 #判断一个点是否在线段上，使用向量法
 def pointInLineSeg(x: float, y: float, x1: float, y1: float, x2: float, y2: float):

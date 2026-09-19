@@ -23,18 +23,19 @@ import math, gettext, itertools, glob
 from functools import partial
 from fontTools.ttLib import ttFont, ttCollection
 from ui.sprint_font_ui import *
-from tkinter import filedialog
-from tkinter import simpledialog
+from tkinter import filedialog, simpledialog, Label
 from utils.comm_utils import *
 from utils.widget_right_click import rightClicker
 import sprint_struct.sprint_textio as sprint_textio
 from conversion.lceda_to_sprint import LcComponent
 from sprint_struct.sprint_export_dsn import PcbRule, SprintExportDsn
-from app.config_manager import ConfigManager
+from app.config_manager import ConfigManager, DEFAULT_MCP_PORT
 from app.font_operations import FontOperations
 from app.footprint_svg_handler import FootprintSvgHandler
 from app.autorouter_handler import AutorouterHandler
 from app.pcb_enhancements import PcbEnhancements
+#注意：app.mcp_server不能在此导入(其依赖的http.server导入耗时约0.6s)，
+#已改为在MCP后台启动线程中延迟导入，见getMcpServer
 
 __Version__ = "1.10"
 __DATE__ = "20260911"
@@ -101,7 +102,7 @@ class Application(Application_ui):
 
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
-        self.staBar.panelwidth(0, 100) #Label的width的单位为字符个数
+        self.staBar.panelwidth(0, 92) #Label的width的单位为字符个数，右侧留出齿轮入口的位置
         self.txtFontSize = 14
         self.fontTryTime = 0
 
@@ -141,9 +142,23 @@ class Application(Application_ui):
         #分析Sprint-Layout传入的参数
         self.getSprintApiData()
 
+        #初始化MCP服务器相关的状态和板图数据
+        self.mcpExitRequest = None
+        self.settingsDialog = None
+        self.initMcpBoard()
+
         self.populateWidgets()
         self.configManager.restoreConfig()
-        
+
+        #初始化MCP服务器状态(不自动启动，由用户在设置对话框中手动启动)
+        self.initMcpServer()
+
+        #初始化设置对话框的入口：状态栏右侧齿轮
+        self.initSettingsEntries()
+
+        #窗口关闭按钮走统一的安全退出流程(确保MCP服务器等后台资源被关闭)
+        self.master.protocol('WM_DELETE_WINDOW', self.onWindowClose)
+
         #TODO
         if globals().get('DEBUG_IN_FILE') and not self.inFileName:
             self.inFileName = DEBUG_IN_FILE
@@ -160,10 +175,16 @@ class Application(Application_ui):
 
     #安全退出程序，确保焦点正确返回给Sprint-Layout
     def safeExit(self, returnCode=RETURN_CODE_NONE):
+        #确保MCP服务器和尚未触发的延时启动任务被关闭
+        self.shutdownMcpServer()
         self.master.update()
         self.master.quit()
         self.destroy()
         sys.exit(returnCode)
+
+    #点击窗口关闭按钮(如独立模式直接点X)的统一处理
+    def onWindowClose(self, event=None):
+        self.safeExit(RETURN_CODE_NONE)
     
     #分析Sprint-Layout传入的参数
     def getSprintApiData(self):
@@ -506,6 +527,167 @@ class Application(Application_ui):
             self.lastCheckUpdate = datetime.datetime.now() - datetime.timedelta(days=29)
         self.configManager.saveConfig(self.lastCheckUpdate)
 
+    #================= MCP服务器相关 =================
+    #初始化MCP服务器的配置变量(端口，由设置对话框读写)
+    #注意：板图解析和mcp_server模块的导入都是重量级操作，全部延后到用户手动启动时进行
+    #(见startMcpServer/ensureMcpBoardLoaded)，避免拖慢程序启动
+    def initMcpBoard(self):
+        self.mcpPortVar = StringVar(value=str(DEFAULT_MCP_PORT))
+        self.mcpBoardLoaded = False
+        self.mcpParseFailed = False #输入板图解析失败时为True，禁止replace整板回写(避免用残缺板图覆盖原板)
+        self.mcpInitialElements = []
+        self.mcpTextIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
+        self.mcpStatusWindow = None #MCP运行状态窗口(模态)，显示期间服务器处于运行状态
+
+    #初始化MCP服务器状态(服务器由设置对话框中手动启动，平时不运行)
+    def initMcpServer(self):
+        self.mcpServer = None #延迟创建(导入http.server等约0.6s，必须避开启动路径)，见getMcpServer
+        self.mcpServerLock = threading.Lock()
+        #启动事件轮询，处理MCP线程的回写请求
+        self.master.after(500, self.pollMcpEvents)
+
+    #获取MCP服务器实例(首次调用时才导入mcp_server模块并创建实例)
+    def getMcpServer(self):
+        with self.mcpServerLock:
+            if self.mcpServer is None:
+                from app.mcp_server import SprintMcpServer
+                self.mcpServer = SprintMcpServer(self.mcpTextIo, serverVersion=__Version__,
+                    pcbRule=self.pcbRule, onApplyRequest=self.requestApplyMcpBoard,
+                    pcbAll=self.pcbAll, hasInputFile=bool(self.inFileName))
+            return self.mcpServer
+
+    #解析输入临时文件为MCP共享板图并记录初始元素快照(可能耗时，在用户手动启动MCP时同步调用)
+    def ensureMcpBoardLoaded(self):
+        if self.mcpBoardLoaded:
+            return
+        server = self.getMcpServer()
+        textIo = None
+        parseError = ''
+        if self.inFileName:
+            try:
+                if os.path.isfile(self.inFileName) and (os.path.getsize(self.inFileName) > 0):
+                    from sprint_struct.sprint_textio_parser import SprintTextIoParser
+                    parser = SprintTextIoParser(self.pcbWidth, self.pcbHeight)
+                    textIo = parser.parse(self.inFileName)
+            except Exception as e:
+                parseError = str(e)
+                print('MCP parse input file failed: {}'.format(parseError))
+        if textIo is None:
+            textIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
+        #记录初始元素的序列化文本，用于insert_new模式下计算新增增量
+        self.mcpInitialElements = [str(elem) for elem in textIo.elements]
+        self.mcpTextIo = textIo
+        with server.boardLock:
+            server.textIo = textIo
+        self.mcpBoardLoaded = True
+        #解析失败时原板内容未知，必须禁止replace整板回写(否则会用残缺板图覆盖Sprint-Layout中的原板，造成数据丢失)
+        self.mcpParseFailed = bool(parseError)
+        server.replaceDisabled = self.mcpParseFailed
+        if parseError:
+            showwarning(_('info'), _('Failed to parse input file:\n{}\n\n'
+                'Only newly added elements can be transferred back to Sprint-Layout.').format(parseError))
+
+    #确保MCP服务器被关闭(程序退出时调用)
+    def shutdownMcpServer(self):
+        if self.mcpServer is not None:
+            try:
+                self.mcpServer.stop()
+            except Exception:
+                pass
+
+    #启动MCP服务器(设置对话框中的手动操作)：加载板图、启动服务器、打开状态窗口
+    #成功返回True并保存端口配置
+    def startMcpServer(self):
+        server = self.getMcpServer()
+        port = str_to_int(self.mcpPortVar.get(), DEFAULT_MCP_PORT)
+        if not (1024 <= port <= 65535):
+            port = DEFAULT_MCP_PORT
+            self.mcpPortVar.set(str(port))
+        #已在运行则直接打开状态窗口
+        if server.isRunning():
+            self.openMcpStatusWindow()
+            self.saveConfig()
+            return True
+        self.ensureMcpBoardLoaded()
+        ok, msg = server.start(port)
+        if not ok:
+            showwarning(_('info'), msg)
+            return False
+        self.saveConfig()
+        self.openMcpStatusWindow()
+        return True
+
+    #打开MCP运行状态窗口(模态，已打开则置前)
+    def openMcpStatusWindow(self, event=None):
+        from app.mcp_status_window import McpStatusWindow
+        dlg = self.mcpStatusWindow
+        if (dlg is not None) and bool(dlg.winfo_exists()):
+            dlg.lift()
+            return
+        self.mcpStatusWindow = McpStatusWindow(self)
+
+    #================= 设置对话框相关 =================
+    #初始化设置对话框的入口：状态栏最右侧的齿轮图标
+    def initSettingsEntries(self):
+        self.staBarGear = Label(self.staBar, text='⚙', width=2, relief=GROOVE,
+            anchor=CENTER, font=('Segoe UI Symbol', 12), cursor='hand2')
+        self.staBarGear.pack(side=RIGHT, before=self.staBar.lbls[-1])
+        Tooltip(self.staBarGear, _('Settings'))
+        self.staBarGear.bind('<Button-1>', self.openSettingsDialog)
+
+    #打开设置对话框(已打开则聚焦置前)
+    def openSettingsDialog(self, event=None):
+        from app.settings_dialog import SettingsDialog
+        dlg = self.settingsDialog
+        if (dlg is not None) and bool(dlg.winfo_exists()):
+            dlg.top.lift()
+            dlg.top.focus_force()
+            return
+        self.settingsDialog = SettingsDialog(self)
+
+    #MCP线程请求将板图回写到Sprint-Layout(在MCP线程中调用，只记录请求，由主线程轮询执行)
+    def requestApplyMcpBoard(self, mode='auto'):
+        self.mcpExitRequest = mode or 'auto'
+
+    #主线程事件轮询：处理MCP线程的回写请求
+    def pollMcpEvents(self):
+        try:
+            mode = self.mcpExitRequest
+            if mode is not None:
+                self.mcpExitRequest = None
+                self.applyMcpBoard(mode) #正常时safeExit内部sys.exit不会返回；若因警告提前返回(如无新增元素)，必须继续轮询等待重试
+        except Exception as e:
+            print('pollMcpEvents: {}'.format(str(e)))
+        self.master.after(500, self.pollMcpEvents)
+
+    #将MCP板图回写到Sprint-Layout并退出插件
+    #mode: replace=整板替换(仅整板启动时有效) / insert_new=仅插入新增元素 / auto=自动选择
+    def applyMcpBoard(self, mode='auto'):
+        if not self.inFileName:
+            showwarning(_('info'), _('MCP board can only be applied when launched from Sprint-Layout'))
+            return
+
+        #MCP线程可能正在修改板图，加锁后取数据
+        with self.mcpServer.boardLock:
+            textIo = self.mcpServer.textIo
+            if mode == 'auto':
+                mode = 'replace' if self.pcbAll else 'insert_new'
+            #原板解析失败时禁止replace整板回写，强制退化为insert_new，避免残缺板图覆盖原板
+            if (mode == 'replace') and self.mcpParseFailed:
+                mode = 'insert_new'
+            if mode == 'replace':
+                payload = str(textIo)
+            else:
+                newElems = self.mcpServer.getNewElementsSince(self.mcpInitialElements)
+                payload = '\n'.join([str(elem) for elem in newElems])
+
+        if not payload.strip():
+            showwarning(_('info'), _('No elements to transfer to Sprint-Layout'))
+            return
+
+        self.saveOutputFile(payload)
+        self.safeExit(RETURN_CODE_REPLACE_ALL if (mode == 'replace') else RETURN_CODE_INSERT_ALL)
+
     def cmbFont_ComboboxSelected(self, event=None):
         self.txtMain.configure(font=Font(family=self.cmbFont.text(), size=self.txtFontSize))
         
@@ -710,18 +892,20 @@ class Application(Application_ui):
             layered = self.cmbExportFormat.text() == _("Layered OpenSCAD File")
             generator = OpenSCADGenerator(textIo, layers=layer, layered=layered)
         elif outFmt == '*.svg':
-            layer = self.cmbExportLayer.current()
             generator = SVGGenerator(textIo, layers=layer)
         elif outFmt == '*.dxf':
-            layer = self.cmbExportLayer.current()
             generator = DXFGenerator(textIo, layers=layer)
         else:
             showwarning(_('info'), _('Cannot detect export type. Please add a file extension'))
             return
 
-        errStr = generator.generate(outFileName)
+        try:
+            errStr = generator.generate(outFileName)
+        except Exception as e:
+            errStr = str(e)
+
         if errStr:
-            showwarning(_('info'), errStr)
+            showwarning(_('info'), _('Failed to save file.\n{}').format(errStr))
         else:
             showinfo(_("info"), _("Export file successfully"))
     
@@ -746,9 +930,13 @@ class Application(Application_ui):
             showwarning(_('info'), _('Input is empty'))
             return
 
-        #如果是SVG模式，校验文件，否则直接使用文本
+        #如果是SVG模式，校验文件，否则直接使用文本(文本过长时qrcode库会抛DataOverflowError，必须捕获提示)
         if isQrcode:
-            fileName = self.footprintSvgHandler.textToQrcodeStr(fileName)
+            try:
+                fileName = self.footprintSvgHandler.textToQrcodeStr(fileName)
+            except Exception as e:
+                showwarning(_('info'), f'{type(e)}\n{str(e)}')
+                return
         elif not self.verifyFileName(fileName):
             return
         elif not fileName.lower().endswith('.svg'):
@@ -784,14 +972,14 @@ class Application(Application_ui):
             showwarning(_('info'), _('Input is empty'))
             return False
 
+        if os.path.isfile(fileName):
+            return True
+
         if (extraVeriFunc and extraVeriFunc(fileName)):
             return True
 
-        if not os.path.isfile(fileName):
-            showwarning(_('info'), _("File does not exist\n{}").format(fileName))
-            return False
-        
-        return True
+        showwarning(_('info'), _("File does not exist\n{}").format(fileName))
+        return False
 
     #备份输入文件
     def backupInputFile(self, newTxtStr):
@@ -817,15 +1005,15 @@ class Application(Application_ui):
         try:
             if not os.path.exists(backupDir):
                 os.makedirs(backupDir)
-            
+
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             backupFile = os.path.join(backupDir, f"backup_{timestamp}.txt")
-            
+
             with open(backupFile, 'w', encoding='utf-8') as f:
                 f.write(origTxt)
         except:
             pass
-            
+
         try:
             backups = glob.glob(os.path.join(backupDir, "backup_*.txt"))
             backups.sort(key=os.path.getmtime)
@@ -932,6 +1120,8 @@ class Application(Application_ui):
                 self.pcbRule.clearance = ret
             elif itemName == _("Smd-Smd Clearance"):
                 self.pcbRule.smdSmdClearance = ret
+        elif ret is not None: #输入了过小的值时明确提示，而不是静默忽略
+            showwarning(_('info'), _('Value must be no less than 0.01'))
 
         self.updateRuleView()
         self.saveConfig()
@@ -1407,7 +1597,7 @@ class Application(Application_ui):
 
     #显示一个历史输入的列表
     def cmdLastText_Cmd(self, event=None):
-        if self.historyNum <= 0:
+        if (self.historyNum <= 0) or (not self.history): #无历史记录时直接返回，避免弹出空菜单
             return
             
         menu = Menu(self.master, tearoff=0)

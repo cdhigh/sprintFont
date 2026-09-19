@@ -8,6 +8,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
+from xml.sax.saxutils import escape
 from sprint_struct.sprint_textio import *
 
 #保留小数位数的同时,能处理一些None或非法值之类的,比{var:.4f}健壮
@@ -31,12 +32,12 @@ class SVGGenerator:
     #layerColors: 各层颜色字典,默认为None时使用标准PCB颜色
     def __init__(self, textIo, layers=None, strokeWidth=0.1, mirrorY=False, layerColors=None):
         self.textIo = textIo
-        if not layers or layers < 0:
+        if not layers:
             self.layers = list(range(1, 8))
         elif isinstance(layers, (list, tuple)):
-            self.layers = layers
+            self.layers = list(layers)
         else:
-            self.layers = (layers,)
+            self.layers = [layers]
         self.strokeWidth = strokeWidth or 0.1
         self.mirrorY = mirrorY
         
@@ -64,19 +65,25 @@ class SVGGenerator:
 
     #导出到SVG的主接口, 失败返回错误信息
     def generate(self, outputFile):
-        for pad in self.textIo.getPads(layerIdx=self.layers):
-            self.addPad(pad)
-            
-        for track in self.textIo.getTracks(self.layers):
-            self.addTrack(track)
-            
-        for circle in self.textIo.getCircles(self.layers):
-            self.addCircle(circle)
-            
-        for zone in self.textIo.getPolygons(self.layers):
-            self.addPolygon(zone)
+        try:
+            for pad in self.textIo.getPads(layerIdx=self.layers):
+                self.addPad(pad)
+                
+            for track in self.textIo.getTracks(self.layers):
+                self.addTrack(track)
+                
+            for circle in self.textIo.getCircles(self.layers):
+                self.addCircle(circle)
+                
+            for zone in self.textIo.getPolygons(self.layers):
+                self.addPolygon(zone)
 
-        return self.save(outputFile)
+            for text in self.textIo.getTexts(self.layers):
+                self.addText(text)
+
+            return self.save(outputFile)
+        except Exception as e:
+            return str(e)
 
     def _transform(self, x, y):
         tx = r4(x)
@@ -164,7 +171,19 @@ class SVGGenerator:
         else:
             self._updateBounds(cx, cy, halfW, halfH)
         
-        self.layerShapes[layer].append(shape)
+        # 确定焊盘所在的目标图层 (过孔需映射到请求的所有铜层)
+        targetLayers = []
+        if pad.via:
+            for lyr in (LAYER_C1, LAYER_C2):
+                if lyr in self.layers and lyr not in targetLayers:
+                    targetLayers.append(lyr)
+            if pad.layerIdx in self.layers and pad.layerIdx not in targetLayers:
+                targetLayers.append(pad.layerIdx)
+        elif pad.layerIdx in self.layers:
+            targetLayers.append(pad.layerIdx)
+
+        for lyr in targetLayers:
+            self.layerShapes[lyr].append(shape)
 
         # 钻孔
         if drill > 0:
@@ -173,7 +192,6 @@ class SVGGenerator:
 
     #添加导线
     def addTrack(self, track):
-        hWidth = r4(max(track.width / 2, 0.01))
         points = [self._transform(p[0], p[1]) for p in track.points]
         if len(points) < 2:
             return
@@ -216,29 +234,38 @@ class SVGGenerator:
             startRad = math.radians(circle.start)
             stopRad = math.radians(circle.stop)
             
-            # 外弧起点和终点
+            # 外弧与内弧起止点 (Sprint角度0度在3点钟、逆时针为正；SVG默认Y向下，逆时针方向Y减小，sweepFlag=0)
+            if self.mirrorY:
+                y1Outer = cy + rOuter * math.sin(startRad)
+                y2Outer = cy + rOuter * math.sin(stopRad)
+                y1Inner = cy + rInner * math.sin(stopRad)
+                y2Inner = cy + rInner * math.sin(startRad)
+                sweepOuter = 1
+                sweepInner = 0
+            else:
+                y1Outer = cy - rOuter * math.sin(startRad)
+                y2Outer = cy - rOuter * math.sin(stopRad)
+                y1Inner = cy - rInner * math.sin(stopRad)
+                y2Inner = cy - rInner * math.sin(startRad)
+                sweepOuter = 0
+                sweepInner = 1
+
             x1Outer = cx + rOuter * math.cos(startRad)
-            y1Outer = cy + rOuter * math.sin(startRad)
             x2Outer = cx + rOuter * math.cos(stopRad)
-            y2Outer = cy + rOuter * math.sin(stopRad)
-            
-            # 内弧起点和终点
             x1Inner = cx + rInner * math.cos(stopRad)
-            y1Inner = cy + rInner * math.sin(stopRad)
             x2Inner = cx + rInner * math.cos(startRad)
-            y2Inner = cy + rInner * math.sin(startRad)
             
             # 判断是否大于180度
-            angleDiff = circle.stop - circle.start
-            if angleDiff < 0:
-                angleDiff += 360
+            angleDiff = (circle.stop - circle.start) % 360
+            if angleDiff == 0 and circle.start != circle.stop:
+                angleDiff = 360
             largeArc = 1 if angleDiff > 180 else 0
             
             # 绘制圆环弧段
             shape = (f'<path d="M {r4(x1Outer)} {r4(y1Outer)} '
-                    f'A {rOuter} {rOuter} 0 {largeArc} 1 {r4(x2Outer)} {r4(y2Outer)} '
+                    f'A {rOuter} {rOuter} 0 {largeArc} {sweepOuter} {r4(x2Outer)} {r4(y2Outer)} '
                     f'L {r4(x1Inner)} {r4(y1Inner)} '
-                    f'A {rInner} {rInner} 0 {largeArc} 0 {r4(x2Inner)} {r4(y2Inner)} '
+                    f'A {rInner} {rInner} 0 {largeArc} {sweepInner} {r4(x2Inner)} {r4(y2Inner)} '
                     f'Z"/>')
 
         self.layerShapes[layer].append(shape)
@@ -260,6 +287,35 @@ class SVGGenerator:
         pointsStr = " ".join([f"{r4(p[0])},{r4(p[1])}" for p in cleanPoints])
         shape = f'<polygon points="{pointsStr}" stroke="none"/>'
         
+        self.layerShapes[layer].append(shape)
+
+    #添加文本(视觉近似: 用sans-serif字体渲染，不是Sprint的矢量字体)
+    def addText(self, text):
+        if (not text.text) or (text.visible is False): #component标签可隐藏
+            return
+        cx, cy = self._transform(*text.pos)
+        fontSize = max(r4(text.height), 0.1)
+        layer = text.layerIdx
+
+        #按字符数估算文本宽度，用于更新画布边界
+        estWidth = fontSize * 0.7 * len(text.text)
+        self.minX = min(self.minX, cx)
+        self.minY = min(self.minY, cy - fontSize)
+        self.maxX = max(self.maxX, cx + estWidth)
+        self.maxY = max(self.maxY, cy)
+
+        transforms = []
+        if text.rotation: #Sprint顺时针为正，SVG的y轴向下，rotate正角同为顺时针
+            transforms.append(f'rotate({r1(text.rotation)} {r4(cx)} {r4(cy)})')
+        if text.mirrorH:
+            transforms.append(f'translate({r4(2 * cx)} 0) scale(-1 1)')
+        if text.mirrorV:
+            transforms.append(f'translate(0 {r4(2 * cy)}) scale(1 -1)')
+        transform = f' transform="{" ".join(transforms)}"' if transforms else ''
+
+        #stroke设为none避免描边字，fill继承所在层g的颜色
+        shape = (f'<text x="{r4(cx)}" y="{r4(cy)}" font-size="{fontSize}" '
+            f'font-family="sans-serif" stroke="none"{transform}>{escape(text.text)}</text>')
         self.layerShapes[layer].append(shape)
 
     #合并非常靠近的点(与OpenSCAD代码相同)

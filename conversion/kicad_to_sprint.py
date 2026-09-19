@@ -33,6 +33,8 @@ def kicadModToTextIo(kicadFile: str, importText: int):
     
     textIo = SprintTextIO()
     component = SprintComponent()
+    component.idText.height = 1
+    component.valueText.height = 1
 
     #线
     for kiLine in kicadMod.lines:
@@ -87,7 +89,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
 
         #Kicad顺时针为正，Sprint-Layout逆时针为正
         rotation = kiPad['pos']['orientation']
-        spPad.rotation = (360 - rotation) if rotation else 0
+        spPad.rotation = round((360 - rotation) % 360, 2) if rotation else 0
         
         #spPad.padId = kiPad.name
         #thru_hole/np_thru_hole(内部不镀铜)/smd/connect(smd不镀锡)
@@ -104,7 +106,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
 
             #处理椭圆焊盘，确定是水平还是垂直
             if (kiPad['shape'] == 'oval'):
-                #究竟使用圆形焊盘还是长条椭圆焊盘，取决于长轴是否大于短轴的4/3
+                #究竟使用圆形焊盘还是长条椭圆焊盘，取决于长轴是否大于短轴的1.5倍(3/2)
                 if ((width > height) and ((width * 2 / 3) > height)): #水平椭圆焊盘
                     spPad.form = PAD_FORM_RECT_ROUND_H
                 elif ((width < height) and ((height * 2 / 3) > width)): #垂直椭圆焊盘
@@ -159,7 +161,7 @@ def kicadModToTextIo(kicadFile: str, importText: int):
 
             spText.pos = ((kiText['pos']['x'] + offsetX), (kiText['pos']['y'] + offsetY))
             #Kicad逆时针旋转为正，Sprint-Layout顺时针旋转为正
-            spText.rotation = (360 - angle) if angle else 0
+            spText.rotation = round((360 - angle) % 360, 2) if angle else 0
             
             #spText.thickness = 2
 
@@ -198,29 +200,4 @@ def kicadModToTextIo(kicadFile: str, importText: int):
         return textIo
     else:
         return _("The file contains no components.")
-
-    #暂时先不支持曲线
-    #曲线，Kicad使用三阶贝塞尔曲线，将曲线转换为Sprint-Layout的多边形
-    bezierSmoothList = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9) #曲线分成10份
-    for kiCur in kicadMod.curves:
-        layerIdx = kicadLayerMap.get(kiCur.layer, LAYER_S1)
-        if (layerIdx == LAYER_U):
-            continue
-        polygon = SprintPolygon(layerIdx, kiCur.width if kiCur.width else 0)
-        start = (kiCur.start[0], kiCur.start[-1])
-        ctl1 = (kiCur.bezier1[0], kiCur.bezier1[-1])
-        ctl2 = (kiCur.bezier2[0], kiCur.bezier2[-1])
-        end = (kiCur.end[0], kiCur.end[-1])
-        midPoints = [bezierTools.cubicPointAtT(start, ctl1, ctl2, end, i) for i in bezierSmoothList]
-        polygon.addPoint(start[0], start[1])
-        for (x, y) in midPoints:
-            polygon.addPoint(x, y)
-        polygon.addPoint(end[0], end[1])
-        #反方向再回去
-        for (x, y) in midPoints[::-1]:
-            polygon.addPoint(x, y)
-
-        component.add(polygon)
-
-    return textIo
 

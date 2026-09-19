@@ -5,6 +5,7 @@
 Author: cdhigh <https://github.com/cdhigh>
 """
 from .sprint_element import *
+from utils.comm_utils import pointAfterRotated
 
 #里面的长度单位都是mm
 class SprintText(SprintElement):
@@ -122,4 +123,26 @@ class SprintText(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         self.pos = (round(self.pos[0] + offsetX, 4), round(self.pos[1] + offsetY, 4))
+        self.updateSelfBbox()
+
+    #绕指定中心旋转自身，angle为顺时针为正的度数，文本自身旋转角同步增加
+    #注意pointAfterRotated必须用默认的clockwise=0分支：内部坐标Y向下，该分支的旋转矩阵
+    #才是屏幕视觉顺时针(与焊盘/文本ROTATION一致)，函数本身的注释按Y向上坐标书写
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        self.pos = pointAfterRotated(self.pos[0], self.pos[1], cx, cy, angle)
+        self.rotation = (self.rotation + angle) % 360
+        self.updateSelfBbox()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)，旋转角取反，字形镜像标志取反(None视为未镜像)
+    def mirrorHorzBy(self, cx: float):
+        self.pos = (round(2 * cx - self.pos[0], 4), self.pos[1])
+        self.rotation = (360 - self.rotation) % 360
+        self.mirrorH = (not self.mirrorH) if self.mirrorH is not None else True
+        self.updateSelfBbox()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)，旋转角取反，字形镜像标志取反(None视为未镜像)
+    def mirrorVertBy(self, cy: float):
+        self.pos = (self.pos[0], round(2 * cy - self.pos[1], 4))
+        self.rotation = (360 - self.rotation) % 360
+        self.mirrorV = (not self.mirrorV) if self.mirrorV is not None else True
         self.updateSelfBbox()

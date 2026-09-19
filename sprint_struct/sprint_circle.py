@@ -6,7 +6,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import math
 from .sprint_element import *
-from utils.comm_utils import svgArcToCenterParam
+from utils.comm_utils import svgArcToCenterParam, pointAfterRotated
 
 #里面的长度单位都是mm
 class SprintCircle(SprintElement):
@@ -125,6 +125,38 @@ class SprintCircle(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         self.center = (round(self.center[0] + offsetX, 4), round(self.center[1] + offsetY, 4))
+        self.updateSelfBbox()
+
+    #圆弧角度重映射：本类的start/stop是逆时针为正(0度在3点钟方向)，与焊盘/文本的顺时针为正相反，
+    #所以整体旋转angle(顺时针为正)时弧角度要减去angle；水平镜像时角度关于180度翻转，垂直镜像时取反
+    def remapArcAngles(self, startOffset: float, mirrorMode: int=0):
+        #mirrorMode: 0=无镜像(仅旋转偏移)，1=水平镜像，2=垂直镜像
+        if mirrorMode == 1:
+            newStart, newStop = (180 - self.stop) % 360, (180 - self.start) % 360
+        elif mirrorMode == 2:
+            newStart, newStop = (-self.stop) % 360, (-self.start) % 360
+        else:
+            newStart, newStop = (self.start - startOffset) % 360, (self.stop - startOffset) % 360
+        self.start, self.stop = newStart, newStop
+
+    #绕指定中心旋转自身，angle为顺时针为正的度数
+    #注意pointAfterRotated必须用默认的clockwise=0分支：内部坐标Y向下，该分支的旋转矩阵
+    #才是屏幕视觉顺时针(与焊盘/文本ROTATION一致)，函数本身的注释按Y向上坐标书写
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        self.center = pointAfterRotated(self.center[0], self.center[1], cx, cy, angle)
+        self.remapArcAngles(angle)
+        self.updateSelfBbox()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)
+    def mirrorHorzBy(self, cx: float):
+        self.center = (round(2 * cx - self.center[0], 4), self.center[1])
+        self.remapArcAngles(0, mirrorMode=1)
+        self.updateSelfBbox()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)
+    def mirrorVertBy(self, cy: float):
+        self.center = (self.center[0], round(2 * cy - self.center[1], 4))
+        self.remapArcAngles(0, mirrorMode=2)
         self.updateSelfBbox()
 
     #返回一个三元组, 分别对应起点坐标,圆弧中心坐标,终点坐标

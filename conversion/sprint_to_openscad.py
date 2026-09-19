@@ -23,6 +23,12 @@ def r4(value):
     except:
         return 0
 
+#Sprint角度(顺时针为正)转OpenSCAD角度(逆时针为正)
+def sprintAngleToScad(angle, mirrorY=True):
+    if not angle:
+        return 0
+    return r1((360 - angle) % 360) if mirrorY else r1(angle % 360)
+
 class OpenSCADGenerator:
     #textIo: SprintTextIO对象
     #layers: 要导出的板层列表, None为所有板层
@@ -32,12 +38,12 @@ class OpenSCADGenerator:
     #layerColors: 分层模式下各层颜色字典,RGB值(0-1范围), None时使用默认PCB颜色
     def __init__(self, textIo, layers=None, thickness=0.2, mirrorY=True, layered=False, layerColors=None):
         self.textIo = textIo
-        if not layers or layers < 0:
+        if not layers:
             self.layers = list(range(1, 8))
         elif isinstance(layers, (list, tuple)):
-            self.layers = layers
+            self.layers = list(layers)
         else:
-            self.layers = (layers,)
+            self.layers = [layers]
         self.thickness = thickness or 0.2
         self.mirrorY = mirrorY
         self.layered = layered
@@ -59,30 +65,24 @@ class OpenSCADGenerator:
         
         self.arcRingRequired = False
 
-    #导出到KICAD的主接口, 失败返回错误信息
+    #导出到OpenSCAD的主接口, 失败返回错误信息
     def generate(self, outputFile):
-        for pad in self.textIo.getPads(layerIdx=self.layers):
-            self.addPad(pad)
-            
-        for track in self.textIo.getTracks(self.layers):
-            self.addTrack(track)
-            
-        for circle in self.textIo.getCircles(self.layers):
-            self.addCircle(circle)
-            
-        for zone in self.textIo.getPolygons(self.layers):
-            self.addPolygon(zone)
+        try:
+            for pad in self.textIo.getPads(layerIdx=self.layers):
+                self.addPad(pad)
+                
+            for track in self.textIo.getTracks(self.layers):
+                self.addTrack(track)
+                
+            for circle in self.textIo.getCircles(self.layers):
+                self.addCircle(circle)
+                
+            for zone in self.textIo.getPolygons(self.layers):
+                self.addPolygon(zone)
 
-        #如果U层没有任何元素, 则根据PCB大小创建一个外框
-        #if (not self.textIo.getAllElementsInLayer(LAYER_U) and 
-        #    self.textIo.pcbWidth and self.textIo.pcbHeight):
-        #    points = [(0, 0), (0, r4(self.textIo.pcbHeight)), 
-        #        (r4(self.textIo.pcbWidth), r4(self.textIo.pcbHeight)), 
-        #        (r4(self.textIo.pcbWidth), 0)]
-        #    pointsStr = self._pointsToScadArray(points)
-        #    cmd = f"offset(r=0.001) polygon(points={pointsStr});"
-        #    self.positiveShapes.append(cmd)
-        return self.save(outputFile)
+            return self.save(outputFile)
+        except Exception as e:
+            return str(e)
 
     def _transform(self, x, y):
         return r4(x), r4(self.textIo.yMax - y if self.mirrorY else y)
@@ -94,16 +94,16 @@ class OpenSCADGenerator:
         radius = r4(size / 2)
         rOuter = r4(radius / math.cos(math.pi/8)) #外接圆半径
         drill = pad.drill
-        layer = pad.layerIdx
 
-        rotCmd = f'rotate({r1(pad.rotation)}) ' if pad.rotation else ''
+        rot = sprintAngleToScad(pad.rotation, self.mirrorY) if pad.rotation else 0
+        rotCmd = f'rotate({r1(rot)}) ' if rot else ''
         
         if pad.padType == 'SMDPAD':
             w, h = r4(pad.sizeX), r4(pad.sizeY)
             shapeCmd = f"translate([{cx}, {cy}, 0]) {rotCmd}square([{w}, {h}], center=true);"
         elif pad.form == PAD_FORM_OCTAGON: #八角形焊盘的半径是内切圆, 需要转换为Openscad的外接圆
-            rotCmd = f'rotate({r1(pad.rotation + 22.5)}) ' #默认就需要旋转22.5才能变成X/Y轴不是尖角
-            shapeCmd = f"translate([{cx}, {cy}, 0]) {rotCmd}circle(r={rOuter}, $fn=8);"
+            rotOct = r1((rot + 22.5) % 360) #默认就需要旋转22.5才能变成X/Y轴不是尖角
+            shapeCmd = f"translate([{cx}, {cy}, 0]) rotate({rotOct}) circle(r={rOuter}, $fn=8);"
         elif pad.form == PAD_FORM_SQUARE:
             shapeCmd = f"translate([{cx}, {cy}, 0]) {rotCmd}square([{size}, {size}], center=true);"
         elif pad.form == PAD_FORM_RECT_ROUND_H: #矩形焊盘长宽比例为2
@@ -127,11 +127,22 @@ class OpenSCADGenerator:
         else: #剩下的就是圆形
             shapeCmd = f"translate([{cx}, {cy}, 0]) circle(r={radius}, $fn=32);"
 
-        self.layerShapes[layer]['positive'].append(shapeCmd)
+        # 确定焊盘所在的目标图层 (过孔需映射到请求的所有铜层)
+        targetLayers = []
+        if pad.via:
+            for lyr in (LAYER_C1, LAYER_C2):
+                if lyr in self.layers and lyr not in targetLayers:
+                    targetLayers.append(lyr)
+            if pad.layerIdx in self.layers and pad.layerIdx not in targetLayers:
+                targetLayers.append(pad.layerIdx)
+        elif pad.layerIdx in self.layers:
+            targetLayers.append(pad.layerIdx)
 
-        if drill > 0: # 钻孔
-            drillCmd = f"translate([{cx}, {cy}, -1]) circle(r={r4(drill / 2)}, $fn=16);"
-            self.layerShapes[layer]['negative'].append(drillCmd)
+        drillCmd = f"translate([{cx}, {cy}, -1]) circle(r={r4(drill / 2)}, $fn=16);" if drill > 0 else None
+        for lyr in targetLayers:
+            self.layerShapes[lyr]['positive'].append(shapeCmd)
+            if drillCmd:
+                self.layerShapes[lyr]['negative'].append(drillCmd)
 
     #添加导线
     def addTrack(self, track):
@@ -168,7 +179,13 @@ class OpenSCADGenerator:
             cmd = (f"translate([{cx}, {cy}, 0]) difference() {{"
                 f"circle(r={rOuter}, $fn=64);circle(r={rInner}, $fn=64);}}")
         else:
-            cmd = f"arcRing({cx}, {cy}, {r4(radius)}, {r4(width)}, {r1(circle.start)}, {r1(circle.stop)});"
+            if not self.mirrorY:
+                startAng = r1((360 - circle.stop) % 360)
+                stopAng = r1((360 - circle.start) % 360)
+            else:
+                startAng = r1(circle.start)
+                stopAng = r1(circle.stop)
+            cmd = f"arcRing({cx}, {cy}, {r4(radius)}, {r4(width)}, {startAng}, {stopAng});"
             self.arcRingRequired = True
 
         #这里不判断cutout属性,因为其他板层的cutout只是禁止铺铜,不影响外形

@@ -38,6 +38,9 @@ class FootprintSvgHandler:
         elif (fileName.endswith('.json')):  # 立创EDA离线封装文件
             ins = LcComponent.fromFile(fileName)
             textIo = ins if not ins or isinstance(ins, str) else ins.createSprintTextIo(importText)
+        elif os.path.isfile(fileName):  # 本地存在的文件(未带标准后缀，尝试作为离线封装读取)
+            ins = LcComponent.fromFile(fileName)
+            textIo = ins if not ins or isinstance(ins, str) else ins.createSprintTextIo(importText)
         elif LcComponent.isLcedaComponent(fileName):  # 在线立创EDA
             if not easyEdaSite:
                 easyEdaSite = 'cn' if sysLanguge.startswith('zh') else 'global'

@@ -162,6 +162,8 @@ class LcComponent:
         #添加一些辅助信息
         if component.isValid():
             component.idText.text = self.prefix
+            component.idText.height = 1
+            component.valueText.height = 1
             component.comment = '{} ({})'.format(self.fpName, self.lcId)
             component.package = self.packageName
             textIo.add(component)
@@ -189,7 +191,7 @@ class LcComponent:
     #根据力创商城ID获取封装的UUID，返回 (errMsg, uuid)
     @classmethod
     def getFootprintUuid(cls, lcId: str, easyEdaSite: str):
-        url = LC_PRODUCT_URI.format(lcId) if (easyEdaSite != 'cn') else LC_PRODUCT_URI_CN.format(lcId)
+        url = LC_PRODUCT_URI.format(lcId) if (easyEdaSite.lower() != 'cn') else LC_PRODUCT_URI_CN.format(lcId)
         #print(url)
         errMsg, lcJsonData = cls.fetchJsonFromLc(url)
         if errMsg:
@@ -207,7 +209,7 @@ class LcComponent:
     #联网获取封装绘制信息，返回(fpName, packageName, prefix, fpShape)
     @classmethod
     def fetchFpInfoFromUuid(cls, fpUuid: str, easyEdaSite: str):
-        url = LC_FOOTPRINT_INFO_URI.format(fpUuid) if (easyEdaSite != 'cn') else LC_FOOTPRINT_INFO_URI_CN.format(fpUuid)
+        url = LC_FOOTPRINT_INFO_URI.format(fpUuid) if (easyEdaSite.lower() != 'cn') else LC_FOOTPRINT_INFO_URI_CN.format(fpUuid)
         errMsg, lcJsonData = cls.fetchJsonFromLc(url)
         if errMsg:
             print(errMsg)
@@ -351,7 +353,7 @@ class LcComponent:
         
         spPad = SprintPad(layerIdx=layer)
         spPad.pos = (x, y)
-        spPad.rotation = (360 - rotation) if rotation else 0  #Sprint-Layout和立创的焊盘旋转方向是相反的
+        spPad.rotation = round((360 - rotation) % 360, 2) if rotation else 0  #Sprint-Layout和立创的焊盘旋转方向是相反的
         spPad.padType = padType
         spPad.via = via  #via=True 双面焊盘
         
@@ -365,7 +367,7 @@ class LcComponent:
 
             #处理椭圆焊盘，确定是水平还是垂直
             if (data[0] == 'OVAL'):
-                #究竟使用圆形焊盘还是长条椭圆焊盘，取决于长轴是否大于短轴的4/3
+                #究竟使用圆形焊盘还是长条椭圆焊盘，取决于长轴是否大于短轴的1.5倍(3/2)
                 if ((width > height) and ((width * 2 / 3) > height)): #水平椭圆焊盘
                     spPad.form = PAD_FORM_RECT_ROUND_H
                 elif ((width < height) and ((height * 2 / 3) > width)): #垂直椭圆焊盘
@@ -552,7 +554,7 @@ class LcComponent:
     #14.[locked]：是否锁定
     #15.[c_etype]：c_etype属性值（c_etype是自定义的用于细分图元类型的属性）
     def handleText(self, data: list, component: SprintComponent):
-        if not data or not component or not self.importText:
+        if not data or not component or (len(data) < 10) or not self.importText:
             return
         
         layer = lcLayerMap.get(data[6], LAYER_S1)
@@ -564,9 +566,8 @@ class LcComponent:
         
         x, y = mil2mm(data[1]), mil2mm(data[2])
         spText.pos = (x, y)
-        spText.rotation = str_to_int(data[4])
-        if spText.rotation:
-            spText.rotation = 360 - spText.rotation #Sprint-Layout的旋转方向和立创是相反的
+        rot = str_to_int(data[4])
+        spText.rotation = int((360 - rot) % 360) if rot else 0 #Sprint-Layout的旋转方向和立创是相反的
 
         #width = mil2mm(data[3])
         #mirror = str_to_int(data[5])
@@ -586,7 +587,7 @@ class LcComponent:
     #5.[gId]：元素id
     #6.[locked]：是否锁定
     def handleVia(self, data: list, component: SprintComponent):
-        if not data or not component or not self.importText:
+        if not data or not component:
             return
 
         x = mil2mm(data[0])

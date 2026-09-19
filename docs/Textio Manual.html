@@ -1,0 +1,997 @@
+﻿<html>
+	
+<head>
+	<title>Text-IO interface</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="generator" content="HelpNDoc">
+	<link type="text/css" rel="stylesheet" media="all" href="css/reset.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/base.css" />
+	<link type="text/css" rel="stylesheet" media="all" href="css/hnd.css" />
+	<!--[if lte IE 8]>
+		<link type="text/css" rel="stylesheet" media="all" href="css/ielte8.css" />
+	<![endif]-->
+	<script type="text/javascript" src="js/chmRelative.js"></script>
+</head>
+
+<body>
+	<div id="topic_content">
+		
+<p class="rvps2"><span class="rvts6">Text-IO interface</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7">Sprint-Layout is able to export elements as a text file or import elements from a text file. These text files is used as an interface for competent programmers.</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7">To </span><span class="rvts22">Export</span><span class="rvts7"> elements, select</span><span class="rvts14"> Text-IO: Export elements... </span><span class="rvts17">from the </span><span class="rvts14">Extras</span><span class="rvts17"> menu.</span></p>
+<p class="rvps3"><span class="rvts7">Sprint-Layout then generates a text file with all the elements of the current layout.</span></p>
+<p class="rvps3"><span class="rvts7">If you want to export only certain elements of the layout, then select these elements just before you call the export command.</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7">To </span><span class="rvts22">Import</span><span class="rvts7"> elements, select</span><span class="rvts14"> Text-IO: Import elements... </span><span class="rvts17">from the </span><span class="rvts14">Extras</span><span class="rvts17"> menu.</span></p>
+<p class="rvps3"><span class="rvts7">Now you can select the desired text file and Sprint-Layout will import and generate all elements it contains.</span></p>
+<p class="rvps3"><span class="rvts7">The imported elements will "stick" on the mouse, and with one click you can place them now.</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39">The format of Text-IO files</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">A Text-IO file is an ordinary ASCII file. All elements are described in a simple line.</span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">Each line describes a complete element, beginning with the element-type.</span><br><span class="rvts7">Then comes the relevant parameters which describe the element-type (separated by </span><span class="rvts22">commas</span><span class="rvts7">).</span><br><span class="rvts7">At the end, there is always a </span><span class="rvts22">semicolon</span><span class="rvts7"> and a </span><span class="rvts22">RETURN</span><span class="rvts7">.</span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">The order of the parameters does not matter, only the element type must always be at the beginning of the line.</span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">Spaces within a line are redundant, since they can be, but need not.</span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">Not case sensitive</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39">Numeric format</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">The unit of each value is either in millimeter or degree </span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">Angels in degree values are sometimes multiplied with the factor 100 or 1000 (see description)</span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">All millimeter values are multiplied with the factor 10000</span><br><span class="rvts7">A width of 0,6 mm appears as </span><span class="rvts22">6000</span><span class="rvts7"> </span></p>
+<p class="rvps3" style="text-indent: -24px; padding-left: 24px; margin-left: 0px;"><span style="font-size: 12pt; font-family: 'Arial Unicode MS', 'Lucida Sans Unicode', 'Arial'; color: #000000;">●</span>
+<span class="rvts7">All coordinate values have their origin in the top/left edge, and they count up to bottom/right</span><br><span class="rvts7">All coordinate values are in the X / Y format and are also defined in millimeters * 10000</span><br><span class="rvts7">A coordinate of X=12,08 mm / Y=21,2 mm appears as </span><span class="rvts22">120800 / 212000</span></p>
+<p class="rvps3"><span class="rvts22"><br></span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39">Layer numbers</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts7">The layer of an element is specified with: </span><span class="rvts22">LAYER=x</span><span class="rvts7"> </span></p>
+<p class="rvps3"><span class="rvts7">Where </span><span class="rvts22">x</span><span class="rvts7"> is a number between 1..7:</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7">1 = C1</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Copper top) </span></p>
+<p class="rvps3"><span class="rvts7">2 = S1</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Silkscreen top) </span></p>
+<p class="rvps3"><span class="rvts7">3 = C2</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Copper bottom) </span></p>
+<p class="rvps3"><span class="rvts7">4 = S2</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Silkscreen bottom) </span></p>
+<p class="rvps3"><span class="rvts7">5 = I1</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Inner copper layer 1) </span></p>
+<p class="rvps3"><span class="rvts7">6 = I2</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Inner copper layer 2) </span></p>
+<p class="rvps3"><span class="rvts7">7 = O</span><span class="rvts7"> &nbsp; &nbsp; &nbsp; &nbsp;</span><span class="rvts7">(Outline) </span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39">Element-Types</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts7">There are the following element-types:</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7">TRACK</span></p>
+<p class="rvps3"><span class="rvts7">PAD</span></p>
+<p class="rvps3"><span class="rvts7">SMDPAD</span></p>
+<p class="rvps3"><span class="rvts7">ZONE</span></p>
+<p class="rvps3"><span class="rvts7">TEXT</span></p>
+<p class="rvps3"><span class="rvts7">CIRCLE</span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts39">TRACK</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">TRACK</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the track</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">WIDTH=4600</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Width of the track (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">P0=1489707 / 561742</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">1. Point of the track (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">P1=1489707 / 568092</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">2. Point of the track (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">...</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts7">...</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CUTOUT=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Cutout-element (if automatic ground-plane is used), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">FLATSTART=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Track-start is flat, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">FLATEND=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Track-end is flat, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">TRACK, LAYER=1, WIDTH=4600, P0=150000 / 250000, P1=150000 / 450000, P2=250000 / 450000;</span><br><span class="rvts10">TRACK, LAYER=3, WIDTH=8000, CLEAR=0, P0=150000 / 250000, P1=150000 / 450000, P2=250000 / 450000, P3=250000 / 650000, NAME=|ground|;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts39">PAD</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">PAD</span></p>
+</td>
+<td width="430" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the pad</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">POS=120000 / 240000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Center of the pad (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">SIZE=16000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Diameter of the pad (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">DRILL=8000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Diameter of the drilling (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">FORM=1</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts7">Shape of the pad</span></p>
+<p class="rvps3"><span class="rvts7">1 = round</span></p>
+<p class="rvps3"><span class="rvts7">2 = octagon</span></p>
+<p class="rvps3"><span class="rvts7">3 = square</span></p>
+<p class="rvps3"><span class="rvts7">4 = round, horizontal</span></p>
+<p class="rvps3"><span class="rvts7">5 = octagon, horizontal</span></p>
+<p class="rvps3"><span class="rvts7">6 = rectangle, horizontal</span></p>
+<p class="rvps3"><span class="rvts7">7 = round, vertical</span></p>
+<p class="rvps3"><span class="rvts7">8 = octagon, vertical</span></p>
+<p class="rvps3"><span class="rvts7">9 = rectangle, vertical</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="428" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=true</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=true</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">ROTATION=4500</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Rotation angle (in °(deg) *100), default=0</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">VIA=true</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Pad is a via, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL=true</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Pad is a thermal-pad (on the automatic ground-plane), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL_TRACKS_WIDTH=80</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Width of the thermal-bridges in % (50..300), default=100</span></p>
+<p class="rvps3"><span class="rvts48">Width=Pad-diameter / 3 * (THERMAL_TRACKS_WIDTH / 100) </span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL_TRACKS_INDIVIDUAL=true</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Thermal-pad-bridges are defined individual for each layer, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL_TRACKS=(32-bit-integer)</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Thermal-pad-bridges 4 bytes à 8 bit on/off</span></p>
+<p class="rvps3"><span class="rvts46">(Low Byte=) C1 + C2 +I1 +I2 (=High Byte)</span></p>
+<p class="rvps3"><span class="rvts46">Each byte 8 bridges (bits), beginning at 12 o'clock, clockwise</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">PAD_ID=23</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The </span><span class="rvts49">PAD_ID</span><span class="rvts46"> is a unique ID for this pad</span></p>
+<p class="rvps3"><span class="rvts46">This ID is important for possibly defined </span><span class="rvts49">connections</span><span class="rvts46"> (rubberbands), see next parameter </span><span class="rvts49">CON</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CON0=5</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts49">CON</span><span class="rvts46"> (connect) defines a connection from this pad to the pad with the given </span><span class="rvts49">PAD_ID</span><span class="rvts46">. It is possible to define several connections, separated by commas. The index </span><span class="rvts49">x</span><span class="rvts46"> of the </span><span class="rvts49">CONx</span><span class="rvts46"> parameter has to be started with 0 (zero) and has to be numbered consecutively.</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">PAD, LAYER=3, FORM=1, POS=88900 / 85600, SIZE=16000, DRILL=8000;</span><br><span class="rvts10">PAD, LAYER=3, FORM=3, POS=88900 / 85600, SIZE=16000, DRILL=8000, VIA=true, ROTATION=4500;</span><br><span class="rvts10">PAD, LAYER=3, FORM=1, POS=88900 / 85600, SIZE=16000, DRILL=8000,PAD_ID=12,CON0=14,CON1=25,CON3=7, NAME=|ground|;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts39">SMDPAD</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">SMDPAD</span></p>
+</td>
+<td width="430" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the SMD-pad</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">POS=120000 / 240000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Center of the SMD-pad (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">SIZE_X=10000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">X-size of the SMD-pad (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="242" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">SIZE_Y=10000</span></p>
+</td>
+<td width="430" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Y-size of the SMD-pad (mm*10000)</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="428" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" height="18" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=true</span></p>
+</td>
+<td width="428" height="18" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=true</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">ROTATION=4500</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Rotation angle (in °(deg) *100), default=0</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL=true</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">SMD-pad is a thermal-pad (on the automatic ground-plane), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL_TRACKS_WIDTH=80</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Width of the thermal-bridges in % (50..300), default=100</span></p>
+<p class="rvps3"><span class="rvts48">Width=Min (X,Y) / 3 * (THERMAL_TRACKS_WIDTH / 100) </span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THERMAL_TRACKS=(Byte)</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Thermal-pad-bridges 8 bit on/off</span></p>
+<p class="rvps3"><span class="rvts46">8 bridges (bits), beginning at 12 o'clock, clockwise, default=85 (10101010)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">PAD_ID=23</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The </span><span class="rvts49">PAD_ID</span><span class="rvts46"> is a unique ID for this pad</span></p>
+<p class="rvps3"><span class="rvts46">This ID is important for possibly defined </span><span class="rvts49">connections</span><span class="rvts46"> (rubberbands), see next parameter </span><span class="rvts49">CON</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CON0=5</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts49">CON</span><span class="rvts46"> (connect) defines a connection from this pad to the pad with the given </span><span class="rvts49">PAD_ID</span><span class="rvts46">. It is possible to define several connections, separated by commas. The index </span><span class="rvts49">x</span><span class="rvts46"> of the </span><span class="rvts49">CONx</span><span class="rvts46"> parameter has to be started with 0 (zero) and has to be numbered consecutively.</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="244" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="428" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">SMDPAD, LAYER=3, POS=240000 / 200000, SIZE_X=10000, SIZE_Y=20000;</span><br><span class="rvts10">SMDPAD, LAYER=3, POS=240000 / 200000, SIZE_X=10000, SIZE_Y=20000, ROTATION=4500;</span><br><span class="rvts10">SMDPAD, LAYER=3, POS=240000 / 200000, SIZE_X=10000, SIZE_Y=20000, PAD_ID=25,CON0=12,CON1=17, NAME=|ground|;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts39">ZONE</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">ZONE</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the zone</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">WIDTH=4600</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Width of the outline (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">P0=1489707 / 561742</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">1. Point of the zone (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">P1=1489707 / 568092</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">2. Point of the zone (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">...</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts7">... the polygon will be closed automatically after the last point.</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CUTOUT=false</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Cutout-element (if automatic ground-plane is used), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=false</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK_CUTOUT=false</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Zone defines a cutout in the solder mask, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">HATCH=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Zone has a hatched filling, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">HATCH_AUTO</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Thickness of the hatched filling is equal to the outline width, default=true</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">HATCH_WIDTH=10000</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Thickness of the hatched filling (if HATCH_AUTO=false) (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">ZONE, LAYER=1, WIDTH=4000, P0=150000 / 250000, P1=150000 / 450000, P2=250000 / 450000;</span><br><span class="rvts10">ZONE, LAYER=3, WIDTH=8000, HATCH=true, P0=150000 / 250000, P1=150000 / 450000, P2=250000 / 450000, P3=250000 / 650000, NAME=|ground|;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts39">TEXT</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">TEXT</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the text</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">POS=120000 / 240000</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Start position of the text (bottom/left) &nbsp;(mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">TEXT=|abc def|</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">HEIGHT=50000</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Text height (mm*10000)</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CUTOUT=false</span><span class="rvts24"> &nbsp; &nbsp; &nbsp; &nbsp;</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Cutout-element (if automatic ground-plane is used), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=false</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">STYLE=0</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Text style, default=1</span></p>
+<p class="rvps3"><span class="rvts46">0 = Narrow</span></p>
+<p class="rvps3"><span class="rvts46">1 = Normal</span></p>
+<p class="rvps3"><span class="rvts46">2 = Wide</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">THICKNESS=0</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Text thickness, default=1</span></p>
+<p class="rvps3"><span class="rvts46">0 = Thin</span></p>
+<p class="rvps3"><span class="rvts46">1 = Normal</span></p>
+<p class="rvps3"><span class="rvts46">2 = Bold</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">ROTATION=45</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Rotation angle in °(deg), default=0</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">MIRROR_HORZ=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Text is mirrored horizontal, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">MIRROR_VERT=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Text is mirrored vertical, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">TEXT, LAYER=1, POS=150000 / 250000, TEXT=|Hello World|, HEIGHT=5000;</span><br><span class="rvts10">TEXT, LAYER=3, POS=150000 / 250000, TEXT=|Hello World|, HEIGHT=5000, MIRROR_HORZ=true;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts39">CIRCLE (Ring / Segment)</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts21"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">CIRCLE</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Keyword, must always be at the lines beginning</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">LAYER=3</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Layer of the circle</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">WIDTH=4600</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Width of the circle line (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">CENTER=1489707 / 561742</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Center (mm*10000)</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">RADIUS=120000</span></p>
+</td>
+<td width="452" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Radius (mm*10000)</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts46"><br></span></p>
+<div class="rvps3"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CLEAR=6000</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Distance to the automatic ground-plane (if used), default=4000</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">CUTOUT=false</span><span class="rvts24"> &nbsp; &nbsp; &nbsp; &nbsp;</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Cutout-element (if automatic ground-plane is used), default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">SOLDERMASK=false</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Soldermask, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">START=90000</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Start angle (in °(deg) *1000), default=0</span></p>
+<p class="rvps3"><span class="rvts46">0° is at 3 o'clock, count direction anti-clockwise</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">STOP=270000</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Stop angle (in °(deg) *1000), default=0</span></p>
+<p class="rvps3"><span class="rvts46">0° is at 3 o'clock, count direction anti-clockwise</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">FILL=true</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Circle is filled, default=false</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">NAME=|text|</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps5"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">CIRCLE, LAYER=1, WIDTH=6000, CENTER=150000 / 250000, RADIUS=40000;</span><br><span class="rvts10">CIRCLE, LAYER=3, WIDTH=6000, CENTER=350000 / 250000, RADIUS=80000, START=90000, STOP=270000;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps3"><span class="rvts50"><br></span></p>
+<p class="rvps3"><span class="rvts50"><br></span></p>
+<p class="rvps2"><span class="rvts6">Special Commands</span></p>
+<p class="rvps3"><span class="rvts7">There are some optional commands for the creation of &nbsp;</span><a class="rvts8" href="Components1.htm">Components</a><span class="rvts7"> or </span><a class="rvts8" href="BuildandSplitGroups.htm">Groups</a><span class="rvts7"> .</span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts39"><br></span></p>
+<p class="rvps3"><span class="rvts51">Components</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10">The following commands can be used for the creation of Components:</span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">BEGIN_COMPONENT</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">BEGIN_COMPONENT</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the beginning of a component.</span></p>
+<p class="rvps3"><span class="rvts46">All following elements till </span><span class="rvts49">END_COMPONENT</span><span class="rvts46"> will be assigned to this component.</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts46"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">COMMENT=|aComment|</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the comment-text for this component, see also </span><a class="rvts8" href="CreateaComponent.htm">Create a Component</a></p>
+<p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">USE_PICKPLACE=false</span><span class="rvts24"> &nbsp; &nbsp; &nbsp; &nbsp;</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines if the component uses Pick+Place Data, default=false</span></p>
+<p class="rvps3"><span class="rvts46">See also </span><a class="rvts8" href="PickPlaceData.htm">Pick+Place Data</a></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">PACKAGE=|aPackage|</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the package-text für this component, see also </span><a class="rvts8" href="PickPlaceData.htm">Pick+Place Data</a></p>
+<p class="rvps3"><span class="rvts46">The text must be framed with the pipe character "|" (ASCII 124) </span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">ROTATION=0</span></p>
+</td>
+<td width="453" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the rotation of the component (in degree), default=0</span></p>
+<p class="rvps3"><span class="rvts46">See also </span><a class="rvts8" href="PickPlaceData.htm">Pick+Place Data</a></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">ID_TEXT (Text-label for the Identifier)</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">ID_TEXT</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the text-label for the Identifier of the component.</span></p>
+<p class="rvps3"><span class="rvts49">ID_TEXT must be defined in the component.</span></p>
+<p class="rvps3"><span class="rvts46">This text-label can be hide with the option VISIBLE=false in need.</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">. . . </span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">All other </span><span class="rvts49">necessary</span><span class="rvts46"> parameters are based on the </span><span class="rvts8">TEXT</span><span class="rvts46"> command</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts46"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">VISIBLE=true</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines if the text-label will be visible or not, default=true</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">. . .</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">All other </span><span class="rvts49">optional</span><span class="rvts46"> parameters are based on the </span><span class="rvts8">TEXT</span><span class="rvts46"> command</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">VALUE_TEXT (Text-label for the Value)</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">VALUE_TEXT</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the text-label for the Value of the component.</span></p>
+<p class="rvps3"><span class="rvts49">VALUE_TEXT must be defined in the component.</span></p>
+<p class="rvps3"><span class="rvts46">This text-label can be hide with the option VISIBLE=false in need.</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">. . . </span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">All other </span><span class="rvts49">necessary</span><span class="rvts46"> parameters are based on the </span><span class="rvts8">TEXT</span><span class="rvts46"> command</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts46"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="755" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Optional parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">VISIBLE=true</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines if the text-label will be visible or not, default=true</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="219" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts24">. . .</span></p>
+</td>
+<td width="453" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">All other </span><span class="rvts49">optional</span><span class="rvts46"> parameters are based on the </span><span class="rvts8">TEXT</span><span class="rvts46"> command</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">END_COMPONENT</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">END_COMPONENT</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the end of a component.</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps13"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">BEGIN_COMPONENT;</span><br><span class="rvts10"> &nbsp; ID_TEXT,LAYER=2,POS=408300/370050,HEIGHT=13000,THICKNESS=2,TEXT=|R1|;</span><br><span class="rvts10"> &nbsp; VALUE_TEXT,VISIBLE=false,LAYER=2,POS=395600/389550,HEIGHT=13000,THICKNESS=2,TEXT=|1k|;</span><br><span class="rvts10"> &nbsp; TRACK,LAYER=2,WIDTH=1500,P0=419100/434800,P1=419100/396800,P2=510500/396800,P3=510500/434800,P4=419100/434800;</span><br><span class="rvts10"> &nbsp; TRACK,LAYER=2,WIDTH=1500,P0=504200/396800,P1=504200/434800;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=406400/415800,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=523200/415800,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10">END_COMPONENT;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts50"><br></span></p>
+<p class="rvps3"><span class="rvts50"><br></span></p>
+<p class="rvps3"><span class="rvts51">Groups</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10">The following commands can be used for the creation of Groups:</span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">GROUP</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">GROUP</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the beginning of a group.</span></p>
+<p class="rvps3"><span class="rvts46">All following elements till </span><span class="rvts49">END_GROUP</span><span class="rvts46"> will be assigned to this group.</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps10"><span class="rvts39"><br></span></p>
+<p class="rvps10"><span class="rvts39">END_GROUP</span></p>
+<hr style="height: 1px; color : #000000;  background-color : #000000; border-width : 0px;">
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<div class="rvps10"><table width="700" border="1" cellpadding="4" cellspacing="2" style="border-color: #000000; border-style: solid;">
+<tr valign="top">
+<td colspan="2" width="584" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts47">Necessary parameters</span></p>
+</td>
+</tr>
+<tr valign="top">
+<td width="220" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts14">END_GROUP</span></p>
+</td>
+<td width="452" valign="top" style="border-color: #000000; border-style: solid;"><p class="rvps3"><span class="rvts46">Defines the end of a group.</span></p>
+</td>
+</tr>
+</table>
+</div>
+<p class="rvps10"><span class="rvts7"><br></span></p>
+<p class="rvps3"><span class="rvts50"><br></span></p>
+<p class="rvps3"><span class="rvts50"><br></span></p>
+<p class="rvps13"><span class="rvts23">Example:</span><br><span class="rvts23"></span><br><span class="rvts10">GROUP;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=482600/187200,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=508000/174500,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10">END_GROUP;</span><br><span class="rvts10"></span><br><span class="rvts10">GROUP;</span><br><span class="rvts10"> &nbsp; GROUP;</span><br><span class="rvts10"> &nbsp; &nbsp; &nbsp;PAD,LAYER=3,POS=482600/187200,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; &nbsp; &nbsp;PAD,LAYER=3,POS=508000/174500,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; END_GROUP;</span><br><span class="rvts10"> &nbsp; GROUP;</span><br><span class="rvts10"> &nbsp; &nbsp; &nbsp;PAD,LAYER=3,POS=558800/250700,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; &nbsp; &nbsp;PAD,LAYER=3,POS=584200/263400,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; END_GROUP;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=647700/123700,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10"> &nbsp; PAD,LAYER=3,POS=647700/161800,FORM=1,SIZE=21600,DRILL=8800;</span><br><span class="rvts10">END_GROUP;</span><br><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps10"><span class="rvts10"><br></span></p>
+<p class="rvps3"><span class="rvts10"><br></span></p>
+</div>
+	
+	</body>
+	
+</html>
+

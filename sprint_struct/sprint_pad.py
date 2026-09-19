@@ -6,6 +6,7 @@ Author: cdhigh <https://github.com/cdhigh>
 """
 import math
 from .sprint_element import *
+from utils.comm_utils import pointAfterRotated
 
 #Pad的形状
 PAD_FORM_ROUND = 1
@@ -79,7 +80,8 @@ class SprintPad(SprintElement):
     def toStrPad(self, padId=None):
         outStr = ['PAD,LAYER={},POS={}/{},SIZE={},DRILL={},FORM={}'.format(self.layerIdx, self.mm2um01(self.pos[0]), 
             self.mm2um01(self.pos[1]), self.mm2um01(self.size), self.mm2um01(self.drill), self.form)]
-        if self.clearance:
+        #clearance=0表示十字焊盘与铺铜直连，必须用is not None判断，不能丢掉CLEAR=0
+        if self.clearance is not None:
             outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
@@ -90,7 +92,7 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.thermalTracksWidth))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
         if self.thermalTracksIndividual is not None:
             outStr.append('THERMAL_TRACKS_INDIVIDUAL={}'.format(self.booleanStr(self.thermalTracksIndividual)))
         if self.thermalTracks:
@@ -112,7 +114,8 @@ class SprintPad(SprintElement):
     def toStrSmdPad(self, padId=None):
         outStr = ['SMDPAD,LAYER={},POS={}/{},SIZE_X={},SIZE_Y={}'.format(self.layerIdx, 
             self.mm2um01(self.pos[0]), self.mm2um01(self.pos[1]), self.mm2um01(self.sizeX), self.mm2um01(self.sizeY))]
-        if self.clearance:
+        #clearance=0表示十字焊盘与铺铜直连，必须用is not None判断，不能丢掉CLEAR=0
+        if self.clearance is not None:
             outStr.append('CLEAR={}'.format(self.mm2um01(self.clearance)))
         if self.soldermask is not None:
             outStr.append('SOLDERMASK={}'.format(self.booleanStr(self.soldermask)))
@@ -121,7 +124,7 @@ class SprintPad(SprintElement):
         if self.thermal is not None:
             outStr.append('THERMAL={}'.format(self.booleanStr(self.thermal)))
         if self.thermalTracksWidth:
-            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.thermalTracksWidth))
+            outStr.append('THERMAL_TRACKS_WIDTH={}'.format(self.mm2um01(self.thermalTracksWidth)))
         if self.thermalTracks:
             outStr.append('THERMAL_TRACKS={}'.format(self.thermalTracks))
         if padId is not None:
@@ -190,6 +193,26 @@ class SprintPad(SprintElement):
     #移动自身的位置
     def moveByOffset(self, offsetX: float, offsetY: float):
         self.pos = (round(self.pos[0] + offsetX, 4), round(self.pos[1] + offsetY, 4))
+        self.updateSelfBbox()
+
+    #绕指定中心旋转自身，angle为顺时针为正的度数，焊盘自身旋转角同步增加
+    #注意pointAfterRotated必须用默认的clockwise=0分支：内部坐标Y向下，该分支的旋转矩阵
+    #才是屏幕视觉顺时针(与焊盘/文本ROTATION一致)，函数本身的注释按Y向上坐标书写
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        self.pos = pointAfterRotated(self.pos[0], self.pos[1], cx, cy, angle)
+        self.rotation = (self.rotation + angle) % 360
+        self.updateSelfBbox()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)，旋转角取反(镜像逆反转方向)，矩形宽高不互换
+    def mirrorHorzBy(self, cx: float):
+        self.pos = (round(2 * cx - self.pos[0], 4), self.pos[1])
+        self.rotation = (360 - self.rotation) % 360
+        self.updateSelfBbox()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)，旋转角取反
+    def mirrorVertBy(self, cy: float):
+        self.pos = (self.pos[0], round(2 * cy - self.pos[1], 4))
+        self.rotation = (360 - self.rotation) % 360
         self.updateSelfBbox()
     
     #判断一个点是否在本焊盘的范围内，用最简化的算法，到中心的距离小于最小外围尺寸

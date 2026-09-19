@@ -4,7 +4,7 @@
 import os, glob
 from collections import defaultdict
 from test_base import *
-from kicad_to_sprint import kicadModToTextIo, KicadMod, KicadMod8
+from conversion.kicad_to_sprint import kicadModToTextIo, KicadMod, KicadMod8
 
 class TestKicadToSprint(BaseTestCase):
     def test_convert_no_exceptions(self):

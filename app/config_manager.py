@@ -7,6 +7,9 @@ Author: cdhigh <https://github.com/cdhigh>
 import os, json, locale, gettext, datetime
 from utils.comm_utils import str_to_int, str_to_float
 
+#MCP服务器默认端口(定义在此处，避免为取常量而导入重量级的mcp_server模块)
+DEFAULT_MCP_PORT = 5390
+
 #管理应用程序的配置加载、保存和恢复
 class ConfigManager:
     #初始化配置管理器
@@ -133,6 +136,7 @@ class ConfigManager:
             'bulkEditTarget': str(app.cmbBulkEditTarget.current()),
             'history': list(app.history),
             'historyNum': str(app.historyNum),
+            'mcpPort': app.mcpPortVar.get(),
         }
 
         if cfg != self.cfg:  # 有变化再写配置文件
@@ -304,4 +308,10 @@ class ConfigManager:
         if 0 <= target < 4:
             app.cmbBulkEditTarget.current(target)
             app.cmbBulkEditTarget.event_generate("<<ComboboxSelected>>")
+
+        # MCP服务器(仅保存端口；服务器由用户在设置对话框中手动启动，不自动运行)
+        mcpPort = str_to_int(cfg.get('mcpPort', '0'), DEFAULT_MCP_PORT)
+        if not (1024 <= mcpPort <= 49151):
+            mcpPort = DEFAULT_MCP_PORT
+        app.mcpPortVar.set(str(mcpPort))
 

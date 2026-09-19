@@ -42,7 +42,7 @@ class DXFGenerator:
     #mirrorY: 是否镜像Y轴(默认True：Sprint屏幕坐标Y向下，DXF标准笛卡尔坐标Y向上，需镜像以保持正向)
     def __init__(self, textIo, layers=None, strokeWidth=0.1, mirrorY=True):
         self.textIo = textIo
-        if not layers or layers < 0:
+        if not layers:
             self.layers = list(range(1, 8))
         elif isinstance(layers, (list, tuple)):
             self.layers = list(layers)
@@ -169,11 +169,19 @@ class DXFGenerator:
         layerName = self.getLayerName(pad.layerIdx)
         rotDxf = sprintAngleToDxf(pad.rotation)
 
-        targetLayers = [layerName]
-        #通孔焊盘若同时导出了正面与背面铜层，两面均添加铜皮
-        if (pad.padType == 'PAD' or pad.via):
-            if (LAYER_C1 in self.layers) and (LAYER_C2 in self.layers) and (layerName == 'C1'):
-                targetLayers.append('C2')
+        targetLayers = []
+        if pad.via:
+            for lyr in (LAYER_C1, LAYER_C2):
+                if lyr in self.layers:
+                    name = self.getLayerName(lyr)
+                    if name not in targetLayers:
+                        targetLayers.append(name)
+            if pad.layerIdx in self.layers:
+                name = self.getLayerName(pad.layerIdx)
+                if name not in targetLayers:
+                    targetLayers.append(name)
+        elif pad.layerIdx in self.layers:
+            targetLayers.append(layerName)
 
         #钻孔
         if drill > 0:
@@ -341,10 +349,10 @@ class DXFGenerator:
                 self.hasDrillLayer = True
                 self.addCircleEntity('DRILL', cx, cy, radius)
         else:
-            #圆弧
+            #圆弧 (Sprint圆弧0度在3点钟、逆时针为正，与DXF在Y向上坐标系下的定义天然一致)
             startAng = r1(circle.start)
             stopAng = r1(circle.stop)
-            if self.mirrorY:
+            if not self.mirrorY:
                 startAng, stopAng = (360 - stopAng) % 360, (360 - startAng) % 360
             self.addArcEntity(layerName, cx, cy, radius, startAng, stopAng)
 

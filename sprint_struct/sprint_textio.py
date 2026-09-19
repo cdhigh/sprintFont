@@ -42,10 +42,11 @@ class SprintTextIO(SprintElement):
             self.add(elem)
 
     #删除某一个对象，成功返回True
+    #注意必须按身份(is)找到索引后del删除，list.remove按==匹配，会误删同规格的焊盘/导线
     def remove(self, obj):
-        for elem in self.elements:
+        for idx, elem in enumerate(self.elements):
             if elem is obj:
-                self.elements.remove(obj)
+                del self.elements[idx]
                 self.updateSelfBbox()
                 return True
 

@@ -1,6 +1,6 @@
 # architecture.md — 系统架构和模块关系
 
-> 本文件由 AI Agent 自动维护。最后更新：2026-09-02
+> 本文件由 AI Agent 自动维护。最后更新：2026-09-12
 
 ## 1. 系统分层
 
@@ -60,7 +60,41 @@ Sprint-Layout 通过"命令行参数 + 临时文本文件 + 进程退出码"三�
 - `kicad_pcb8/`（2024-03 版 fork）：支持 v7/v8，无 __init__.py，仅被 `conversion/kicad_to_sprint.py` 作为 fallback import。
 - 切换机制：kicad_to_sprint.py 先试 kicad_pcb.KicadMod，捕获 FootPrint8NotSupported 后降级 KicadMod8。
 
-## 6. 架构决策记录（日期 + 结论 + 原因）
+## 6. MCP服务器（app/mcp_server.py，2026-09-12新增）
+
+在插件运行期间内嵌一个本地HTTP服务器，把完整的Sprint-Layout Text-IO接口暴露为MCP工具，供外部AI客户端（Claude/ZCode/Cursor等）读取、绘制、修改板图。
+
+- **传输**：Streamable HTTP（协议版本 2025-06-18 / 2025-03-26），纯标准库 `http.server.ThreadingHTTPServer` + 守护线程实现（官方MCP SDK要求Python 3.10+，本项目是3.8+cx_Freeze）。端点 `http://127.0.0.1:<port>/mcp`（默认5380，只绑定回环地址，带Host头校验防DNS重绑定）。响应固定用 application/json 单响应（不用SSE长连接，GET一律405，规范允许）。**2026-09-13决策：不声明、也不实现 2024-11-05**——该版本的传输是HTTP+SSE双端点（GET建立SSE流+endpoint事件，POST回202、响应走SSE推送），与Streamable HTTP不兼容；客户端请求该版本时按规范回退到所支持的最高版本(2025-06-18)，由客户端决定接受或断开。initialize 时签发 Mcp-Session-Id，客户端不带会话头按无状态兼容。会话校验在解析出请求方法后进行、`initialize` 跳过校验（2026-09-13修复：原先在解析前校验，代理转发残留会话头会导致握手被404拒绝）；DELETE 请求按 2025-03-26 规范注销会话并返回204（此前返回405导致标准客户端退出报错）。
+- **共享板图**：`Application.initMcpBoard()` 把输入临时文件解析为 `SprintTextIO`（Standalone模式为空板），`SprintMcpServer.textIo` 持有；所有工具调用在 `RLock` 内执行，修改性操作前自动 deepcopy 快照（30步 undo 栈）。注意 undo/importSes/importTextIo(replace) 会整体替换 `textIo` 引用，外部必须经 `mcpServer.textIo` 取当前板图。
+- **工具集**（30个）：查询 getBoardInfo(getElements 之外还返回 rules 设计规则：trackWidth/viaDiameter/viaDrill/clearance/smdSmdClearance，LLM手工布线的依据)/getElements(分页+类型/层过滤，回显全部模型字段；2026-09-13增强：depth=0只返回元件/组概要不展开子元素(大板省Token)、indices=[..]直查指定索引详情(忽略其它过滤)、bbox=[xMin,yMin,xMax,yMax]包围盒相交空间过滤(AI局部布线/摆件前查障碍物)，bbox判断用模块级 elementIntersectsBbox，包围盒无效(正负无穷)的元素一律排除)/getNetlist（调 conversion/netlist_builder 提取铜层连通性——**物理接触语义、网络自动编号 Net-N，不是设计意图**，元件子标签"a.b"与 getElements 的 subElements 枚举一致，2026-09-12修复错位bug）/checkDrc（调 conversion/drc_checker：同层**不同网络**元素的间距违规+线宽不足+可选孤立焊盘清单，同网络的有意连接不算违规，违规按严重度排序并带元素标签/实际间隙/要求值/位置，LLM布线后自检用）；绘制 addTrack/addPad/addSmdPad/addZone/addText/addCircle/addComponent（元件=焊盘+丝印+标签打包，addPad 支持热焊盘辐条参数；焊盘name字段是自由标签，不参与网络命名）/batchAdd(2026-09-13新增：一次调用传 tracks/pads/smdPads/zones/texts/circles spec数组批量添加，减少总线布线时的HTTP+LLM往返；**原子化**——先全部构建校验，任一spec非法则整体报错不落板且不消耗撤销快照；整批只占一步undo；返回连续的 indexes 列表，顺序固定为tracks→pads→smdPads→zones→texts→circles、各数组内保持传入顺序)/addStandardFootprint(2026-09-13新增：参数化标准封装生成器，支持0402/0603/0805/1206、SOIC-8/14/16(1.27)、DIP-8/14/16(2.54,排距7.62)、SOT-23、HEADER-1xN/2xN(2.54,N=1-20)；只需package/pos(/rotation/idText/valueText)；pos=封装中心，rotation顺时针为正绕中心旋转(先rotateBy再moveByOffset，位号(0,0)自动放置语义保持)；引脚1在左上、SOIC/DIP逆时针编号、排针沿Y纵向行优先编号；引脚号写入焊盘name字段；几何常量集中在 mcp_server.py 的 CHIP_PASSIVE_FOOTPRINTS/SOIC_*/DIP_*/SOT23_*/HEADER_* 表——数值为常用库近似值(近似KiCad/IPC-B级)，[待确认] 如需精确IPC-7351密度等级再调表)；编辑 deleteElements/moveElements/rotateElements/mirrorElements(2026-09-13新增：几何变换走 sprint_struct 各元素类的 rotateBy(angle,cx,cy)/mirrorHorzBy(cx)/mirrorVertBy(cy)方法，工具层只做参数解析与undo快照；rotateElements 任意角、顺时针为正、center缺省=选区外框几何中心；mirrorElements axis='x'水平翻转/axis='y'垂直翻转、绕选区外框中心线、文本字形镜像标志取反+旋转角取反(镜像逆反转方向)、圆弧角度按逆时针为正的存储约定重映射；元件(0,0)自动放置的位号/值标签保持不动、显式坐标的跟随变换；角度方向坑见 pitfalls.md 2026-09-13 pointAfterRotated条目)/groupElements/updateElements(2026-09-12新增：原地改属性免删建，属性清单由 UPDATE_ELEMENT_PROPS 常量统一定义，类型专属属性只应用到匹配元素)/undo/clearBoard/setBoardSize；导入导出 importTextIo/exportTextIo/exportSvg(2026-09-12新增：调 conversion/sprint_to_svg 出SVG矢量图供视觉验证，含近似文本渲染，可选 returnText 内联返回)/loadTextIoFile/saveTextIoFile；外部自动布线交接 exportDsn/importSes（直接调 SprintExportDsn/SprintImportSes，绕开带Tk弹窗的 AutorouterHandler，DSN/pickle 文件写出逻辑与 AutorouterHandler 相同；自动布线器只能人工操作，MCP描述不引导LLM去运行它）；回写 applyToSprintLayout。
+- **回写Sprint-Layout**：MCP线程不碰Tk——applyToSprintLayout 或 Export页"Apply to Sprint-Layout"按钮只置 `mcpExitRequest` 标志，主线程 `pollMcpEvents`(500ms轮询) 执行 `applyMcpBoard`：整板启动(/A) → 全板序列化 + 退出码1(REPLACE_ALL)；部分选择启动 → 与启动时元素序列化快照(`mcpInitialElements`)比对，只写新增元素 + 退出码2(INSERT_ALL)；Standalone → 禁止回写（saveTextIoFile 后手动导入）。
+- **UI**：MCP的端口在**设置对话框**中配置（状态栏齿轮打开），服务器由对话框中的 "Start MCP Server" 按钮手动启动；配置键 mcpPort 存放在 `initMcpBoard()` 创建的无控件变量 mcpPortVar 中。
+- **生命周期（2026-09-12定稿）**：MCP**不自动启动**、无 mcpEnabled 配置项——用户打开设置对话框点击 **"Start MCP Server"按钮** 手动启动（同步加载板图+开服，成功后对话框关闭并弹出模态状态窗口，端口写入配置），**服务器仅在模态状态窗口显示期间运行**（窗口的接受/取消都会退出整个插件，因此无需独立的停止入口）；状态栏不再轮播MCP状态（STABAR_INFO_MCP槽位已移除）。mcpEnabledVar 已删除，仅保留 mcpPort 配置键。
+- **交互模型（2026-09-12定稿）**：MCP一旦启动成功就弹出**模态状态窗口**（app/mcp_status_window.py，McpStatusWindow）。窗口显示服务器状态/连接地址（点击复制）+ **LLM交互概要日志**（mcp_server 的 addLogEntry/drainLogEntries 线程安全日志：连接、每次工具调用的名称/ok或error/耗时/参数摘要，上限500条，窗口300ms轮询增量显示）。底部两个按钮：**接受** = `applyMcpBoard('replace')` 将内存SprintTextIO整板写入输出文件、以 RETURN_CODE_REPLACE_ALL(1) 退出插件（板图为空则仅弹窗提示、会话继续）；**取消** = 确认后 `safeExit(0)` 放弃修改退出。Standalone模式接受按钮禁用。
+- **坐标系（MCP工具参数）**：与 Text-IO 文件格式及内部模型一致——原点左上、X右Y下、mm；焊盘/文本旋转顺时针为正；圆弧起止角0°在3点钟方向、逆时针为正。
+
+## 7. 设置对话框（app/settings_dialog1.py，2026-09-12新增）
+
+- **设计**：由 Vb6Tkinter 可视化设计（`ui/frmSettings.frm`）生成 `SettingsDialog_ui` 骨架（app/settings_dialog1.py），业务逻辑写在同文件手写的 `SettingsDialog` 子类中——与主界面"生成/手写分离"同一工作流。
+- **入口**：状态栏最右侧齿轮图标（tkinter.Label，`pack(side=RIGHT, before=填充Label)` 插入）。曾实现过Windows系统菜单入口（ctypes挂钩窗口过程），因稳定性考虑已移除，只保留齿轮（用户决策 2026-09-12，技术要点留档见 pitfalls.md）。
+- **模态对话框**：界面语种（第一项 **Auto=配置中写空字符串**，运行时跟随系统语言；指定语种保存后**重启插件生效**——UI文案在控件创建时固化，动态下拉列表不随 retranslateUi 翻译，运行时切换会残留旧语言）、MCP 使能/端口（LabelFrame组）、立创EDA节点(auto/cn/global)、更新检查频率(0/7/30/90天)；`lblMcpEndPoint` 单击/双击复制 MCP 连接地址到剪贴板。
+- **值语义**："打开时读入、点Ok才统一写回"——对话框控件绑定自己的变量（txtMcpPortVar），restoreValues 从应用变量填入，cmdSettingsOk_Cmd 统一写回 `app.mcpPortVar` 并保存配置；"Start MCP Server"按钮走 cmdMcpStart_Cmd（写端口→startMcpServer→成功后关闭对话框）；Cancel 直接销毁无需还原逻辑。
+- **MCP启停的唯一入口**是 `Application.applyMcpSettings()`：按变量当前值启动/停止/重启服务器（端口未变且在运行时不动作），启动失败弹窗提示（程序启动时的自动开启为静默模式，只写状态栏）。
+- 共享 StringVar 上注册的 trace_add 在对话框销毁时必须 trace_remove；本对话框的 txtMcpPortVar 由对话框自持、trace 回调也属对话框，随销毁一起释放（教训见 pitfalls.md）。
+
+## 8. 架构决策记录（日期 + 结论 + 原因）
+
+- 2026-09-12: MCP服务器用纯标准库 http.server 实现而非官方 mcp SDK——运行环境是 Python 3.8 + cx_Freeze，SDK要求3.10+且引入大量依赖；Streamable HTTP 用 application/json 单响应而非SSE长连接，线程模型简单且兼容官方客户端。
+- 2026-09-12: 设置对话框改为 Vb6Tkinter 可视化设计（ui/frmSettings.frm → app/settings_dialog.py 的 SettingsDialog_ui 骨架 + 手写 SettingsDialog 子类），替换最初手绘布局的版本；值语义用"打开读入/确定写回"，省去取消还原逻辑；端点标签支持点击复制到剪贴板。
+- 2026-09-12: 回写Sprint-Layout的新增元素判定用"顶层元素序列化字符串比对"而非引入元素ID——Text-IO序列化是确定性的，改动最小；局限：部分选择模式下修改/移动已有元素会表现为"旧元素仍在+新元素插入"造成重复，故insert_new只推荐添加类操作，修改请用整板模式。
+- 2026-09-13: 上述字符串比对细化为multiset计数判同（getNewElementsSince）——纯集合判同会漏掉"原位复制出的完全相同元素"（回写时静默丢失）；仍不采用元素ID，因为undo/importSes/importTextIo(replace)会整体替换textIo引用、id全变会把整板误判为新增。同日：整板replace回写增加前提"输入板图解析成功"——解析失败时 applyMcpBoard 强制降级insert_new，MCP侧 getBoardInfo.applyMode 同步改报、toolApplyToSprintLayout 对显式replace报错（详见pitfalls.md）。
+- 2026-09-12: exportDsn/importSes 在 MCP 中直接调用 sprint_struct 底层类而不复用 AutorouterHandler——后者硬编码 tkinter.messagebox 弹窗，不能在HTTP线程中调用。
+- 2026-09-12: 语种切换采用"保存后重启生效"而非运行时 retranslateUi——动态下拉列表(cmbLayerList等)与右键菜单的词条不在 retranslateUi 覆盖范围内，运行时切换会得到混合语言界面；且插件本身生命周期短，重开即生效。
+- 2026-09-12: 设置入口为状态栏齿轮 + 模态设置对话框；曾实现系统菜单入口(ctypes挂钩窗口过程)，因稳定性顾虑当日移除（技术要点留档pitfalls）。Export页不放置任何MCP控件，配置集中在设置对话框。
+- 2026-09-12: MCP生命周期简化定稿：取消自动启动（原"延时3s后台启动"方案废弃，连同epoch/后台线程守卫机制一并删除），改为设置对话框中"Start MCP Server"按钮手动启动；**服务器生命周期=模态状态窗口显示期间**（接受/取消都退出插件，无需停止入口）；mcpEnabled配置项与状态栏MCP状态轮播随之移除。启动路径现在完全不涉及MCP（延迟导入保留在getMcpServer，用户点启动按钮时才付出约0.6s导入+板图解析，getfqdn反向DNS坑见pitfalls）。
+- 2026-09-12: MCP交互模型定稿为"模态状态窗口+接受/取消"：插件进程被Sprint-Layout挂起等待退出，MCP期间的全部产物都在插件进程内，人工点击"接受"是唯一的回写确认点（整板REPLACE_ALL），"取消"丢弃修改退出(RETURN_CODE_NONE)；交互概要日志让用户可见LLM做了什么。状态窗口为手写Toplevel(app/mcp_status_window.py)，如需Vb6Tkinter重设计可移植（同设置对话框流程）。
+- 2026-09-12: MCP的工具描述与指引**不引导LLM操作自动布线器**——自动布线器(Freerouting等)只能人工操作，DSN/SES 仅作为人工交接文件保留（exportDsn/importSes 描述明确"由用户手动操作"）；同时 getBoardInfo 暴露 PcbRule 设计规则（线宽/过孔/间隙），供 LLM 手工布线时遵循，getNetlist 描述明确"物理接触语义、非设计意图、网络自动编号"，焊盘 name 描述明确"自由标签、非网络名"，避免 LLM 误解能力边界。
+- 2026-09-12: checkDrc 用"先划网络再查间距"而非裸几何距离——Sprint-Layout 无网络概念，若不区分网络，每个有意的焊盘-走线搭接都会被误报为间距违规；故复用 NetlistBuilder 的物理接触连通性划分网络，只检查**同层不同网络**的元素对（不同的网络元件间距用 rule.clearance，SMD-SMD 对用 rule.smdSmdClearance），另查线宽不足与孤立焊盘（单元素网络）。局限：覆铜按实心多边形（忽略hatch）、圆不导电不参与、无过孔环宽/孔径检查、O(n²)大板慢——这些边界都写进了工具描述。
 
 - 2026-09-11: DXF 导出采用纯 Python 生成标准 AC1015 (AutoCAD 2000) ASCII 格式——无需额外第三方依赖(ezdxf)，保证 cx_Freeze 打包体积小且最大兼容各类 CAD 软件(AutoCAD, SolidWorks, FreeCAD, Fusion360)。
 - 2026-09-02: 初始整理。app/ 层是从 sprintFont.py 拆出的业务 handler（UI 与逻辑分离的重构产物），后续新功能应放进 app/ 或 conversion/，不要继续膨胀 sprintFont.py。
@@ -70,7 +104,7 @@ Sprint-Layout 通过"命令行参数 + 临时文本文件 + 进程退出码"三�
 - 2026-09-02: UI 用 VB6 + Vb6Tkinter 可视化设计再生成 tkinter 代码——生成/手写分离（ui/sprint_font_ui.py 生成部分不要手改 + sprintFont.py 手写业务逻辑）。
 - 2026-09-02: 字体扫描用 daemon 线程 + queue + after(500ms) 轮询异步填充下拉框——扫描全部系统字体慢，不能阻塞界面启动。
 
-## 7. 外部交互
+## 9. 外部交互
 
 - 立创EDA API：中文节点 `https://lceda.cn/api/...`，国际节点 `https://easyeda.com/api/...`（由系统语言或配置项 easyEdaSite=cn/global 选择）。两步：商城编号(C+数字) → svgs 接口取 component_uuid → components 接口取封装 JSON（dataStr.shape，`~` 分隔的命令行）。urllib + 浏览器 UA/Referer 伪装，超时 5s，故意不发 Accept-Encoding 免解压。
 - 版本检查：`raw.githubusercontent.com/cdhigh/sprintFontRelease` 的 version.json，默认 30 天周期，可 skipVersion 跳过。

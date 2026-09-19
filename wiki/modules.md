@@ -25,6 +25,10 @@
 | font_operations.py | `FontOperations`：扫描系统/用户/插件目录字体（fontTools lazy 模式，异步填充下拉框）、generatePolygons 文本→多边形、invertFontBackground 负像镂空、`\uXXXX` 符号转义 |
 | footprint_svg_handler.py | `FootprintSvgHandler`：按输入分流 kicad_mod / 立创在线 ID / 立创本地 json / SVG / 二维码（qrcode 库 SvgPathImage） |
 | autorouter_handler.py | `AutorouterHandler`：exportDsn（写 .dsn + **pickle exporter 到 .pickle**）、importSes（反序列化 pickle + SprintImportSes） |
+| drc_checker.py | `DrcChecker`：PCB设计规则检查（同层不同网络的间距违规/线宽不足/孤立焊盘），网络划分复用 NetlistBuilder 物理接触连通性，供MCP的 checkDrc 工具调用 |
+| mcp_server.py | `SprintMcpServer`：内嵌MCP服务器（纯标准库Streamable HTTP，127.0.0.1:5380/mcp）+ 25个Text-IO工具（查询/绘制/编辑含updateElements原地改属性/导入导出含exportSvg视觉验证/getNetlist/checkDrc/exportDsn/importSes/applyToSprintLayout），持有共享SprintTextIO，RLock+deepcopy撤销栈，线程安全交互日志；详见 architecture.md 第6节 |
+| mcp_status_window.py | `McpStatusWindow`：MCP运行状态模态窗口（状态/连接地址+LLM交互概要日志），按钮"接受"=整板写回Sprint-Layout(REPLACE_ALL)退出、"取消"=放弃退出；详见 architecture.md 第6节 |
+| settings_dialog1.py | `SettingsDialog`：设置对话框（语种[重启生效]/MCP使能与端口/立创节点/更新频率）。`SettingsDialog_ui` 由 ui/frmSettings.frm 经 Vb6Tkinter 生成（不要手改），业务逻辑在手写子类；入口为状态栏齿轮，见 architecture.md 第7节 |
 | pcb_enhancements.py | `PcbEnhancements`：addTeardrops / removeTeardrops（启发式识别已有泪滴）/ convertRoundedTrack / doBulkEdit（If/Then 批量修改，含 evalCondition 通用比较） |
 
 ## sprint_struct/ — PCB 数据模型与核心算法（最底层、最常引用）
@@ -33,7 +37,7 @@
 |---|---|
 | sprint_element.py | 元素基类 `SprintElement` + **板层常量**（LAYER_C1/S1/C2/S2/I1/I2/U）+ KiCad 层名映射 + mm2um01 单位换算 |
 | sprint_textio.py | 顶层容器 `SprintTextIO`：元素增删/查询/归类/mergeConnectedTracks；文本设计格式的**写出** |
-| sprint_textio_parser.py | `SprintTextIoParser`：文本设计格式的**读入**（按类型码分发），角度单位补丁在此 |
+| sprint_textio_parser.py | `SprintTextIoParser`：文本设计格式的**读入**（按类型码分发），角度单位补丁在此；parseText/parseLines 支持内存文本直接解析（MCP导入用） |
 | sprint_track.py | 折线导线 `SprintTrack`（points/width/序列化 `TRACK,...P0=x/y;`） |
 | sprint_pad.py | `SprintPad`：通孔/贴片焊盘，FORM 1-9 形状常量，via/thermal 属性，DSN padstack 命名 |
 | sprint_polygon.py | 覆铜多边形 `SprintPolygon`（ZONE）：hatch/encircle 射线法/devour 内孔合并（假定凸多边形） |
@@ -76,6 +80,7 @@
 |---|---|
 | main.frm / main.frx / ui.vbp / ui.vbw | VB6 窗体设计源文件（用 Vb6Tkinter 工作流设计界面）；main.frm 被 VB 当模块打开时是换行符问题（Unix→DOS 即可） |
 | frmNewVersion.frm | 新版本提示对话框的 VB 窗体 |
+| frmSettings.frm | 设置对话框的 VB 窗体（Vb6Tkinter 生成 app/settings_dialog1.py 的 SettingsDialog_ui） |
 | main_frm_readme.md | Vb6Tkinter 六步工作流说明 |
 | sprint_font_ui.py | **Vb6Tkinter 生成的 tkinter 界面代码（不要手改生成部分）**：Application_ui + Statusbar + Tooltip；含 XP 的 TCL_LIBRARY 修复 |
 | teardrop_image.py / rounded_track_image.py / wire_pair_image.py | GIF 图片的 base64 数据常量（界面图例用） |
@@ -94,11 +99,12 @@
 
 | 文件 | 职责 |
 |---|---|
-| runtests.py | 测试入口：`python tests/runtests.py`（TEST_MODULES=['test_base','test_kicad_to_sprint']）；**需先设 KICAD_FOOTPRINT_DIR 环境变量**；桩化 `builtins._` |
+| runtests.py | 测试入口：`python tests/runtests.py`（TEST_MODULES=['test_base','test_kicad_to_sprint','test_dxf_export','test_mcp_server']）；**需先设 KICAD_FOOTPRINT_DIR 环境变量**；桩化 `builtins._` |
 | test_base.py | 通用 unittest 基类（日志/断言工具） |
 | test_kicad_to_sprint.py | kicad_mod 批量转换冒烟测试 |
 | test_svg_export.py | SVG 导出独立脚本，**当前是坏的**（调用了不存在的 textIo.parse()，见 pitfalls.md） |
 | test_dxf_export.py | DXF 导出单元测试（焊盘/钻孔/走线/圆弧/覆铜/文字/单层与全层） |
+| test_mcp_server.py | MCP服务器单元测试（HTTP传输/JSON-RPC/全部工具），可独立运行：`python tests/test_mcp_server.py` |
 
 ## 其他目录
 

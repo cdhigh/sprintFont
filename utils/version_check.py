@@ -48,7 +48,7 @@ def openNewVersionDialog(master, currVersion, versionJson):
     return versionJson.get('action', '')
 
 class VersionDialog_ui(Frame):
-    #这个类仅实现界面生成功能，具体事件处理代码在子类Application中。
+    #这个类仅实现界面生成功能，具体事件处理代码在子类VersionDialog中。
     def __init__(self, master=None):
         Frame.__init__(self, master)
         # To center the window on the screen.
@@ -97,21 +97,21 @@ class VersionDialog_ui(Frame):
         self.style = Style()
 
         self.cmdLaterVar = StringVar(value='Later')
-        self.style.configure('TcmdLater.TButton', font=('微软雅黑',10))
+        self.style.configure('TcmdLater.TButton', font=('TkDefaultFont',10))
         self.cmdLater = Button(self.top, text='Later', textvariable=self.cmdLaterVar, command=self.cmdLater_Cmd, style='TcmdLater.TButton')
         self.cmdLater.setText = lambda x: self.cmdLaterVar.set(x)
         self.cmdLater.text = lambda : self.cmdLaterVar.get()
         self.cmdLater.place(relx=0.712, rely=0.898, relwidth=0.262, relheight=0.08)
 
         self.cmdSkipThisVersionVar = StringVar(value='Skip this version')
-        self.style.configure('TcmdSkipThisVersion.TButton', font=('微软雅黑',10))
+        self.style.configure('TcmdSkipThisVersion.TButton', font=('TkDefaultFont',10))
         self.cmdSkipThisVersion = Button(self.top, text='Skip this version', textvariable=self.cmdSkipThisVersionVar, command=self.cmdSkipThisVersion_Cmd, style='TcmdSkipThisVersion.TButton')
         self.cmdSkipThisVersion.setText = lambda x: self.cmdSkipThisVersionVar.set(x)
         self.cmdSkipThisVersion.text = lambda : self.cmdSkipThisVersionVar.get()
         self.cmdSkipThisVersion.place(relx=0.37, rely=0.898, relwidth=0.262, relheight=0.08)
 
         self.cmdDownloadVar = StringVar(value='Download')
-        self.style.configure('TcmdDownload.TButton', font=('微软雅黑',10))
+        self.style.configure('TcmdDownload.TButton', font=('TkDefaultFont',10))
         self.cmdDownload = Button(self.top, text='Download', textvariable=self.cmdDownloadVar, command=self.cmdDownload_Cmd, style='TcmdDownload.TButton')
         self.cmdDownload.setText = lambda x: self.cmdDownloadVar.set(x)
         self.cmdDownload.text = lambda : self.cmdDownloadVar.get()
@@ -120,28 +120,28 @@ class VersionDialog_ui(Frame):
         self.vScrlTxt = Scrollbar(self.top, orient='vertical')
         self.vScrlTxt.place(relx=0.945, rely=0.195, relwidth=0.029, relheight=0.646)
 
-        self.txtChangelogFont = Font(font=('微软雅黑',10))
+        self.txtChangelogFont = Font(font=('TkDefaultFont',10))
         self.txtChangelog = Text(self.top, bg='#E0E0E0', yscrollcommand=self.vScrlTxt.set, font=self.txtChangelogFont)
         self.txtChangelog.place(relx=0.027, rely=0.195, relwidth=0.92, relheight=0.646)
         self.txtChangelog.insert('1.0','')
         self.vScrlTxt['command'] = self.txtChangelog.yview
 
         self.lblLastestVar = StringVar(value='Lastest')
-        self.style.configure('TlblLastest.TLabel', anchor='w', font=('微软雅黑',10,'bold'))
+        self.style.configure('TlblLastest.TLabel', anchor='w', font=('TkDefaultFont',10,'bold'))
         self.lblLastest = Label(self.top, text='Lastest', textvariable=self.lblLastestVar, style='TlblLastest.TLabel')
         self.lblLastest.setText = lambda x: self.lblLastestVar.set(x)
         self.lblLastest.text = lambda : self.lblLastestVar.get()
         self.lblLastest.place(relx=0.027, rely=0.09, relwidth=0.509, relheight=0.061)
 
         self.lblCurrentVersionVar = StringVar(value='Current')
-        self.style.configure('TlblCurrentVersion.TLabel', anchor='w', font=('微软雅黑',10,'bold'))
+        self.style.configure('TlblCurrentVersion.TLabel', anchor='w', font=('TkDefaultFont',10,'bold'))
         self.lblCurrentVersion = Label(self.top, text='Current', textvariable=self.lblCurrentVersionVar, style='TlblCurrentVersion.TLabel')
         self.lblCurrentVersion.setText = lambda x: self.lblCurrentVersionVar.set(x)
         self.lblCurrentVersion.text = lambda : self.lblCurrentVersionVar.get()
         self.lblCurrentVersion.place(relx=0.027, rely=0.02, relwidth=0.495, relheight=0.061)
 
 class VersionDialog(VersionDialog_ui):
-    #这个类实现具体的事件处理回调函数。界面生成代码在Application_ui中。
+    #这个类实现具体的事件处理回调函数。界面生成代码在VersionDialog_ui中。
     def __init__(self, master, currVersion, versionJson):
         VersionDialog_ui.__init__(self, master)
         self.txtChangelog.bind('<Button-3>', rightClicker, add='')

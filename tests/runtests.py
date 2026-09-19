@@ -46,7 +46,7 @@ def start_test(verbosity=1, failfast=0, testonly='', report=''):
         else:
             cov.report()
 
-TEST_MODULES = ['test_base', 'test_kicad_to_sprint', 'test_dxf_export']
+TEST_MODULES = ['test_base', 'test_kicad_to_sprint', 'test_dxf_export', 'test_mcp_server', 'test_lceda_conversion', 'test_openscad_export']
 
 if __name__ == '__main__':
     verbosity = 1 #Verbosity of output

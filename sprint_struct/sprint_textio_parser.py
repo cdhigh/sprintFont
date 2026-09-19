@@ -58,6 +58,14 @@ class SprintTextIoParser:
                     return None
 
         self.fileName = fileName
+        return self.parseLines(lines)
+
+    #直接分析TextIO格式的文本内容（内存中的字符串），返回一个 SprintTextIO 对象
+    def parseText(self, txt: str):
+        return self.parseLines(txt.split('\n'))
+
+    #分析文本行列表，返回一个 SprintTextIO 对象
+    def parseLines(self, lines: list):
         self.textIo = SprintTextIO(self.pcbWidth, self.pcbHeight)
         self.containers = [self.textIo] #这是一个栈结构
 

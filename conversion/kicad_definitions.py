@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """Kicad一些对应常量定义:
-* 坐标系
-  Kicad坐标系原点在左上角(屏幕坐标系)
-  Sprint-Layout坐标系原点在左下角(标准笛卡尔坐标系)
+#* 坐标系
+#  Kicad坐标系原点在左上角(屏幕坐标系，Y向下)
+#  Sprint-Layout Text-IO文件与内部数据模型坐标系原点同样在左上角、Y向下(与Kicad一致，无需翻转Y；GUI界面标尺显示原点在左下)
 * 数值单位
   Kicad 数值使用浮点数,单位为mm
   Sprint-Layout 数值使用整数,单位为0.1微米(万分之一毫米), 除以10000就是mm值

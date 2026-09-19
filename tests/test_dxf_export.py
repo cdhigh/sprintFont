@@ -158,6 +158,9 @@ class TestDxfExport(unittest.TestCase):
             self.assertIn('1\nTEST_PCB', content)
             self.assertIn('0\nEOF', content)
 
+            # 验证圆弧角度（Sprint圆弧与DXF在Y向上坐标系下均为逆时针，45°~180°保持不变）
+            self.assertIn('50\n45\n51\n180', content)
+
             # 验证凸度 (bulge) 存在于圆角焊盘
             self.assertIn('42\n1', content)
 
@@ -208,6 +211,33 @@ class TestDxfExport(unittest.TestCase):
             # 应自动生成 U 层板框折线
             self.assertIn('8\nU', content)
             self.assertIn('0\nLWPOLYLINE', content)
+        finally:
+            if os.path.exists(tempPath):
+                os.remove(tempPath)
+
+    def test_opposite_layer_via(self):
+        textIo = SprintTextIO(pcbWidth=50.0, pcbHeight=50.0)
+        viaPad = SprintPad('PAD', LAYER_C2)
+        viaPad.pos = (25.0, 25.0)
+        viaPad.size = 1.6
+        viaPad.drill = 0.8
+        viaPad.via = True
+        textIo.add(viaPad)
+
+        with tempfile.NamedTemporaryFile(suffix='.dxf', delete=False) as tf:
+            tempPath = tf.name
+
+        try:
+            gen = DXFGenerator(textIo, layers=[LAYER_C1])
+            err = gen.generate(tempPath)
+            self.assertEqual(err, '')
+
+            with open(tempPath, 'r', encoding='utf-8') as f:
+                content = f.read()
+
+            # 焊盘应输出到 C1 层，不应包含未在层表中定义的 C2 实体层
+            self.assertIn('8\nC1', content)
+            self.assertNotIn('8\nC2', content)
         finally:
             if os.path.exists(tempPath):
                 os.remove(tempPath)

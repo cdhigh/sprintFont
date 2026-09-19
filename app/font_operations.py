@@ -95,6 +95,9 @@ class FontOperations:
 
         font.close()
 
+        if not polygons: #文本没有生成任何轮廓(如只含空格/零宽字符等)，避免反转背景时polygons[0]越界
+            return _('No outline generated from the text')
+
         textIo = sprint_textio.SprintTextIO(pcbWidth, pcbHeight)
         if invert:  # 生成负像
             textIo.add(self.invertFontBackground(polygons, padding, capLeft, capRight, smooth))

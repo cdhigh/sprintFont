@@ -119,11 +119,12 @@ class SprintComponent(SprintElement):
             self.add(elem)
 
     #删除某一个对象，成功返回True
+    #注意必须按身份(is)找到索引后del删除，list.remove按==匹配，会误删同规格的焊盘/导线
     def remove(self, obj):
         from .sprint_group import SprintGroup
-        for elem in self.elements:
+        for idx, elem in enumerate(self.elements):
             if elem is obj:
-                self.elements.remove(obj)
+                del self.elements[idx]
                 self.updateSelfBbox()
                 return True
                 
@@ -221,4 +222,48 @@ class SprintComponent(SprintElement):
     def moveByOffset(self, offsetX: float, offsetY: float):
         for elem in self.elements:
             elem.moveByOffset(offsetX, offsetY)
+        #显式指定过坐标的位号/值标签跟随移动，(0,0)表示未指定(序列化时自动放置在元件上方)
+        if (self.idText is not None) and (self.idText.pos != (0, 0)):
+            self.idText.moveByOffset(offsetX, offsetY)
+        if (self.valueText is not None) and (self.valueText.pos != (0, 0)):
+            self.valueText.moveByOffset(offsetX, offsetY)
         self.updateSelfBbox()
+        if self.elements:
+            self.updatePos()
+
+    #绕指定中心旋转元件，angle为顺时针为正的度数，递归应用到全部子元素
+    #位号/值标签的旋转角与镜像标志不参与序列化(toComponentText)，只跟随变换显式坐标
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        for elem in self.elements:
+            elem.rotateBy(angle, cx, cy)
+        if (self.idText is not None) and (self.idText.pos != (0, 0)):
+            self.idText.rotateBy(angle, cx, cy)
+        if (self.valueText is not None) and (self.valueText.pos != (0, 0)):
+            self.valueText.rotateBy(angle, cx, cy)
+        self.updateSelfBbox()
+        if self.elements:
+            self.updatePos()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)，递归应用到全部子元素
+    def mirrorHorzBy(self, cx: float):
+        for elem in self.elements:
+            elem.mirrorHorzBy(cx)
+        if (self.idText is not None) and (self.idText.pos != (0, 0)):
+            self.idText.mirrorHorzBy(cx)
+        if (self.valueText is not None) and (self.valueText.pos != (0, 0)):
+            self.valueText.mirrorHorzBy(cx)
+        self.updateSelfBbox()
+        if self.elements:
+            self.updatePos()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)，递归应用到全部子元素
+    def mirrorVertBy(self, cy: float):
+        for elem in self.elements:
+            elem.mirrorVertBy(cy)
+        if (self.idText is not None) and (self.idText.pos != (0, 0)):
+            self.idText.mirrorVertBy(cy)
+        if (self.valueText is not None) and (self.valueText.pos != (0, 0)):
+            self.valueText.mirrorVertBy(cy)
+        self.updateSelfBbox()
+        if self.elements:
+            self.updatePos()

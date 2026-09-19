@@ -1,6 +1,6 @@
 # conventions.md — 编码规范与工作流
 
-> 本文件由 AI Agent 自动维护。最后更新：2026-09-02
+> 本文件由 AI Agent 自动维护。最后更新：2026-09-12
 
 ## 编码规范（来自 AGENTS.md，必须遵守）
 
@@ -14,6 +14,7 @@
 - app/ 下 handler 之间不互相 import，由 sprintFont.py 组装调度。
 - 单位：内部 mm 浮点，序列化才转 0.1µm 整数（mm2um01）；涉及角度先查 pitfalls.md 的单位坑。
 - 新增 UI 控件的正规流程是改 ui/main.frm 后重新生成 sprint_font_ui.py（Vb6Tkinter），不要直接手改生成代码；仅事件逻辑写在 sprintFont.py。
+- 设置对话框遵循同一工作流：ui/frmSettings.frm 设计 → 生成 app/settings_dialog1.py 的 SettingsDialog_ui → 业务逻辑写在同文件手写的 SettingsDialog 子类；唯一的例外手写控件是主窗口状态栏齿轮（sprintFont.initSettingsEntries）。
 
 ## 打包（cx_Freeze）
 
@@ -32,14 +33,15 @@
 ## 测试
 
 - 一般不需要测试（AGENTS.md 口径）；需要时 `python tests/runtests.py`，且**必须先设环境变量 `KICAD_FOOTPRINT_DIR`** 指向含 .kicad_mod 的目录。
-- TEST_MODULES 只有 test_base 和 test_kicad_to_sprint；test_svg_export.py 是独立脚本且当前是坏的（pitfalls.md）。
+- `tests/test_mcp_server.py` 无外部依赖可独立运行：`python tests/test_mcp_server.py`（启动真实HTTP服务器自测25个MCP工具）。
+- TEST_MODULES 含 test_base/test_kicad_to_sprint/test_dxf_export/test_mcp_server，但 test_kicad_to_sprint 顶层导入 `kicad_to_sprint`（模块在 conversion/ 下）会 ModuleNotFoundError 且 KICAD_FOOTPRINT_DIR 未设必挂——整包跑之前先单独跑各文件（`python tests/test_xxx.py`）；test_svg_export.py 是独立脚本且当前是坏的（pitfalls.md）。
 - 验证打包功能可跑 buildcxfreeze.bat 后用 exe 实测。
 
 ## config.json 配置项（%APPDATA%\Roaming\sprintFont\config.json）
 
 所有值以字符串存储，restoreConfig 逐项 str_to_int/float + 范围钳制（config_manager.py）：
 
-- 全局：language / lastTab / checkUpdateFrequency(30天) / lastCheckUpdate / skipVersion / history(文本历史[]) / historyNum(5) / backupNum(5) / easyEdaSite(cn|global)
+- 全局：language(空字符串=Auto跟随系统语言，初始化时由initI18n解析) / lastTab / checkUpdateFrequency(30天) / lastCheckUpdate / skipVersion / history(文本历史[]) / historyNum(5) / backupNum(5) / easyEdaSite(cn|global)
 - 字体页：font / txtFontSize / height(字高mm) / layer(板层索引) / wordSpacing / lineSpacing / smooth / invertBackground / padding / capLeft / capRight
 - 封装页：importFootprintText
 - 导出页：exportLayer / exportLayeredScad
@@ -49,6 +51,8 @@
 - 弧线：roundedTrackType(0=tangent) / roundedTrackBigDistance(2.0) / roundedTrackSmallDistance(0.3) / roundedTrackSegs(10) / mergeConnectedTracks
 - 差分线：wirePairType(0=单侧) / wirePairAmin / wirePairAmax / wirePairSpacing / wirePairSkew
 - 批量修改：bulkEditTarget(0=Text)
+- MCP服务：mcpPort(默认5380，1024-65535)；只绑定127.0.0.1；无使能开关——服务器由设置对话框中"Start MCP Server"按钮手动启动，仅在模态状态窗口显示期间运行
+- 设置对话框可修改的还有：language（重启生效）/ easyEdaSite(auto|cn|global，auto按系统语言) / checkUpdateFrequency(0=不检查,7/30/90天)
 
 ## 版本/发布
 

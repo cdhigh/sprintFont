@@ -44,6 +44,8 @@ class SprintElement:
         '|': '_',
         '"': '_',
         "'": '_',
+        '\n': '_',
+        '\r': '_',
     })
 
     def __init__(self, layerIdx: int=1):
@@ -104,5 +106,16 @@ class SprintElement:
     def moveByOffset(self, offsetX: float, offsetY: float):
         return
 
-        
-            
+    #几何变换约定：内部模型坐标Y向下（Text-IO文件坐标），"顺时针为正"指屏幕视觉顺时针，
+    #与焊盘/文本ROTATION的正方向一致（见wiki/pitfalls.md角度条目）
+    #绕指定中心(cx, cy)旋转自身，angle为顺时针为正的度数，默认不旋转
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        return
+
+    #绕竖直线x=cx做水平镜像(左右翻转，翻转X坐标)，默认不镜像
+    def mirrorHorzBy(self, cx: float):
+        return
+
+    #绕水平线y=cy做垂直镜像(上下翻转，翻转Y坐标)，默认不镜像
+    def mirrorVertBy(self, cy: float):
+        return

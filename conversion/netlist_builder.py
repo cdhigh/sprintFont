@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
 """根据铜箔连通性自动生成Sprint-Layout的网表
+注意：仅考虑导电元素(Pad, Track, Polygon覆铜)；铜层圆环/圆弧(SprintCircle)不参与
+电气网络连通性构建(作为标记/非导电图元处理，与drc_checker保持一致)；排除cutout禁止区。
 Author: cdhigh <https://github.com/cdhigh>
 """
 import math
@@ -228,6 +230,7 @@ class NetlistBuilder:
     # 执行网表生成的完整流程，返回包含 networks 和 element映射 的字典
     def build(self):
         # 1. 收集所有相关的导电元素 (仅考虑铜层 C1, C2, I1, I2)
+        # 注意：铜层圆环/圆弧(SprintCircle)不参与连通性判断(仅作标记/非导电图元处理，与DRC一致)；排除cutout禁止区
         target_layers = [LAYER_C1, LAYER_C2, LAYER_I1, LAYER_I2]
         all_pads = self.textIo.getPads(layerIdx=target_layers)
         all_tracks = self.textIo.getTracks(layerIdx=target_layers)

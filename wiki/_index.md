@@ -1,9 +1,9 @@
 # wiki/_index.md
 
-> 本文件由 AI Agent 自动维护，是 wiki 的索引入口。最后整理：2026-09-02
+> 本文件由 AI Agent 自动维护，是 wiki 的索引入口。最后整理：2026-09-12
 
 ## 项目一句话
-sprintFont 是 Sprint-Layout v6.0 (2022+) 的外部插件（Python + Tkinter，cx_Freeze 打包为 exe），通过"临时文件 + 进程退出码"协议与 Sprint-Layout 通讯，提供：字体文本插入（含中文/特殊符号）、KiCad/立创EDA封装导入、SVG/二维码插入、Freerouting 自动布线（DSN/SES）、泪滴焊盘、弧形走线、差分线长度匹配、批量修改、多格式导出（KiCad/立创/OpenSCAD/SVG/DXF）。
+sprintFont 是 Sprint-Layout v6.0 (2022+) 的外部插件（Python + Tkinter，cx_Freeze 打包为 exe），通过"临时文件 + 进程退出码"协议与 Sprint-Layout 通讯，提供：字体文本插入（含中文/特殊符号）、KiCad/立创EDA封装导入、SVG/二维码插入、Freerouting 自动布线（DSN/SES）、泪滴焊盘、弧形走线、差分线长度匹配、批量修改、多格式导出（KiCad/立创/OpenSCAD/SVG/DXF），并可开启内嵌 MCP 服务器（127.0.0.1:5380/mcp）让 AI 客户端直接读写板图。
 
 ## Wiki 文件列表
 | 文件 | 内容 | 何时读 |
@@ -22,3 +22,8 @@ sprintFont 是 Sprint-Layout v6.0 (2022+) 的外部插件（Python + Tkinter，c
 - 主入口：`sprintFont.py`（唯一业务主类 `Application`，9 个 Tab 逻辑全在此）
 - 数据模型核心：`sprint_struct/sprint_textio.py`（写出）+ `sprint_textio_parser.py`（读入）——即 Sprint-Layout"文本设计格式"
 - UI 骨架：`ui/sprint_font_ui.py` 由 VB6 窗体 main.frm 经 Vb6Tkinter 生成，不要手改生成部分
+- MCP 服务：`app/mcp_server.py`（30个Text-IO工具，架构见 architecture.md 第6节），在设置对话框中配置
+- 设置对话框：状态栏齿轮打开（语种[重启生效]/MCP/立创节点/更新频率），见 architecture.md 第7节
+
+## 三条铁律之外的坐标系注意
+MCP工具参数和内部数据模型都是 **Text-IO 文件坐标：原点左上、X右Y下、mm**（详见 pitfalls.md 2026-09-12 条目）。

@@ -39,11 +39,12 @@ class SprintGroup(SprintElement):
             self.add(elem)
 
     #删除某一个对象，成功返回True
+    #注意必须按身份(is)找到索引后del删除，list.remove按==匹配，会误删同规格的焊盘/导线
     def remove(self, obj):
         from .sprint_component import SprintComponent
-        for elem in self.elements:
+        for idx, elem in enumerate(self.elements):
             if elem is obj:
-                self.elements.remove(obj)
+                del self.elements[idx]
                 self.updateSelfBbox()
                 return True
 
@@ -108,5 +109,23 @@ class SprintGroup(SprintElement):
     def moveByOffset(self, offsetX: float, offsetY: float):
         for elem in self.elements:
             elem.moveByOffset(offsetX, offsetY)
+        self.updateSelfBbox()
+
+    #绕指定中心旋转自身，angle为顺时针为正的度数，递归应用到全部子元素
+    def rotateBy(self, angle: float, cx: float, cy: float):
+        for elem in self.elements:
+            elem.rotateBy(angle, cx, cy)
+        self.updateSelfBbox()
+
+    #绕竖直线x=cx做水平镜像(左右翻转)，递归应用到全部子元素
+    def mirrorHorzBy(self, cx: float):
+        for elem in self.elements:
+            elem.mirrorHorzBy(cx)
+        self.updateSelfBbox()
+
+    #绕水平线y=cy做垂直镜像(上下翻转)，递归应用到全部子元素
+    def mirrorVertBy(self, cy: float):
+        for elem in self.elements:
+            elem.mirrorVertBy(cy)
         self.updateSelfBbox()
 

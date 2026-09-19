@@ -16,6 +16,7 @@ Compiled releases and English readme: <https://github.com/cdhigh/sprintFontRelea
 * 生成圆弧走线
 * 差分线长度匹配
 * 导出到Kicad/EasyEDA/OpenSCAD/SVG/DXF
+* 和AI的集成(MCP服务器)
 
 
 
@@ -315,6 +316,24 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 
+### 2.9 和AI的集成(Model Context Protocol服务器)功能
+sprintFont添加了实验性的MCP服务器功能, 可以让AI直接读取和修改PCB数据, 具体的应用可能因人而异, 具体效果也不一定如你所愿
+比如给AI一个带尺寸的封装图像, AI自动帮忙绘制封装图等.
+1. 主流的AI本地客户端比如 ChatGPT/Antigravity/Claude/Cursor/ZCode 等都支持添加自定义MCP服务器，可以搜索自己手上使用的程序的帮助文档。
+2. 比如Antigravity：
+在 `C:\Users\Account\.gemini\config\mcp_config.json`里面添加一项：
+```
+mcpServers {
+  ...,
+   "sprint-layout": {
+      "serverUrl": "http://127.0.0.1:5390/mcp"
+    }
+}
+```
+3. 比如zcode，就在设置菜单里面找到 "新建 MCP 服务器", 选择HTTP类型，填入名字和URL `http://127.0.0.1:5390/mcp` 即可.
+4. 设置好之前，启动sprintFont，点击右下角的齿轮图标，再点击“启动MCP服务器”，让这个窗口处于打开状态，然后就可以打开你的AI编辑器来对sprintFont发号施令了。 
+**注意：先启动MCP服务器再打开AI编辑器，否则AI编辑器无法发现和记录MCP服务器**
+
 
 ## 3. 您可能希望了解的其他内容
 1. Sprint-Layout通过临时文件和插件通讯，如果启动插件时你什么元件都没有选中，则Sprint-Layout会导出PCB中所有元件到临时文件，否则只会导出被选择的元件。     
@@ -343,6 +362,10 @@ Kicad自带很多封装库，如果不想安装Kicad，也可以仅仅下载封�
 
 
 ## 4. 版本更新日志
+
+### v1.11
+  1. 添加AI集成(MCP服务器)功能
+  2. Bugfix: 从力创导入的封装上的器件编码字体过小
 
 ### v1.10
   1. 添加导出到DXF功能
