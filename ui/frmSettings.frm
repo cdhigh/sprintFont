@@ -2,7 +2,7 @@ VERSION 5.00
 Begin VB.Form frmSettings 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Settings"
-   ClientHeight    =   4515
+   ClientHeight    =   5265
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   6750
@@ -18,16 +18,24 @@ Begin VB.Form frmSettings
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   4515
+   ScaleHeight     =   5265
    ScaleWidth      =   6750
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
+   Begin VB.ComboBox cmbBackupCount 
+      Height          =   420
+      Left            =   4200
+      Style           =   2  'Dropdown List
+      TabIndex        =   13
+      Top             =   1920
+      Width           =   2415
+   End
    Begin VB.Frame frmMcpServer 
       Caption         =   "MCP Server (AI bridge)"
       Height          =   1095
       Left            =   120
       TabIndex        =   9
-      Top             =   2520
+      Top             =   3240
       Width           =   6495
       Begin VB.CommandButton cmdMcpStart 
          Caption         =   "Start MCP Server"
@@ -60,7 +68,7 @@ Begin VB.Form frmSettings
       Left            =   4200
       Style           =   2  'Dropdown List
       TabIndex        =   8
-      Top             =   1920
+      Top             =   2520
       Width           =   2415
    End
    Begin VB.ComboBox cmbEasyEdaSite 
@@ -85,7 +93,7 @@ Begin VB.Form frmSettings
       Height          =   495
       Left            =   3600
       TabIndex        =   1
-      Top             =   3840
+      Top             =   4560
       Width           =   2295
    End
    Begin VB.CommandButton cmdSettingsOk 
@@ -93,8 +101,17 @@ Begin VB.Form frmSettings
       Height          =   495
       Left            =   480
       TabIndex        =   0
-      Top             =   3840
+      Top             =   4560
       Width           =   2295
+   End
+   Begin VB.Label lblBackupCount 
+      Alignment       =   1  'Right Justify
+      Caption         =   "Backup Count"
+      Height          =   375
+      Left            =   240
+      TabIndex        =   14
+      Top             =   1920
+      Width           =   3615
    End
    Begin VB.Label lblUpdateCheck 
       Alignment       =   1  'Right Justify
@@ -102,7 +119,8 @@ Begin VB.Form frmSettings
       Height          =   375
       Left            =   240
       TabIndex        =   7
-      Top             =   1920
+      ToolTipText     =   "Double Click To Check Now"
+      Top             =   2520
       Width           =   3615
    End
    Begin VB.Label lblEasyEdaSite 
@@ -138,4 +156,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Private Sub lblUpdateCheck_DblClick()
 
+End Sub

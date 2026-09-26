@@ -10,7 +10,7 @@ import time
 from tkinter import Toplevel, Text, Scrollbar, END
 from tkinter.ttk import Frame, Label, Button
 from tkinter.messagebox import askokcancel
-from ui.sprint_font_ui import Tooltip
+from ui.tooltip import Tooltip
 
 #MCP运行状态窗口(模态)
 class McpStatusWindow(Toplevel):
@@ -75,10 +75,11 @@ class McpStatusWindow(Toplevel):
         self.cmdCancelBtn.pack(side='right', padx=(20, 0))
         self.cmdAccept = Button(btnFrame, text=_('Accept'), width=14, command=self.cmdAccept_Cmd)
         self.cmdAccept.pack(side='right')
+        #初始或无修改时接受按钮禁用，发生实质修改后才点亮
+        self.cmdAccept.configure(state='disabled')
         
         #Standalone模式没有输出文件，接受按钮不可用
         if not app.inFileName:
-            self.cmdAccept.configure(state='disabled')
             self.lblStatus.configure(text=_('Standalone mode: use the saveTextIoFile tool to save the board'))
 
     #定时刷新MCP状态与交互日志
@@ -98,6 +99,13 @@ class McpStatusWindow(Toplevel):
                             time.strftime('%H:%M:%S', time.localtime(ts)), text))
                     self.logText.see(END)
                     self.logText.configure(state='disabled')
+
+            #仅在有输入文件且板图发生过实质修改时才启用接受按钮
+            if not self.app.inFileName:
+                self.cmdAccept.configure(state='disabled')
+            else:
+                isModified = self.app.isBoardModified()
+                self.cmdAccept.configure(state=('normal' if isModified else 'disabled'))
         except Exception as e:
             print('McpStatusWindow.refreshStatus: {}'.format(str(e)))
         self.after(300, self.refreshStatus)
@@ -118,12 +126,17 @@ class McpStatusWindow(Toplevel):
             self.clipboard_clear()
             self.clipboard_append(url)
 
-    #点击接受：将内存中的板图写回Sprint-Layout(REPLACE_ALL)并退出插件
-    #板图为空时applyMcpBoard只弹窗提示，窗口保留，会话继续
+    #点击接受：将板图写回Sprint-Layout并退出插件
+    #自动根据修改情况判定模式：纯新增图元走insert_new(仅输出新图元)；改动旧图元走replace(整板替换)
     def cmdAccept_Cmd(self, event=None):
-        self.app.applyMcpBoard('replace')
+        if not self.app.isBoardModified():
+            return
+        self.app.applyMcpBoard('auto')
 
-    #点击取消/关闭窗口：确认后放弃全部修改退出插件
+    #点击取消/关闭窗口：若未修改直接退出；发生修改后弹窗确认放弃全部修改退出插件
     def cmdCancel(self, event=None):
+        if not self.app.isBoardModified():
+            self.app.safeExit(0) #0=RETURN_CODE_NONE，无修改直接退出
+            return
         if askokcancel(_('Cancel'), _('Discard all MCP changes and exit?')):
             self.app.safeExit(0) #0=RETURN_CODE_NONE，Sprint-Layout不做任何处理

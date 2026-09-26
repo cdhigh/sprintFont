@@ -38,7 +38,7 @@ from app.pcb_enhancements import PcbEnhancements
 #已改为在MCP后台启动线程中延迟导入，见getMcpServer
 
 __Version__ = "1.10"
-__DATE__ = "20260911"
+__DATE__ = "20260926"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
@@ -84,6 +84,7 @@ URI_ISSUES = 'https://github.com/cdhigh/sprintFontRelease/issues'
 class Application(Application_ui):
     def __init__(self, master=None):
         Application_ui.__init__(self, master)
+        self.version = __Version__
         
         # 初始化配置管理器
         self.configManager = ConfigManager(self, MODULE_PATH, CFG_FILENAME, I18N_PATH, SUPPORTED_LANGUAGES)
@@ -92,13 +93,13 @@ class Application(Application_ui):
         self.cfg = self.configManager.cfg
         self.language = self.configManager.language
         self.sysLanguge = self.configManager.sysLanguge
-        self.backupNum = str_to_int(self.configManager.cfg.get('backupNum', '5'), 5)
+        self.backupCount = str_to_int(self.configManager.cfg.get('backupCount', '5'), 5)
         self.historyNum = str_to_int(self.configManager.cfg.get('historyNum', '5'), 5)
         self.history = self.configManager.cfg.get('history', [])
         self.history = list(self.history) if isinstance(self.history, list) else []
         
         self.retranslateUi()
-        self.master.title('sprintFont v{}'.format(__Version__))
+        self.master.title('sprintFont v{}'.format(self.version))
 
         #width = str_to_int(self.master.geometry().split('x')[0])
         #if (width > 16): #状态栏仅使用一个分栏，占满全部空间
@@ -536,6 +537,8 @@ class Application(Application_ui):
         self.mcpBoardLoaded = False
         self.mcpParseFailed = False #输入板图解析失败时为True，禁止replace整板回写(避免用残缺板图覆盖原板)
         self.mcpInitialElements = []
+        self.mcpInitialWidth = self.pcbWidth
+        self.mcpInitialHeight = self.pcbHeight
         self.mcpTextIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
         self.mcpStatusWindow = None #MCP运行状态窗口(模态)，显示期间服务器处于运行状态
 
@@ -551,7 +554,7 @@ class Application(Application_ui):
         with self.mcpServerLock:
             if self.mcpServer is None:
                 from app.mcp_server import SprintMcpServer
-                self.mcpServer = SprintMcpServer(self.mcpTextIo, serverVersion=__Version__,
+                self.mcpServer = SprintMcpServer(self.mcpTextIo, serverVersion=self.version,
                     pcbRule=self.pcbRule, onApplyRequest=self.requestApplyMcpBoard,
                     pcbAll=self.pcbAll, hasInputFile=bool(self.inFileName))
             return self.mcpServer
@@ -574,11 +577,15 @@ class Application(Application_ui):
                 print('MCP parse input file failed: {}'.format(parseError))
         if textIo is None:
             textIo = sprint_textio.SprintTextIO(self.pcbWidth, self.pcbHeight)
-        #记录初始元素的序列化文本，用于insert_new模式下计算新增增量
+        #记录初始元素的序列化文本与板尺寸，用于判断是否发生修改及增量计算
         self.mcpInitialElements = [str(elem) for elem in textIo.elements]
+        self.mcpInitialWidth = textIo.pcbWidth
+        self.mcpInitialHeight = textIo.pcbHeight
         self.mcpTextIo = textIo
         with server.boardLock:
             server.textIo = textIo
+            server.mutationCount = 0
+            server.undoStack = []
         self.mcpBoardLoaded = True
         #解析失败时原板内容未知，必须禁止replace整板回写(否则会用残缺板图覆盖Sprint-Layout中的原板，造成数据丢失)
         self.mcpParseFailed = bool(parseError)
@@ -660,6 +667,13 @@ class Application(Application_ui):
             print('pollMcpEvents: {}'.format(str(e)))
         self.master.after(500, self.pollMcpEvents)
 
+    #检查当前MCP板图相对启动时是否发生过任何实质性修改
+    def isBoardModified(self):
+        if (not self.mcpBoardLoaded) or (self.mcpServer is None):
+            return False
+        with self.mcpServer.boardLock:
+            return self.mcpServer.isBoardModified(self.mcpInitialElements, self.mcpInitialWidth, self.mcpInitialHeight)
+
     #将MCP板图回写到Sprint-Layout并退出插件
     #mode: replace=整板替换(仅整板启动时有效) / insert_new=仅插入新增元素 / auto=自动选择
     def applyMcpBoard(self, mode='auto'):
@@ -670,16 +684,33 @@ class Application(Application_ui):
         #MCP线程可能正在修改板图，加锁后取数据
         with self.mcpServer.boardLock:
             textIo = self.mcpServer.textIo
-            if mode == 'auto':
-                mode = 'replace' if self.pcbAll else 'insert_new'
-            #原板解析失败时禁止replace整板回写，强制退化为insert_new，避免残缺板图覆盖原板
-            if (mode == 'replace') and self.mcpParseFailed:
-                mode = 'insert_new'
-            if mode == 'replace':
-                payload = str(textIo)
-            else:
-                newElems = self.mcpServer.getNewElementsSince(self.mcpInitialElements)
-                payload = '\n'.join([str(elem) for elem in newElems])
+            isModified = self.mcpServer.isBoardModified(self.mcpInitialElements, self.mcpInitialWidth, self.mcpInitialHeight)
+            payload = ''
+
+            if isModified:
+                #如果选择auto模式：检查是否属于纯新增图元(原图元完全未动且板尺寸未变)
+                #若是纯新增图元，自动降级为insert_new，安全追加，原板完全不重写；只有修改了原有图元才走replace
+                if mode == 'auto':
+                    if self.mcpServer.isPureAddition(self.mcpInitialElements, self.mcpInitialWidth, self.mcpInitialHeight):
+                        mode = 'insert_new'
+                    else:
+                        mode = 'replace' if self.pcbAll else 'insert_new'
+
+                #原板解析失败时禁止replace整板回写，强制退化为insert_new，避免残缺板图覆盖原板
+                if (mode == 'replace') and self.mcpParseFailed:
+                    mode = 'insert_new'
+
+                if mode == 'replace':
+                    payload = str(textIo)
+                else:
+                    #insert_new模式下只输出新增的图元，严禁输出原板图元(避免原板图元重复插入)
+                    newElems = self.mcpServer.getNewElementsSince(self.mcpInitialElements)
+                    payload = '\n'.join([str(elem) for elem in newElems])
+
+        #如果板图未做任何实质性修改，不执行任何替换或写回，直接以RETURN_CODE_NONE(0)安全退出，Sprint-Layout原板保持100%原样
+        if not isModified:
+            self.safeExit(RETURN_CODE_NONE)
+            return
 
         if not payload.strip():
             showwarning(_('info'), _('No elements to transfer to Sprint-Layout'))
@@ -983,7 +1014,7 @@ class Application(Application_ui):
 
     #备份输入文件
     def backupInputFile(self, newTxtStr):
-        if self.backupNum <= 0:
+        if self.backupCount <= 0:
             return
 
         if not self.inFileName or not os.path.isfile(self.inFileName):
@@ -1017,8 +1048,8 @@ class Application(Application_ui):
         try:
             backups = glob.glob(os.path.join(backupDir, "backup_*.txt"))
             backups.sort(key=os.path.getmtime)
-            if len(backups) > self.backupNum:
-                for oldFile in backups[:-self.backupNum]:
+            if len(backups) > self.backupCount:
+                for oldFile in backups[:-self.backupCount]:
                     try:
                         os.remove(oldFile)
                     except:
@@ -1056,7 +1087,7 @@ class Application(Application_ui):
         import webbrowser
         if self.versionJson:
             from utils.version_check import openNewVersionDialog
-            ret = openNewVersionDialog(self.master, __Version__, self.versionJson)
+            ret = openNewVersionDialog(self.master, self.version, self.versionJson)
             if (ret == 'skip'):
                 self.skipVersion = self.versionJson.get('lastest', '')
 
@@ -1073,7 +1104,7 @@ class Application(Application_ui):
     def versionCheckThread(self, arg=None):
         #print('versionCheckThread')
         from utils.version_check import checkUpdate
-        self.versionJson = checkUpdate(__Version__, self.skipVersion)
+        self.versionJson = checkUpdate(self.version, self.skipVersion)
         #为了简单，直接在子线程里面设置状态栏显示，因为状态栏目前仅在启动时设置一次，所以应该不会有资源冲突
         if self.versionJson:
             try:

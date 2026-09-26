@@ -830,12 +830,12 @@ class TestMcpServer(unittest.TestCase):
     #测试：addStandardFootprint标准封装生成器(引脚坐标/编号/旋转/参数归一化)
     def testStandardFootprint(self):
         self.doInitialize()
-        #0603：两贴片焊盘+丝印外框，引脚号写入name，位号回显
+        #0603：两贴片焊盘+上下两条平行丝印线(避免切焊盘)，引脚号写入name，位号回显
         ret = self.callTool('addStandardFootprint', {'package': '0603', 'pos': [30, 20], 'idText': 'C1'})
         self.assertEqual(ret['pinCount'], 2)
         self.assertEqual(ret['element']['package'], '0603')
         self.assertEqual(ret['element']['id'], 'C1')
-        self.assertEqual(len(ret['element']['subElements']), 3)
+        self.assertEqual(len(ret['element']['subElements']), 4)
         pads = sorted((e for e in ret['element']['subElements'] if e['type'] == 'SMDPAD'),
             key=lambda e: int(e['name']))
         self.assertEqual([p['name'] for p in pads], ['1', '2'])
@@ -1192,6 +1192,197 @@ class TestMcpServer(unittest.TestCase):
         #与当前板图完全一致的快照不应产生任何增量
         self.assertEqual(self.server.getNewElementsSince(
             [str(elem) for elem in self.server.textIo.elements]), [])
+
+    #测试：协议响应头包含Mcp-Protocol-Version与Access-Control-Expose-Headers
+    def testProtocolHeadersAndCors(self):
+        code, headers, body = postRpc(self.port, {
+            'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+            'params': {'protocolVersion': '2025-06-18', 'clientInfo': {'name': 'testClient'}}
+        })
+        self.assertEqual(code, 200)
+        #检查Expose-Headers必须包含Mcp-Session-Id与Mcp-Protocol-Version供浏览器读取
+        expose = headers.get('access-control-expose-headers') or headers.get('Access-Control-Expose-Headers') or ''
+        self.assertIn('Mcp-Session-Id', expose)
+        self.assertIn('Mcp-Protocol-Version', expose)
+        protoVer = headers.get('mcp-protocol-version') or headers.get('Mcp-Protocol-Version')
+        self.assertEqual(protoVer, '2025-06-18')
+
+    #测试：clearBoard与setBoardSize在tools/list中暴露且调用正常
+    def testClearBoardAndSetBoardSizeTools(self):
+        self.doInitialize()
+        code, _, body = postRpc(self.port, {'jsonrpc': '2.0', 'id': 2, 'method': 'tools/list'}, sessionId=self.sessionId)
+        toolNames = [t['name'] for t in body['result']['tools']]
+        self.assertIn('clearBoard', toolNames)
+        self.assertIn('setBoardSize', toolNames)
+        self.assertIn('connectPads', toolNames)
+        self.assertIn('addTeardrops', toolNames)
+        self.assertIn('removeTeardrops', toolNames)
+        self.assertIn('roundTracks', toolNames)
+        self.assertIn('importFootprint', toolNames)
+        self.assertEqual(len(toolNames), 35)
+
+        #测试setBoardSize
+        ret = self.callTool('setBoardSize', {'width': 120.5, 'height': 80.0})
+        self.assertEqual(ret['boardSize']['width'], 120.5)
+        self.assertEqual(ret['boardSize']['height'], 80.0)
+        self.assertEqual(self.server.textIo.pcbWidth, 120.5)
+
+        #测试clearBoard
+        self.callTool('clearBoard', {'confirm': False}, expectError=True)
+        ret = self.callTool('clearBoard', {'confirm': True})
+        self.assertGreater(ret['cleared'], 0)
+        self.assertEqual(len(self.server.textIo.elements), 0)
+
+        #撤销后恢复
+        self.callTool('undo')
+        self.assertGreater(len(self.server.textIo.elements), 0)
+
+    #测试：connectPads建立飞线并在DSN导出中生成对应网络
+    def testConnectPadsAndDsnNetlist(self):
+        self.doInitialize()
+        #放置两个0805电阻
+        r1 = self.callTool('addStandardFootprint', {'package': '0805', 'pos': [10, 10], 'idText': 'R1'})
+        r2 = self.callTool('addStandardFootprint', {'package': '0805', 'pos': [25, 10], 'idText': 'R2'})
+        #连接 R1.1 和 R2.1
+        ret = self.callTool('connectPads', {'pads': ['R1.1', 'R2.1']})
+        self.assertTrue(ret['connected'])
+        self.assertEqual(len(ret['padIds']), 2)
+
+        #验证焊盘对象属性已写入padId和connectToOtherPads
+        compR1 = self.server.textIo.elements[r1['element']['index']]
+        compR2 = self.server.textIo.elements[r2['element']['index']]
+        padR1 = [p for p in compR1.elements if isinstance(p, SprintPad) and p.name == '1'][0]
+        padR2 = [p for p in compR2.elements if isinstance(p, SprintPad) and p.name == '1'][0]
+        self.assertIsNotNone(padR1.padId)
+        self.assertIn(padR2.padId, padR1.connectToOtherPads)
+
+        #测试disconnect
+        self.callTool('connectPads', {'pads': ['R1.1', 'R2.1'], 'disconnect': True})
+        padR1 = self.server.resolvePad('R1.1')
+        padR2 = self.server.resolvePad('R2.1')
+        self.assertNotIn(padR2.padId, padR1.connectToOtherPads)
+
+        #撤销后恢复连接
+        self.callTool('undo')
+        padR1 = self.server.resolvePad('R1.1')
+        padR2 = self.server.resolvePad('R2.1')
+        self.assertIn(padR2.padId, padR1.connectToOtherPads)
+
+    #测试：addTeardrops与removeTeardrops
+    def testTeardropsTools(self):
+        self.doInitialize()
+        #板上已有导线与焊盘相交(在setUp中已添加)，生成泪滴
+        ret = self.callTool('addTeardrops', {'hPercent': 50, 'vPercent': 80})
+        self.assertIn('added', ret)
+        if ret['added'] > 0:
+            #移除泪滴
+            rm = self.callTool('removeTeardrops')
+            self.assertEqual(rm['removed'], ret['added'])
+            #撤销移除
+            self.callTool('undo')
+            #再次移除
+            rm2 = self.callTool('removeTeardrops')
+            self.assertEqual(rm2['removed'], ret['added'])
+
+    #测试：roundTracks走线圆弧平滑
+    def testRoundTracksTool(self):
+        self.doInitialize()
+        #添加一个三点的折角走线
+        track = self.callTool('addTrack', {'layer': 1, 'width': 0.5, 'points': [[5, 5], [10, 5], [10, 15]]})
+        ret = self.callTool('roundTracks', {'method': 'tangent', 'bigDistance': 1.0, 'smallDistance': 0.5})
+        self.assertIn('replaced', ret)
+        #可撤销
+        self.callTool('undo')
+
+    #测试：importFootprint离线JSON导入
+    def testImportFootprintJson(self):
+        self.doInitialize()
+        #构建一个简单的测试JSON文件
+        tmpDir = tempfile.mkdtemp(prefix='sprintfont_fp_test_')
+        try:
+            jsonFile = os.path.join(tmpDir, 'test_part.json')
+            dummyData = {
+                'head': {'c_para': {'package': 'TEST_PKG', 'pre': 'U'}},
+                'shape': [
+                    'TRACK~0.591~3~~0 0 10 0~gge1~0',
+                    'PAD~ROUND~0~0~10~10~1~0~1~1~5~5~~~~'
+                ]
+            }
+            with open(jsonFile, 'w', encoding='utf-8') as f:
+                json.dump(dummyData, f)
+
+            ret = self.callTool('importFootprint', {'part': jsonFile, 'pos': [20, 15]})
+            self.assertTrue(ret['imported'])
+            self.assertGreater(ret['elementsAdded'], 0)
+        finally:
+            shutil.rmtree(tmpDir, ignore_errors=True)
+
+    #测试：isBoardModified双层修改判定(零修改/只读/改动/撤销还原/反向抵消/尺寸修改)
+    def testIsBoardModified(self):
+        self.doInitialize()
+        initElems = [str(e) for e in self.server.textIo.elements]
+        initW = self.server.textIo.pcbWidth
+        initH = self.server.textIo.pcbHeight
+
+        #初始状态：未修改
+        self.assertFalse(self.server.isBoardModified(initElems, initW, initH))
+
+        #只读操作：未修改
+        self.callTool('getBoardInfo')
+        self.callTool('getElements')
+        self.callTool('getNetlist')
+        self.assertFalse(self.server.isBoardModified(initElems, initW, initH))
+
+        #添加图元：判定为已修改
+        ret = self.callTool('addTrack', {'layer': 1, 'width': 0.3, 'points': [[1, 1], [5, 5]]})
+        self.assertTrue(self.server.isBoardModified(initElems, initW, initH))
+
+        #撤销后：自动恢复为未修改
+        self.callTool('undo')
+        self.assertFalse(self.server.isBoardModified(initElems, initW, initH))
+
+        #位移修改后移回原位(反向自消除)：内容完全一致，判定为未修改
+        self.callTool('moveElements', {'indices': [0], 'dx': 3.0, 'dy': 0.0})
+        self.assertTrue(self.server.isBoardModified(initElems, initW, initH))
+        self.callTool('moveElements', {'indices': [0], 'dx': -3.0, 'dy': 0.0})
+        self.assertFalse(self.server.isBoardModified(initElems, initW, initH))
+
+        #修改板尺寸：判定为已修改
+        self.callTool('setBoardSize', {'width': initW + 10, 'height': initH})
+        self.assertTrue(self.server.isBoardModified(initElems, initW, initH))
+        self.callTool('undo')
+        self.assertFalse(self.server.isBoardModified(initElems, initW, initH))
+
+    #测试：isPureAddition纯新增图元判定及仅输出新增图元
+    def testIsPureAdditionAndIncrementalPayload(self):
+        self.doInitialize()
+        initElems = [str(e) for e in self.server.textIo.elements]
+        initW = self.server.textIo.pcbWidth
+        initH = self.server.textIo.pcbHeight
+
+        #初始状态：不是新增
+        self.assertFalse(self.server.isPureAddition(initElems, initW, initH))
+
+        #添加标准封装(如0805电阻)：前置旧图元保持不变，判定为纯新增
+        ret = self.callTool('addStandardFootprint', {'package': '0805', 'pos': [15, 15], 'idText': 'R99'})
+        self.assertTrue(self.server.isPureAddition(initElems, initW, initH))
+
+        #验证仅输出新增的图元，不包含旧图元
+        newElems = self.server.getNewElementsSince(initElems)
+        self.assertGreater(len(newElems), 0)
+        #所有新增图元均不在原板初始集合中
+        for ne in newElems:
+            self.assertNotIn(str(ne), initElems)
+        #全板图元数量等于初始数量加上新增数量
+        self.assertEqual(len(self.server.textIo.elements), len(initElems) + len(newElems))
+
+        #若修改了原板已有图元(如移动元素0)：不再属于纯新增(必须走整板替换)
+        self.callTool('moveElements', {'indices': [0], 'dx': 2.0, 'dy': 0.0})
+        self.assertFalse(self.server.isPureAddition(initElems, initW, initH))
+
+        #撤销对原图元的修改后：恢复为纯新增
+        self.callTool('undo')
+        self.assertTrue(self.server.isPureAddition(initElems, initW, initH))
 
 
 if __name__ == '__main__':

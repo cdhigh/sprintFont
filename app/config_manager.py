@@ -29,7 +29,7 @@ class ConfigManager:
         self.cfg = {}
         self.sysLanguge = locale.getdefaultlocale()[0]
         self.language = ''
-        self.backupNum = 5
+        self.backupCount = 5
     
     #获取用户配置数据目录
     #appName: 应用名称
@@ -89,7 +89,7 @@ class ConfigManager:
         app = self.app
         cfg = {
             'language': self.language, 
-            'backupNum': str(self.backupNum),
+            'backupCount': str(app.backupCount),
             'font': app.cmbFont.text(), 
             'txtFontSize': str(app.txtFontSize), 
             'height': app.cmbFontHeight.text(), 

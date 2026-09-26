@@ -11,6 +11,7 @@ from tkinter.messagebox import *
 #from tkinter import filedialog  #.askopenfilename()
 #from tkinter import simpledialog  #.askstring()
 from utils.comm_utils import str_to_int
+from ui.tooltip import Tooltip
 
 #独立运行本文件预览界面时的翻译占位，正常由config_manager安装gettext
 if not hasattr(builtins, '_'):
@@ -36,8 +37,8 @@ class SettingsDialog_ui(Frame):
     def __init__(self, master):
         super().__init__(master)
         x = int((self.master.winfo_screenwidth() - 450) / 2)
-        y = int((self.master.winfo_screenheight() - 301) / 2)
-        self.master.geometry('450x301+{}+{}'.format(x, y))
+        y = int((self.master.winfo_screenheight() - 351) / 2)
+        self.master.geometry('450x351+{}+{}'.format(x, y))
         self.master.title('Settings')
         self.master.resizable(0, 0)
         self.icondata = """
@@ -81,70 +82,86 @@ class SettingsDialog_ui(Frame):
         self.style.configure('TfrmMcpServer.TLabelframe', font=('TkDefaultFont',10))
         self.style.configure('TfrmMcpServer.TLabelframe.Label', font=('TkDefaultFont',10))
         self.frmMcpServer = LabelFrame(self.top, text='MCP Server (AI bridge)', style='TfrmMcpServer.TLabelframe')
-        self.frmMcpServer.place(relx=0.018, rely=0.558, relwidth=0.962, relheight=0.243)
+        self.frmMcpServer.place(relx=0.018, rely=0.615, relwidth=0.962, relheight=0.208)
 
         self.cmbUpdateCheckList = ['',]
         self.cmbUpdateCheckVar = StringVar(value='')
         self.cmbUpdateCheck = Combobox(self.top, exportselection=0, state='readonly', textvariable=self.cmbUpdateCheckVar, values=self.cmbUpdateCheckList, font=('TkDefaultFont',10))
         self.cmbUpdateCheck.setText = lambda x: self.cmbUpdateCheckVar.set(x)
         self.cmbUpdateCheck.text = lambda : self.cmbUpdateCheckVar.get()
-        self.cmbUpdateCheck.place(relx=0.622, rely=0.425, relwidth=0.358)
+        self.cmbUpdateCheck.place(relx=0.622, rely=0.479, relwidth=0.358)
 
         self.cmbEasyEdaSiteList = ['',]
         self.cmbEasyEdaSiteVar = StringVar(value='')
         self.cmbEasyEdaSite = Combobox(self.top, exportselection=0, state='readonly', textvariable=self.cmbEasyEdaSiteVar, values=self.cmbEasyEdaSiteList, font=('TkDefaultFont',10))
         self.cmbEasyEdaSite.setText = lambda x: self.cmbEasyEdaSiteVar.set(x)
         self.cmbEasyEdaSite.text = lambda : self.cmbEasyEdaSiteVar.get()
-        self.cmbEasyEdaSite.place(relx=0.622, rely=0.292, relwidth=0.358)
+        self.cmbEasyEdaSite.place(relx=0.622, rely=0.251, relwidth=0.358)
 
         self.cmbLanguageList = ['',]
         self.cmbLanguageVar = StringVar(value='')
         self.cmbLanguage = Combobox(self.top, exportselection=0, state='readonly', textvariable=self.cmbLanguageVar, values=self.cmbLanguageList, font=('TkDefaultFont',10))
         self.cmbLanguage.setText = lambda x: self.cmbLanguageVar.set(x)
         self.cmbLanguage.text = lambda : self.cmbLanguageVar.get()
-        self.cmbLanguage.place(relx=0.622, rely=0.159, relwidth=0.358)
+        self.cmbLanguage.place(relx=0.622, rely=0.137, relwidth=0.358)
 
         self.cmdSettingsCancelVar = StringVar(value='Cancel')
         self.style.configure('TcmdSettingsCancel.TButton', font=('TkDefaultFont',10))
         self.cmdSettingsCancel = Button(self.top, text='Cancel', textvariable=self.cmdSettingsCancelVar, command=self.top.destroy, style='TcmdSettingsCancel.TButton')
         self.cmdSettingsCancel.setText = lambda x: self.cmdSettingsCancelVar.set(x)
         self.cmdSettingsCancel.text = lambda : self.cmdSettingsCancelVar.get()
-        self.cmdSettingsCancel.place(relx=0.533, rely=0.85, relwidth=0.34, relheight=0.11)
+        self.cmdSettingsCancel.place(relx=0.533, rely=0.866, relwidth=0.34, relheight=0.094)
 
         self.cmdSettingsOkVar = StringVar(value='Ok')
         self.style.configure('TcmdSettingsOk.TButton', font=('TkDefaultFont',10))
         self.cmdSettingsOk = Button(self.top, text='Ok', textvariable=self.cmdSettingsOkVar, command=self.cmdSettingsOk_Cmd, style='TcmdSettingsOk.TButton')
         self.cmdSettingsOk.setText = lambda x: self.cmdSettingsOkVar.set(x)
         self.cmdSettingsOk.text = lambda : self.cmdSettingsOkVar.get()
-        self.cmdSettingsOk.place(relx=0.071, rely=0.85, relwidth=0.34, relheight=0.11)
+        self.cmdSettingsOk.place(relx=0.071, rely=0.866, relwidth=0.34, relheight=0.094)
 
         self.lblUpdateCheckVar = StringVar(value='Update check (days)')
         self.style.configure('TlblUpdateCheck.TLabel', anchor='e', font=('TkDefaultFont',10))
         self.lblUpdateCheck = Label(self.top, text='Update check (days)', textvariable=self.lblUpdateCheckVar, style='TlblUpdateCheck.TLabel')
         self.lblUpdateCheck.setText = lambda x: self.lblUpdateCheckVar.set(x)
         self.lblUpdateCheck.text = lambda : self.lblUpdateCheckVar.get()
-        self.lblUpdateCheck.place(relx=0.036, rely=0.425, relwidth=0.536, relheight=0.083)
+        self.lblUpdateCheckTooltip = Tooltip(self.lblUpdateCheck, 'Double Click To Check Now')
+        self.lblUpdateCheck.place(relx=0.036, rely=0.479, relwidth=0.536, relheight=0.071)
+        self.lblUpdateCheck.bind('<Double-Button-1>', self.lblUpdateCheck_Double_Button_1)
 
         self.lblEasyEdaSiteVar = StringVar(value='EasyEDA server')
         self.style.configure('TlblEasyEdaSite.TLabel', anchor='e', font=('TkDefaultFont',10))
         self.lblEasyEdaSite = Label(self.top, text='EasyEDA server', textvariable=self.lblEasyEdaSiteVar, style='TlblEasyEdaSite.TLabel')
         self.lblEasyEdaSite.setText = lambda x: self.lblEasyEdaSiteVar.set(x)
         self.lblEasyEdaSite.text = lambda : self.lblEasyEdaSiteVar.get()
-        self.lblEasyEdaSite.place(relx=0.036, rely=0.292, relwidth=0.536, relheight=0.083)
+        self.lblEasyEdaSite.place(relx=0.036, rely=0.251, relwidth=0.536, relheight=0.071)
 
         self.lblLanguageTipsVar = StringVar(value='These settings will take effect after restarting')
         self.style.configure('TlblLanguageTips.TLabel', anchor='w', foreground='#7C7C7C', font=('TkDefaultFont',10))
         self.lblLanguageTips = Label(self.top, text='These settings will take effect after restarting', textvariable=self.lblLanguageTipsVar, style='TlblLanguageTips.TLabel')
         self.lblLanguageTips.setText = lambda x: self.lblLanguageTipsVar.set(x)
         self.lblLanguageTips.text = lambda : self.lblLanguageTipsVar.get()
-        self.lblLanguageTips.place(relx=0.036, rely=0.027, relwidth=0.927, relheight=0.083)
+        self.lblLanguageTips.place(relx=0.036, rely=0.023, relwidth=0.927, relheight=0.071)
 
         self.lblLanguageVar = StringVar(value='Language')
         self.style.configure('TlblLanguage.TLabel', anchor='e', font=('TkDefaultFont',10))
         self.lblLanguage = Label(self.top, text='Language', textvariable=self.lblLanguageVar, style='TlblLanguage.TLabel')
         self.lblLanguage.setText = lambda x: self.lblLanguageVar.set(x)
         self.lblLanguage.text = lambda : self.lblLanguageVar.get()
-        self.lblLanguage.place(relx=0.036, rely=0.159, relwidth=0.536, relheight=0.083)
+        self.lblLanguage.place(relx=0.036, rely=0.137, relwidth=0.536, relheight=0.071)
+
+        self.cmbBackupCountList = ['',]
+        self.cmbBackupCountVar = StringVar(value='')
+        self.cmbBackupCount = Combobox(self.top, exportselection=0, state='readonly', textvariable=self.cmbBackupCountVar, values=self.cmbBackupCountList, font=('TkDefaultFont',10))
+        self.cmbBackupCount.setText = lambda x: self.cmbBackupCountVar.set(x)
+        self.cmbBackupCount.text = lambda : self.cmbBackupCountVar.get()
+        self.cmbBackupCount.place(relx=0.622, rely=0.365, relwidth=0.358)
+
+        self.lblBackupCountVar = StringVar(value='Backup Count')
+        self.style.configure('TlblBackupCount.TLabel', anchor='e', font=('TkDefaultFont',10))
+        self.lblBackupCount = Label(self.top, text='Backup Count', textvariable=self.lblBackupCountVar, style='TlblBackupCount.TLabel')
+        self.lblBackupCount.setText = lambda x: self.lblBackupCountVar.set(x)
+        self.lblBackupCount.text = lambda : self.lblBackupCountVar.get()
+        self.lblBackupCount.place(relx=0.036, rely=0.365, relwidth=0.536, relheight=0.071)
 
         self.lblMcpPortVar = StringVar(value='Port')
         self.style.configure('TlblMcpPort.TLabel', anchor='e', font=('TkDefaultFont',10))
@@ -153,12 +170,6 @@ class SettingsDialog_ui(Frame):
         self.lblMcpPort.text = lambda : self.lblMcpPortVar.get()
         self.lblMcpPort.place(relx=0.018, rely=0.329, relwidth=0.187, relheight=0.342)
 
-        self.txtMcpPortVar = StringVar(value='5390')
-        self.txtMcpPort = Entry(self.frmMcpServer, textvariable=self.txtMcpPortVar, font=('TkDefaultFont',10))
-        self.txtMcpPort.setText = lambda x: self.txtMcpPortVar.set(x)
-        self.txtMcpPort.text = lambda : self.txtMcpPortVar.get()
-        self.txtMcpPort.place(relx=0.222, rely=0.329, relwidth=0.187, relheight=0.384)
-
         self.cmdMcpStartVar = StringVar(value='Start MCP Server')
         self.style.configure('TcmdMcpStart.TButton', font=('TkDefaultFont',10))
         self.cmdMcpStart = Button(self.frmMcpServer, text='Start MCP Server', textvariable=self.cmdMcpStartVar, command=self.cmdMcpStart_Cmd, style='TcmdMcpStart.TButton')
@@ -166,15 +177,23 @@ class SettingsDialog_ui(Frame):
         self.cmdMcpStart.text = lambda : self.cmdMcpStartVar.get()
         self.cmdMcpStart.place(relx=0.48, rely=0.219, relwidth=0.483, relheight=0.562)
 
+        self.txtMcpPortVar = StringVar(value='5390')
+        self.txtMcpPort = Entry(self.frmMcpServer, textvariable=self.txtMcpPortVar, font=('TkDefaultFont',10))
+        self.txtMcpPort.setText = lambda x: self.txtMcpPortVar.set(x)
+        self.txtMcpPort.text = lambda : self.txtMcpPortVar.get()
+        self.txtMcpPort.place(relx=0.222, rely=0.329, relwidth=0.187, relheight=0.384)
+
     def retranslateUi(self):
         self.master.title(_('Settings'))
         self.frmMcpServer.configure(text=_('MCP Server (AI bridge)'))
         self.cmdSettingsCancel.setText(_('Cancel'))
         self.cmdSettingsOk.setText(_('Ok'))
         self.lblUpdateCheck.setText(_('Update check (days)'))
+        self.lblUpdateCheckTooltip.text = _('Double Click To Check Now')
         self.lblEasyEdaSite.setText(_('EasyEDA server'))
         self.lblLanguageTips.setText(_('These settings will take effect after restarting'))
         self.lblLanguage.setText(_('Language'))
+        self.lblBackupCount.setText(_('Backup Count'))
         self.lblMcpPort.setText(_('Port'))
         self.cmdMcpStart.setText(_('Start MCP Server'))
 
@@ -200,13 +219,12 @@ class SettingsDialog(SettingsDialog_ui):
         self.cmbLanguage.current(self.currentLanguageIndex())
         self.cmbEasyEdaSite.configure(values=('Auto', 'CN', 'Global'))
         self.cmbEasyEdaSite.current({'cn':1, 'global':2}.get(app.easyEdaSite.lower(), 0))
+        self.cmbBackupCount.configure(values=('0', '5', '10', '20'))
+        self.cmbBackupCount.current({5:1, 10:2, 20: 3}.get(app.backupCount, 0))
         
         self.cmbUpdateCheck.configure(values=UPDATE_CHECK_DAYS)
-        freq = str(app.checkUpdateFrequency)
-        if freq in UPDATE_CHECK_DAYS:
-            self.cmbUpdateCheck.current(UPDATE_CHECK_DAYS.index(freq))
-        else:
-            self.cmbUpdateCheck.current(0)
+        days = {str_to_int(val): idx for idx, val in enumerate(UPDATE_CHECK_DAYS)}
+        self.cmbUpdateCheck.current(days.get(app.checkUpdateFrequency, 0))
 
         self.txtMcpPort.setText(app.mcpPortVar.get())
 
@@ -277,6 +295,9 @@ class SettingsDialog(SettingsDialog_ui):
         #更新检查频率
         app.checkUpdateFrequency = str_to_int(self.cmbUpdateCheck.text(), 0)
 
+        #备份文件的最大数量
+        app.backupCount = str_to_int(self.cmbBackupCount.text(), 5)
+
         #MCP端口(仅保存配置；服务器由“Start MCP Server”按钮手动启动)
         app.mcpPortVar.set(self.txtMcpPort.text())
         app.saveConfig()
@@ -307,4 +328,77 @@ class SettingsDialog(SettingsDialog_ui):
             pass
         self.top.destroy()
 
+    #现在检查更新
+    def lblUpdateCheck_Double_Button_1(self, event=None):
+        import datetime
+        from utils.version_check import checkUpdate
+
+        app = self.app
+        currVersion = getattr(app, 'version', '') if app else ''
+        if not currVersion:
+            try:
+                from sprintFont import __Version__
+                currVersion = __Version__
+            except Exception:
+                currVersion = '1.0'
+
+        #如果主程序已缓存了检测到的新版本信息，直接打开对话框；否则直接同步联网检查
+        versionJson = getattr(app, 'versionJson', None) if app else None
+        if not (versionJson and isinstance(versionJson, dict) and versionJson.get('lastest')):
+            try:
+                self.top.config(cursor='watch')
+                self.top.update_idletasks()
+                versionJson = checkUpdate(currVersion, '')
+            except Exception:
+                versionJson = None
+            finally:
+                try:
+                    self.top.config(cursor='')
+                except Exception:
+                    pass
+
+        if versionJson:
+            self.showVersionDialog(currVersion, versionJson)
+        else:
+            if app:
+                app.lastCheckUpdate = datetime.datetime.now()
+                app.saveConfig()
+            showinfo(_('info'), _('No new version found'))
+
+    #显示新版本提示对话框并处理用户选择
+    def showVersionDialog(self, currVersion, versionJson):
+        import datetime
+        from utils.version_check import openNewVersionDialog
+
+        app = self.app
+        if app:
+            app.versionJson = versionJson
+
+        #暂时释放本对话框的模态抓取，确保新版本对话框能正常接收点击
+        try:
+            self.top.grab_release()
+        except Exception:
+            pass
+
+        try:
+            ret = openNewVersionDialog(self.top, currVersion, versionJson)
+        finally:
+            try:
+                if self.top.winfo_exists():
+                    self.top.grab_set()
+            except Exception:
+                pass
+
+        if ret == 'skip':
+            if app:
+                app.skipVersion = versionJson.get('lastest', '')
+
+        if app:
+            app.versionJson = {} #双击处理后清空版本字典
+            app.lastCheckUpdate = datetime.datetime.now()
+            app.saveConfig()
+            if hasattr(app, 'statusBarInfoIdx'):
+                app.statusBarInfoIdx = 0
+            if hasattr(app, 'displayInputFileOrStandalone'):
+                app.displayInputFileOrStandalone()
 

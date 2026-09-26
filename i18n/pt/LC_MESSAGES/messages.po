@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-11 14:25-0300\n"
+"POT-Creation-Date: 2026-09-26 08:31-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language-Team: sprintFont <LL@li.org>\n"
@@ -18,242 +18,213 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Generated-By: Babel 2.17.0\n"
 
-#: sprintFont.py:191
+#: sprintFont.py:213
 msgid "Please deselect all items before launching the plugin"
 msgstr "Por favor, desmarque todos os itens antes de iniciar o plugin"
 
-#: sprintFont.py:288
+#: sprintFont.py:310
 msgid "Import all (remove routed ratsnests)"
 msgstr "Importar tudo (remover conexões de roteamento feitas)"
 
-#: sprintFont.py:289
+#: sprintFont.py:311
 msgid "Import all (remove all ratsnests)"
 msgstr "Importar tudo (remover todas as conexões de rede)"
 
-#: sprintFont.py:290
+#: sprintFont.py:312
 msgid "Import all (keep all ratsnests)"
 msgstr "Importar tudo (manter todas as conexões de rede)"
 
-#: sprintFont.py:291
+#: sprintFont.py:313
 msgid "Import auto-routed tracks only"
 msgstr "Importar apenas as trilhas roteadas automaticamente"
 
-#: sprintFont.py:331 sprintFont.py:373
+#: sprintFont.py:353 sprintFont.py:395
 msgid "C1 (Front copper)"
 msgstr "C1 (Cobre superior)"
 
-#: sprintFont.py:331 sprintFont.py:373
+#: sprintFont.py:353 sprintFont.py:395
 msgid "S1 (Front silkscreen)"
 msgstr "S1 (Serigrafia superior)"
 
-#: sprintFont.py:331 sprintFont.py:373
+#: sprintFont.py:353 sprintFont.py:395
 msgid "C2 (Back copper)"
 msgstr "C2 (Cobre inferior)"
 
-#: sprintFont.py:332 sprintFont.py:374
+#: sprintFont.py:354 sprintFont.py:396
 msgid "S2 (Back silkscreen)"
 msgstr "S2 (Serigrafia inferior)"
 
-#: sprintFont.py:332 sprintFont.py:374
+#: sprintFont.py:354 sprintFont.py:396
 msgid "I1 (Inner copper1)"
 msgstr "I1 (Cobre interno 1)"
 
-#: sprintFont.py:332 sprintFont.py:374
+#: sprintFont.py:354 sprintFont.py:396
 msgid "I2 (Inner copper2)"
 msgstr "I2 (Cobre interno 2)"
 
-#: sprintFont.py:332 sprintFont.py:374
+#: sprintFont.py:354 sprintFont.py:396
 msgid "U (Edge.cuts)"
 msgstr "U (Limites da placa)"
 
-#: sprintFont.py:352
+#: sprintFont.py:374
 msgid "Super fine (super slow)"
 msgstr "Super fino (super lento)"
 
-#: sprintFont.py:352
+#: sprintFont.py:374
 msgid "Fine (slow)"
 msgstr "Fino (lento)"
 
-#: sprintFont.py:352 sprintFont.py:449 sprintFont.py:454
+#: sprintFont.py:374 sprintFont.py:471 sprintFont.py:476
 msgid "Normal"
 msgstr "Normal"
 
-#: sprintFont.py:352
+#: sprintFont.py:374
 msgid "Rough"
 msgstr "Rústico"
 
-#: sprintFont.py:352
+#: sprintFont.py:374
 msgid "Super Rough"
 msgstr "Muito rústico"
 
-#: sprintFont.py:373
+#: sprintFont.py:395
 msgid "All layers"
 msgstr "Todas as camadas"
 
-#: sprintFont.py:377 ui/sprint_font_ui.py:1599
+#: sprintFont.py:399 ui/sprint_font_ui.py:1540
 msgid "Format"
 msgstr "Formato"
 
-#: sprintFont.py:378
+#: sprintFont.py:400
 msgid "Kicad PCB File"
 msgstr "Arquivo PCB do KiCad"
 
-#: sprintFont.py:378
+#: sprintFont.py:400
 msgid "EasyEDA JSON File"
 msgstr "Arquivo JSON do EasyEDA"
 
-#: sprintFont.py:379
+#: sprintFont.py:401
 msgid "OpenSCAD File"
 msgstr "Arquivo OpenSCAD"
 
-#: sprintFont.py:379 sprintFont.py:710
+#: sprintFont.py:401 sprintFont.py:923
 msgid "Layered OpenSCAD File"
 msgstr "Arquivo OpenSCAD em camadas"
 
-#: sprintFont.py:380
+#: sprintFont.py:402
 msgid "SVG File"
 msgstr "Arquivo SVG"
 
-#: sprintFont.py:380
+#: sprintFont.py:402
 msgid "DXF File"
 msgstr "Arquivo DXF"
 
-#: sprintFont.py:386
+#: sprintFont.py:408
 msgid "SVG"
 msgstr "SVG"
 
-#: sprintFont.py:386
+#: sprintFont.py:408
 msgid "Qrcode"
 msgstr "Código QR"
 
-#: sprintFont.py:391 sprintFont.py:439
+#: sprintFont.py:413 sprintFont.py:461
 msgid "Track"
 msgstr "Trilha"
 
-#: sprintFont.py:391
+#: sprintFont.py:413
 msgid "Polygon"
 msgstr "Polígono"
 
-#: sprintFont.py:415
+#: sprintFont.py:437
 msgid "PTH pad"
 msgstr "PTH pad"
 
-#: sprintFont.py:415 sprintFont.py:439
+#: sprintFont.py:437 sprintFont.py:461
 msgid "SMD pad"
 msgstr "SMD pad"
 
-#: sprintFont.py:415
+#: sprintFont.py:437
 msgid "PTH/SMD"
 msgstr "PTH/SMD"
 
-#: sprintFont.py:420
+#: sprintFont.py:442
 msgid "Tangent"
 msgstr "Tangente"
 
-#: sprintFont.py:420
+#: sprintFont.py:442
 msgid "Three-point"
 msgstr "Três pontos"
 
-#: sprintFont.py:420
+#: sprintFont.py:442
 msgid "Bezier"
 msgstr "Bézier"
 
-#: sprintFont.py:434
+#: sprintFont.py:456
 msgid "Single-sided"
 msgstr "Unilateral"
 
-#: sprintFont.py:434
+#: sprintFont.py:456
 msgid "Double-sided"
 msgstr "Bilateral"
 
-#: sprintFont.py:439 ui/sprint_font_ui.py:1577
+#: sprintFont.py:461 ui/sprint_font_ui.py:1518
 msgid "Text"
 msgstr "Texto"
 
-#: sprintFont.py:439
+#: sprintFont.py:461
 msgid "Pad"
 msgstr "Pad"
 
-#: sprintFont.py:449
+#: sprintFont.py:471
 msgid "Thin"
 msgstr "Fino"
 
-#: sprintFont.py:449
+#: sprintFont.py:471
 msgid "Bold"
 msgstr "Grosso"
 
-#: sprintFont.py:454
+#: sprintFont.py:476
 msgid "Narrow"
 msgstr "Estreito"
 
-#: sprintFont.py:454
+#: sprintFont.py:476
 msgid "Wide"
 msgstr "Largo"
 
-#: sprintFont.py:473
+#: sprintFont.py:495
 msgid "Round"
 msgstr "Redondo"
 
-#: sprintFont.py:473
+#: sprintFont.py:495
 msgid "Octagon"
 msgstr "Octógono"
 
-#: sprintFont.py:473
+#: sprintFont.py:495
 msgid "Square"
 msgstr "Quadrado"
 
-#: sprintFont.py:474
+#: sprintFont.py:496
 msgid "Round, horizontal"
 msgstr "Redondo, horizontal"
 
-#: sprintFont.py:474
+#: sprintFont.py:496
 msgid "Octagon, horizontal"
 msgstr "Octógono, horizontal"
 
-#: sprintFont.py:474
+#: sprintFont.py:496
 msgid "Rectangle, horizontal"
 msgstr "Retângulo, horizontal"
 
-#: sprintFont.py:475
+#: sprintFont.py:497
 msgid "Round, vertical"
 msgstr "Redondo, vertical"
 
-#: sprintFont.py:475
+#: sprintFont.py:497
 msgid "Octagon, vertical"
 msgstr "Octógono, vertical"
 
-#: sprintFont.py:475
+#: sprintFont.py:497
 msgid "Rectangle, vertical"
 msgstr "Retângulo, vertical"
-
-#: sprintFont.py:514
-msgid "Kicad footprint"
-msgstr "Arquivo de pegada do Kicad"
-
-#: sprintFont.py:515
-msgid "easyEDA footprint"
-msgstr "Arquivo de pegada do EasyEDA"
-
-#: sprintFont.py:515 sprintFont.py:527 sprintFont.py:544 sprintFont.py:550
-#: sprintFont.py:559 sprintFont.py:856
-msgid "All files"
-msgstr "Todos os arquivos"
-
-#: sprintFont.py:526
-msgid "All supported files"
-msgstr "Todos os arquivos suportados"
-
-#: sprintFont.py:544
-msgid "SVG files"
-msgstr "Arquivos do SVG"
-
-#: sprintFont.py:550
-msgid "Specctra DSN files"
-msgstr "Arquivos DSN de roteamento automático"
-
-#: sprintFont.py:559
-msgid "Specctra session files"
-msgstr "Arquivos de sessão do Specctra"
 
 #: app/autorouter_handler.py:26 app/autorouter_handler.py:34
 #: app/autorouter_handler.py:43 app/autorouter_handler.py:45
@@ -261,27 +232,84 @@ msgstr "Arquivos de sessão do Specctra"
 #: app/pcb_enhancements.py:40 app/pcb_enhancements.py:50
 #: app/pcb_enhancements.py:53 app/pcb_enhancements.py:203
 #: app/pcb_enhancements.py:221 app/pcb_enhancements.py:224
-#: app/pcb_enhancements.py:242 sprintFont.py:615 sprintFont.py:634
-#: sprintFont.py:636 sprintFont.py:670 sprintFont.py:673 sprintFont.py:675
-#: sprintFont.py:694 sprintFont.py:697 sprintFont.py:719 sprintFont.py:724
-#: sprintFont.py:726 sprintFont.py:746 sprintFont.py:755 sprintFont.py:768
-#: sprintFont.py:772 sprintFont.py:784 sprintFont.py:791 sprintFont.py:864
-#: sprintFont.py:943 sprintFont.py:993 sprintFont.py:1001 sprintFont.py:1065
-#: sprintFont.py:1069 sprintFont.py:1076 sprintFont.py:1080 sprintFont.py:1119
-#: sprintFont.py:1130 sprintFont.py:1152 sprintFont.py:1267 sprintFont.py:1271
-#: sprintFont.py:1276 sprintFont.py:1279 sprint_struct/wire_pair_tuner.py:92
+#: app/pcb_enhancements.py:242 app/settings_dialog.py:366 sprintFont.py:594
+#: sprintFont.py:621 sprintFont.py:681 sprintFont.py:716 sprintFont.py:828
+#: sprintFont.py:847 sprintFont.py:849 sprintFont.py:883 sprintFont.py:886
+#: sprintFont.py:888 sprintFont.py:907 sprintFont.py:910 sprintFont.py:930
+#: sprintFont.py:939 sprintFont.py:941 sprintFont.py:961 sprintFont.py:969
+#: sprintFont.py:974 sprintFont.py:987 sprintFont.py:991 sprintFont.py:1003
+#: sprintFont.py:1012 sprintFont.py:1083 sprintFont.py:1155 sprintFont.py:1164
+#: sprintFont.py:1214 sprintFont.py:1222 sprintFont.py:1286 sprintFont.py:1290
+#: sprintFont.py:1297 sprintFont.py:1301 sprintFont.py:1340 sprintFont.py:1351
+#: sprintFont.py:1373 sprintFont.py:1488 sprintFont.py:1492 sprintFont.py:1497
+#: sprintFont.py:1500 sprint_struct/wire_pair_tuner.py:92
 msgid "info"
 msgstr "Informação"
 
-#: sprintFont.py:615
+#: sprintFont.py:594
+#, python-brace-format
+msgid ""
+"Failed to parse input file:\n"
+"{}\n"
+"\n"
+"Only newly added elements can be transferred back to Sprint-Layout."
+msgstr ""
+"Falha ao processar arquivo de entrada:\n"
+"{}\n"
+"\n"
+"Apenas novos elementos podem ser transferidos de volta ao Sprint-Layout."
+
+#: app/settings_dialog.py:187 sprintFont.py:642
+msgid "Settings"
+msgstr "Configurações"
+
+#: sprintFont.py:681
+msgid "MCP board can only be applied when launched from Sprint-Layout"
+msgstr ""
+"A placa MCP só pode ser aplicada quando iniciada a partir do Sprint-Layout"
+
+#: sprintFont.py:716
+msgid "No elements to transfer to Sprint-Layout"
+msgstr "Nenhum elemento para transferir para o Sprint-Layout"
+
+#: sprintFont.py:727
+msgid "Kicad footprint"
+msgstr "Arquivo de pegada do Kicad"
+
+#: sprintFont.py:728
+msgid "easyEDA footprint"
+msgstr "Arquivo de pegada do EasyEDA"
+
+#: sprintFont.py:728 sprintFont.py:740 sprintFont.py:757 sprintFont.py:763
+#: sprintFont.py:772 sprintFont.py:1075
+msgid "All files"
+msgstr "Todos os arquivos"
+
+#: sprintFont.py:739
+msgid "All supported files"
+msgstr "Todos os arquivos suportados"
+
+#: sprintFont.py:757
+msgid "SVG files"
+msgstr "Arquivos do SVG"
+
+#: sprintFont.py:763
+msgid "Specctra DSN files"
+msgstr "Arquivos DSN de roteamento automático"
+
+#: sprintFont.py:772
+msgid "Specctra session files"
+msgstr "Arquivos de sessão do Specctra"
+
+#: sprintFont.py:828
 msgid "Text is empty"
 msgstr "Texto vazio"
 
-#: sprintFont.py:634
+#: sprintFont.py:847
 msgid "Failed to generate text"
 msgstr "Falha ao gerar o texto"
 
-#: sprintFont.py:673
+#: sprintFont.py:886
 msgid ""
 "Failed to parse content\n"
 "Maybe Id error or Internet disconnected?"
@@ -289,51 +317,21 @@ msgstr ""
 "Falha ao analisar o conteúdo\n"
 "Talvez erro de ID ou desconexão de rede?"
 
-#: sprintFont.py:675
+#: sprintFont.py:888
 msgid "Failed to parse file content"
 msgstr "Falha ao analisar o conteúdo do arquivo"
 
-#: sprintFont.py:694 sprintFont.py:746 sprintFont.py:784
+#: sprintFont.py:907 sprintFont.py:961 sprintFont.py:1003
 msgid "Input is empty"
 msgstr "Entrada vazia"
 
-#: sprintFont.py:697 sprintFont.py:719
+#: sprintFont.py:910 sprintFont.py:930
 msgid "Cannot detect export type. Please add a file extension"
 msgstr ""
 "Não foi possível detectar o tipo de exportação. Adicione uma extensão de "
 "arquivo"
 
-#: sprintFont.py:726
-msgid "Export file successfully"
-msgstr "Arquivo exportado com sucesso"
-
-#: app/autorouter_handler.py:26 app/autorouter_handler.py:58
-#: app/footprint_svg_handler.py:51 sprintFont.py:755 sprintFont.py:993
-msgid "The file format is not supported"
-msgstr "Este formato de arquivo não é suportado"
-
-#: sprintFont.py:772
-msgid "Convert svg image failed"
-msgstr "Falha ao converter imagem SVG"
-
-#: sprintFont.py:791
-#, python-brace-format
-msgid ""
-"File does not exist\n"
-"{}"
-msgstr ""
-"Arquivo não encontrado\n"
-"{}"
-
-#: sprintFont.py:856
-msgid "Save to a text file"
-msgstr "Salvar como arquivo de texto"
-
-#: sprintFont.py:856
-msgid "Text files"
-msgstr "Arquivos de texto"
-
-#: sprintFont.py:864
+#: sprintFont.py:939 sprintFont.py:1083
 #, python-brace-format
 msgid ""
 "Failed to save file.\n"
@@ -342,39 +340,69 @@ msgstr ""
 "Falha ao salvar o arquivo.\n"
 "{}"
 
-#: sprintFont.py:892
+#: sprintFont.py:941
+msgid "Export file successfully"
+msgstr "Arquivo exportado com sucesso"
+
+#: app/autorouter_handler.py:26 app/autorouter_handler.py:58
+#: app/footprint_svg_handler.py:54 sprintFont.py:974 sprintFont.py:1214
+msgid "The file format is not supported"
+msgstr "Este formato de arquivo não é suportado"
+
+#: sprintFont.py:991
+msgid "Convert svg image failed"
+msgstr "Falha ao converter imagem SVG"
+
+#: sprintFont.py:1012
+#, python-brace-format
+msgid ""
+"File does not exist\n"
+"{}"
+msgstr ""
+"Arquivo não encontrado\n"
+"{}"
+
+#: sprintFont.py:1075
+msgid "Save to a text file"
+msgstr "Salvar como arquivo de texto"
+
+#: sprintFont.py:1075
+msgid "Text files"
+msgstr "Arquivos de texto"
+
+#: sprintFont.py:1111
 msgid "  New version found, double-click to show details"
 msgstr "  Nova versão encontrada, clique duas vezes para ver os detalhes"
 
-#: sprintFont.py:900
+#: sprintFont.py:1119
 msgid "Item"
 msgstr "Item"
 
-#: sprintFont.py:901
+#: sprintFont.py:1120
 msgid "Value"
 msgstr "Valor"
 
-#: sprintFont.py:903 sprintFont.py:925
+#: sprintFont.py:1122 sprintFont.py:1144
 msgid "Track width"
 msgstr "Largura da trilha"
 
-#: sprintFont.py:904 sprintFont.py:927
+#: sprintFont.py:1123 sprintFont.py:1146
 msgid "Via diameter"
 msgstr "Diâmetro do via"
 
-#: sprintFont.py:905 sprintFont.py:929
+#: sprintFont.py:1124 sprintFont.py:1148
 msgid "Via drill"
 msgstr "Furação do via"
 
-#: sprintFont.py:906 sprintFont.py:931
+#: sprintFont.py:1125 sprintFont.py:1150
 msgid "Clearance"
 msgstr "Espaçamento mínimo da trilha"
 
-#: sprintFont.py:907 sprintFont.py:933
+#: sprintFont.py:1126 sprintFont.py:1152
 msgid "Smd-Smd Clearance"
 msgstr "Espaçamento mínimo entre SMDs"
 
-#: sprintFont.py:921
+#: sprintFont.py:1140
 #, python-brace-format
 msgid ""
 "\n"
@@ -385,44 +413,48 @@ msgstr ""
 "Por favor, insira um novo valor para o parâmetro '{}'\n"
 "A unidade é mm\n"
 
-#: sprintFont.py:923
+#: sprintFont.py:1142
 msgid "Edit parameter"
 msgstr "Editar parâmetro"
 
-#: sprintFont.py:943
+#: sprintFont.py:1155
+msgid "Value must be no less than 0.01"
+msgstr "O valor deve ser no mínimo 0.01"
+
+#: sprintFont.py:1164
 msgid "DSN file is empty"
 msgstr "Arquivo DSN vazio"
 
-#: sprintFont.py:1009
+#: sprintFont.py:1230
 msgid "whole board"
 msgstr "placa inteira"
 
-#: sprintFont.py:1009
+#: sprintFont.py:1230
 msgid "partial"
 msgstr "parcial"
 
-#: sprintFont.py:1010
+#: sprintFont.py:1231
 #, python-brace-format
 msgid "  In [{}] : {}"
 msgstr "  Em [{}] : {}"
 
-#: sprintFont.py:1012
+#: sprintFont.py:1233
 msgid "  Standalone mode"
 msgstr "  Modo independente"
 
-#: sprintFont.py:1024
+#: sprintFont.py:1245
 msgid "  Releases: "
 msgstr "  Versões: "
 
-#: sprintFont.py:1026
+#: sprintFont.py:1247
 msgid "  Report bugs: "
 msgstr "  Relatar bugs: "
 
-#: sprintFont.py:1069
+#: sprintFont.py:1290
 msgid "No components on the board"
 msgstr "Nenhum componente na placa"
 
-#: sprintFont.py:1076
+#: sprintFont.py:1297
 #, python-brace-format
 msgid ""
 "Error parsing input file:\n"
@@ -431,33 +463,33 @@ msgstr ""
 "Erro ao analisar o arquivo de entrada:\n"
 "{}"
 
-#: sprintFont.py:1080
+#: sprintFont.py:1301
 msgid "Failed to parse input file"
 msgstr "Falha ao analisar o arquivo de entrada"
 
-#: sprintFont.py:1119 sprintFont.py:1130
+#: sprintFont.py:1340 sprintFont.py:1351
 msgid "Please click the Adjust button first to match the trace length"
 msgstr ""
 "Por favor, clique primeiro no botão Ajustar para corresponder ao comprimento"
 " do traço"
 
-#: sprintFont.py:1152
+#: sprintFont.py:1373
 msgid "At least two traces must be selected"
 msgstr "Pelo menos duas trilhas devem ser selecionadas"
 
-#: sprintFont.py:1267
+#: sprintFont.py:1488
 msgid "At least one override (Then) entry must be enabled."
 msgstr "Pelo menos uma entrada Override (Then) deve estar ativa."
 
-#: sprintFont.py:1271
+#: sprintFont.py:1492
 msgid "Enable at least one search condition (If)."
 msgstr "Ative pelo menos uma condição de busca (If)."
 
-#: sprintFont.py:1276
+#: sprintFont.py:1497
 msgid "No elements were modified."
 msgstr "Nenhum elemento foi modificado."
 
-#: sprintFont.py:1279
+#: sprintFont.py:1500
 #, python-brace-format
 msgid "Found and successfully modified {} element(s)."
 msgstr "{} elemento(s) encontrado(s) e modificado(s) com sucesso."
@@ -469,6 +501,48 @@ msgstr "Erro desconhecido"
 #: app/autorouter_handler.py:43
 msgid "Export Specctra DSN file successfully"
 msgstr "Arquivo DSN de roteamento automático exportado com sucesso"
+
+#: app/font_operations.py:99
+msgid "No outline generated from the text"
+msgstr "Nenhum contorno gerado a partir do texto"
+
+#: app/mcp_status_window.py:21
+msgid "MCP Server"
+msgstr "Servidor MCP"
+
+#: app/mcp_status_window.py:53
+msgid "Waiting for MCP server to start..."
+msgstr "Aguardando o servidor MCP iniciar..."
+
+#: app/mcp_status_window.py:72
+msgid "Click to copy to clipboard"
+msgstr "Clique para copiar para a área de transferência"
+
+#: app/mcp_status_window.py:74 app/mcp_status_window.py:141
+#: app/settings_dialog.py:189 sprint_struct/wire_pair_tuner.py:73
+#: ui/sprint_font_ui.py:1517 ui/sprint_font_ui.py:1530
+#: ui/sprint_font_ui.py:1535 ui/sprint_font_ui.py:1542
+#: ui/sprint_font_ui.py:1554 ui/sprint_font_ui.py:1564
+#: ui/sprint_font_ui.py:1574 ui/sprint_font_ui.py:1583
+#: ui/sprint_font_ui.py:1642
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: app/mcp_status_window.py:76
+msgid "Accept"
+msgstr "Aceitar"
+
+#: app/mcp_status_window.py:83
+msgid "Standalone mode: use the saveTextIoFile tool to save the board"
+msgstr "Modo autônomo: use a ferramenta saveTextIoFile para salvar a placa"
+
+#: app/mcp_status_window.py:90
+msgid "MCP server disabled"
+msgstr "Servidor MCP desativado"
+
+#: app/mcp_status_window.py:141
+msgid "Discard all MCP changes and exit?"
+msgstr "Descartar todas as alterações do MCP e sair?"
 
 #: app/pcb_enhancements.py:40
 msgid "Wrong parameter value"
@@ -505,7 +579,57 @@ msgstr "Nenhum pad em forma de lágrima encontrado"
 msgid "No suitable track found"
 msgstr "Nenhuma trilha adequada encontrada"
 
-#: conversion/kicad_to_sprint.py:200
+#: app/settings_dialog.py:34
+msgid "Never"
+msgstr "Nunca"
+
+#: app/settings_dialog.py:188
+msgid "MCP Server (AI bridge)"
+msgstr "Servidor MCP (ponte de IA)"
+
+#: app/settings_dialog.py:190 ui/sprint_font_ui.py:1516
+#: ui/sprint_font_ui.py:1529 ui/sprint_font_ui.py:1543
+#: ui/sprint_font_ui.py:1584 ui/sprint_font_ui.py:1643
+msgid "Ok"
+msgstr "Ok"
+
+#: app/settings_dialog.py:191
+msgid "Update check (days)"
+msgstr "Verificar atualizações (dias)"
+
+#: app/settings_dialog.py:192
+msgid "Double Click To Check Now"
+msgstr "Clique duplo para verificar agora"
+
+#: app/settings_dialog.py:193
+msgid "EasyEDA server"
+msgstr "Servidor EasyEDA"
+
+#: app/settings_dialog.py:194
+msgid "These settings will take effect after restarting"
+msgstr "Estas configurações terão efeito após reiniciar"
+
+#: app/settings_dialog.py:195
+msgid "Language"
+msgstr "Idioma"
+
+#: app/settings_dialog.py:196
+msgid "Backup Count"
+msgstr "Quantidade de backups"
+
+#: app/settings_dialog.py:197
+msgid "Port"
+msgstr "Porta"
+
+#: app/settings_dialog.py:198
+msgid "Start MCP Server"
+msgstr "Iniciar Servidor MCP"
+
+#: app/settings_dialog.py:366
+msgid "No new version found"
+msgstr "Nenhuma nova versão encontrada"
+
+#: conversion/kicad_to_sprint.py:202
 msgid "The file contains no components."
 msgstr "O arquivo não contém componentes."
 
@@ -518,12 +642,12 @@ msgstr "O ID está vazio."
 msgid "open failed: {}, {}"
 msgstr "Falha ao abrir: {}, {}"
 
-#: conversion/lceda_to_sprint.py:120 conversion/lceda_to_sprint.py:185
-#: conversion/lceda_to_sprint.py:202
+#: conversion/lceda_to_sprint.py:120 conversion/lceda_to_sprint.py:187
+#: conversion/lceda_to_sprint.py:204
 msgid "The content is not a valid json format"
 msgstr "O conteúdo não é um formato JSON válido"
 
-#: conversion/lceda_to_sprint.py:202
+#: conversion/lceda_to_sprint.py:204
 #, python-brace-format
 msgid ""
 "Error from easyEDA:\n"
@@ -616,14 +740,6 @@ msgstr "Amplitude-"
 msgid "Confirm"
 msgstr "Confirmar"
 
-#: sprint_struct/wire_pair_tuner.py:73 ui/sprint_font_ui.py:1576
-#: ui/sprint_font_ui.py:1589 ui/sprint_font_ui.py:1594
-#: ui/sprint_font_ui.py:1601 ui/sprint_font_ui.py:1613
-#: ui/sprint_font_ui.py:1623 ui/sprint_font_ui.py:1633
-#: ui/sprint_font_ui.py:1642 ui/sprint_font_ui.py:1701
-msgid "Cancel"
-msgstr "Cancelar"
-
 #: sprint_struct/wire_pair_tuner.py:80
 msgid ""
 "Click the short track at the desired location to add a serpentine trace for "
@@ -658,97 +774,91 @@ msgstr "Comprimento da trilha: {} mm, desvio: {} mm"
 msgid "The difference is smaller than the minimum length of a ridge"
 msgstr "A diferença é menor que o comprimento mínimo de uma crista"
 
-#: ui/sprint_font_ui.py:1567
+#: ui/sprint_font_ui.py:1508
 msgid "sprintFont"
 msgstr "sprintFont"
 
-#: ui/sprint_font_ui.py:1568
+#: ui/sprint_font_ui.py:1509
 msgid "☆"
 msgstr "☆"
 
-#: ui/sprint_font_ui.py:1569
+#: ui/sprint_font_ui.py:1510
 msgid "@"
 msgstr "@"
 
-#: ui/sprint_font_ui.py:1570
+#: ui/sprint_font_ui.py:1511
 msgid "Recommend fonts: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola"
 msgstr "Fontes recomendadas: Segoe UI Symbol, DejaVu Sans, Noto Sans, Symbola"
 
-#: ui/sprint_font_ui.py:1571
+#: ui/sprint_font_ui.py:1512
 msgid "Inverted Background"
 msgstr "Fundo invertido"
 
-#: ui/sprint_font_ui.py:1572
+#: ui/sprint_font_ui.py:1513
 msgid "Padding"
 msgstr "Preenchimento"
 
-#: ui/sprint_font_ui.py:1573
+#: ui/sprint_font_ui.py:1514
 msgid "Cap left"
 msgstr "Forma à esquerda"
 
-#: ui/sprint_font_ui.py:1574
+#: ui/sprint_font_ui.py:1515
 msgid "Cap right"
 msgstr "Forma à direita"
 
-#: ui/sprint_font_ui.py:1575 ui/sprint_font_ui.py:1588
-#: ui/sprint_font_ui.py:1602 ui/sprint_font_ui.py:1643
-#: ui/sprint_font_ui.py:1702
-msgid "Ok"
-msgstr "Ok"
-
-#: ui/sprint_font_ui.py:1578 ui/sprint_font_ui.py:1598
-#: ui/sprint_font_ui.py:1607 ui/sprint_font_ui.py:1656
-#: ui/sprint_font_ui.py:1672 ui/sprint_font_ui.py:1683
-#: ui/sprint_font_ui.py:1699
+#: ui/sprint_font_ui.py:1519 ui/sprint_font_ui.py:1539
+#: ui/sprint_font_ui.py:1548 ui/sprint_font_ui.py:1597
+#: ui/sprint_font_ui.py:1613 ui/sprint_font_ui.py:1624
+#: ui/sprint_font_ui.py:1640
 msgid "Layer"
 msgstr "Camada"
 
-#: ui/sprint_font_ui.py:1579 ui/sprint_font_ui.py:1606
+#: ui/sprint_font_ui.py:1520 ui/sprint_font_ui.py:1547
 msgid "Smooth"
 msgstr "Suave"
 
-#: ui/sprint_font_ui.py:1580
+#: ui/sprint_font_ui.py:1521
 msgid "Word spacing (mm)"
 msgstr "Espaçamento entre palavras (mm)"
 
-#: ui/sprint_font_ui.py:1581
+#: ui/sprint_font_ui.py:1522
 msgid "Line spacing (mm)"
 msgstr "Espaçamento entre linhas (mm)"
 
-#: ui/sprint_font_ui.py:1582 ui/sprint_font_ui.py:1592
-#: ui/sprint_font_ui.py:1608 ui/sprint_font_ui.py:1618
-#: ui/sprint_font_ui.py:1636 ui/sprint_font_ui.py:1648
-#: ui/sprint_font_ui.py:1706
+#: ui/sprint_font_ui.py:1523 ui/sprint_font_ui.py:1533
+#: ui/sprint_font_ui.py:1549 ui/sprint_font_ui.py:1559
+#: ui/sprint_font_ui.py:1577 ui/sprint_font_ui.py:1589
+#: ui/sprint_font_ui.py:1647
 msgid "Save as"
 msgstr "Salvar como"
 
-#: ui/sprint_font_ui.py:1583
+#: ui/sprint_font_ui.py:1524
 msgid "Font"
 msgstr "Fonte"
 
-#: ui/sprint_font_ui.py:1584 ui/sprint_font_ui.py:1604
+#: ui/sprint_font_ui.py:1525 ui/sprint_font_ui.py:1545
 msgid "Height (mm)"
 msgstr "Altura (mm)"
 
-#: ui/sprint_font_ui.py:1585
+#: ui/sprint_font_ui.py:1526
 msgid " Font "
 msgstr " Fonte "
 
-#: ui/sprint_font_ui.py:1586
+#: ui/sprint_font_ui.py:1527
 msgid "Import text"
 msgstr "Importar texto"
 
-#: ui/sprint_font_ui.py:1587 ui/sprint_font_ui.py:1596
-#: ui/sprint_font_ui.py:1603 ui/sprint_font_ui.py:1612
-#: ui/sprint_font_ui.py:1615
+#: ui/sprint_font_ui.py:1528 ui/sprint_font_ui.py:1537
+#: ui/sprint_font_ui.py:1544 ui/sprint_font_ui.py:1553
+#: ui/sprint_font_ui.py:1556
 msgid "..."
 msgstr "..."
 
-#: ui/sprint_font_ui.py:1590
+#: ui/sprint_font_ui.py:1531
 msgid "Input"
 msgstr "Entrada"
 
-#: ui/sprint_font_ui.py:1591
+#: ui/sprint_font_ui.py:1532
 msgid ""
 "Currently supports:\n"
 "1. Kicad footprint Library : *.kicad_mod\n"
@@ -758,27 +868,27 @@ msgstr ""
 "1. Biblioteca de encapsulamento Kicad: *.kicad_mod\n"
 "2. ID de componente EasyEDA: C + número (C pode ser omitido)"
 
-#: ui/sprint_font_ui.py:1593
+#: ui/sprint_font_ui.py:1534
 msgid " Footprint "
 msgstr " Footprint "
 
-#: ui/sprint_font_ui.py:1595
+#: ui/sprint_font_ui.py:1536
 msgid "Export"
 msgstr "Exportar"
 
-#: ui/sprint_font_ui.py:1597
+#: ui/sprint_font_ui.py:1538
 msgid "Filename"
 msgstr "Arquivo"
 
-#: ui/sprint_font_ui.py:1600
+#: ui/sprint_font_ui.py:1541
 msgid " Export "
 msgstr " Exportar "
 
-#: ui/sprint_font_ui.py:1605
+#: ui/sprint_font_ui.py:1546
 msgid "Mode"
 msgstr "Modo"
 
-#: ui/sprint_font_ui.py:1609
+#: ui/sprint_font_ui.py:1550
 msgid ""
 "Note:\n"
 "Only for simple images, may fail to convert complex images"
@@ -786,27 +896,27 @@ msgstr ""
 "Nota:\n"
 "Apenas para imagens simples, pode falhar ao converter imagens complexas"
 
-#: ui/sprint_font_ui.py:1610
+#: ui/sprint_font_ui.py:1551
 msgid " SVG/Qrcode "
 msgstr " SVG/CódigoQR "
 
-#: ui/sprint_font_ui.py:1611
+#: ui/sprint_font_ui.py:1552
 msgid "Import SES"
 msgstr "Importar SES"
 
-#: ui/sprint_font_ui.py:1614
+#: ui/sprint_font_ui.py:1555
 msgid "Export DSN"
 msgstr "Exportar DSN"
 
-#: ui/sprint_font_ui.py:1616
+#: ui/sprint_font_ui.py:1557
 msgid "Rules"
 msgstr "Regras"
 
-#: ui/sprint_font_ui.py:1617
+#: ui/sprint_font_ui.py:1558
 msgid "Ses file"
 msgstr "Ses arquivo"
 
-#: ui/sprint_font_ui.py:1619
+#: ui/sprint_font_ui.py:1560
 msgid ""
 "Open the exported DSN file with Freerouting for autorouting\n"
 "Currently only supports all components placed on the front side"
@@ -814,27 +924,27 @@ msgstr ""
 "Abra o arquivo DSN exportado com o Freerouting para roteamento automático\n"
 "Atualmente, suporta apenas componentes colocados no lado da frente"
 
-#: ui/sprint_font_ui.py:1620
+#: ui/sprint_font_ui.py:1561
 msgid "Dsn file"
 msgstr "Dsn arquivo"
 
-#: ui/sprint_font_ui.py:1621
+#: ui/sprint_font_ui.py:1562
 msgid " AutoRouter "
 msgstr " Roteador "
 
-#: ui/sprint_font_ui.py:1622
+#: ui/sprint_font_ui.py:1563
 msgid "Remove"
 msgstr "Remover"
 
-#: ui/sprint_font_ui.py:1624
+#: ui/sprint_font_ui.py:1565
 msgid "Add"
 msgstr "Adicionar"
 
-#: ui/sprint_font_ui.py:1625
+#: ui/sprint_font_ui.py:1566
 msgid "Pad type"
 msgstr "Tipo de pad"
 
-#: ui/sprint_font_ui.py:1626
+#: ui/sprint_font_ui.py:1567
 msgid ""
 "Apply to all pads when deselecting all, otherwise apply to selected pads AND"
 " tracks only"
@@ -842,43 +952,43 @@ msgstr ""
 "Aplicar a todos os pads ao desmarcar todos, caso contrário, aplicar apenas "
 "aos pads e trilhas selecionados"
 
-#: ui/sprint_font_ui.py:1627
+#: ui/sprint_font_ui.py:1568
 msgid "Horizontal percent"
 msgstr "Percentual horizontal"
 
-#: ui/sprint_font_ui.py:1628 ui/sprint_font_ui.py:1638
+#: ui/sprint_font_ui.py:1569 ui/sprint_font_ui.py:1579
 msgid "Number of segments"
 msgstr "Número de segmentos"
 
-#: ui/sprint_font_ui.py:1629
+#: ui/sprint_font_ui.py:1570
 msgid "Vertical percent"
 msgstr "Percentual vertical"
 
-#: ui/sprint_font_ui.py:1630
+#: ui/sprint_font_ui.py:1571
 msgid " Teardrop "
 msgstr "Pista lágrima"
 
-#: ui/sprint_font_ui.py:1631
+#: ui/sprint_font_ui.py:1572
 msgid "Merge Connected Tracks"
 msgstr "Unir trilhas conectadas"
 
-#: ui/sprint_font_ui.py:1632
+#: ui/sprint_font_ui.py:1573
 msgid "Convert"
 msgstr "Converter"
 
-#: ui/sprint_font_ui.py:1634 ui/sprint_font_ui.py:1650
+#: ui/sprint_font_ui.py:1575 ui/sprint_font_ui.py:1591
 msgid "Type"
 msgstr "Tipo"
 
-#: ui/sprint_font_ui.py:1635
+#: ui/sprint_font_ui.py:1576
 msgid "small d(mm)"
 msgstr "pequeno d(mm)"
 
-#: ui/sprint_font_ui.py:1637
+#: ui/sprint_font_ui.py:1578
 msgid "big d(mm)"
 msgstr "grande d(mm)"
 
-#: ui/sprint_font_ui.py:1639
+#: ui/sprint_font_ui.py:1580
 msgid ""
 "Apply to all tracks when deselecting all, otherwise apply to selected tracks"
 " only"
@@ -886,101 +996,101 @@ msgstr ""
 "Aplicar a todas as trilhas ao desmarcar todas, caso contrário, aplicar "
 "apenas às trilhas selecionadas"
 
-#: ui/sprint_font_ui.py:1640
+#: ui/sprint_font_ui.py:1581
 msgid " RoundedTrack "
 msgstr " Trilha curva "
 
-#: ui/sprint_font_ui.py:1641
+#: ui/sprint_font_ui.py:1582
 msgid "Adjust"
 msgstr "Ajustar"
 
-#: ui/sprint_font_ui.py:1644
+#: ui/sprint_font_ui.py:1585
 msgid "Target skew"
 msgstr "Desvio Alvo"
 
-#: ui/sprint_font_ui.py:1645
+#: ui/sprint_font_ui.py:1586
 msgid "Spacing (s)"
 msgstr "Espaçamento (s)"
 
-#: ui/sprint_font_ui.py:1646
+#: ui/sprint_font_ui.py:1587
 msgid "Select the differential wire pair that needs to be adjusted in length"
 msgstr ""
 "Selecione o par de fios diferenciais que precisa ter o comprimento ajustado"
 
-#: ui/sprint_font_ui.py:1647
+#: ui/sprint_font_ui.py:1588
 msgid "Min amplitude (Amin)"
 msgstr "Amplitude mínima (Amin)"
 
-#: ui/sprint_font_ui.py:1649
+#: ui/sprint_font_ui.py:1590
 msgid "Max amplitude (Amax)"
 msgstr "Amplitude máxima (Amax)"
 
-#: ui/sprint_font_ui.py:1651
+#: ui/sprint_font_ui.py:1592
 msgid " WirePair "
 msgstr " Par dif. "
 
-#: ui/sprint_font_ui.py:1657
+#: ui/sprint_font_ui.py:1598
 msgid "Width"
 msgstr "Largura"
 
-#: ui/sprint_font_ui.py:1668 ui/sprint_font_ui.py:1687
-#: ui/sprint_font_ui.py:1696
+#: ui/sprint_font_ui.py:1609 ui/sprint_font_ui.py:1628
+#: ui/sprint_font_ui.py:1637
 msgid "Rotation"
 msgstr "Rotação"
 
-#: ui/sprint_font_ui.py:1669
+#: ui/sprint_font_ui.py:1610
 msgid "Style"
 msgstr "Estilo"
 
-#: ui/sprint_font_ui.py:1670
+#: ui/sprint_font_ui.py:1611
 msgid "Thickness"
 msgstr "Espessura"
 
-#: ui/sprint_font_ui.py:1671
+#: ui/sprint_font_ui.py:1612
 msgid "Height"
 msgstr "Altura"
 
-#: ui/sprint_font_ui.py:1684
+#: ui/sprint_font_ui.py:1625
 msgid "Size"
 msgstr "Tamanho"
 
-#: ui/sprint_font_ui.py:1685
+#: ui/sprint_font_ui.py:1626
 msgid "Drill"
 msgstr "Furo"
 
-#: ui/sprint_font_ui.py:1686
+#: ui/sprint_font_ui.py:1627
 msgid "Form"
 msgstr "Forma"
 
-#: ui/sprint_font_ui.py:1697
+#: ui/sprint_font_ui.py:1638
 msgid "Size Y"
 msgstr "Tamanho Y"
 
-#: ui/sprint_font_ui.py:1698
+#: ui/sprint_font_ui.py:1639
 msgid "Size X"
 msgstr "Tamanho X"
 
-#: ui/sprint_font_ui.py:1700
+#: ui/sprint_font_ui.py:1641
 msgid "Apply to all items (Ignore conditions)"
 msgstr "Aplicar a todos (Ignorar condições)"
 
-#: ui/sprint_font_ui.py:1703
+#: ui/sprint_font_ui.py:1644
 msgid "Override (Then)"
 msgstr "Sobrescrever (Then)"
 
-#: ui/sprint_font_ui.py:1704
+#: ui/sprint_font_ui.py:1645
 msgid "Condition (If)"
 msgstr "Condição (If)"
 
-#: ui/sprint_font_ui.py:1705
+#: ui/sprint_font_ui.py:1646
 msgid "Property"
 msgstr "Propriedade"
 
-#: ui/sprint_font_ui.py:1707
+#: ui/sprint_font_ui.py:1648
 msgid "Target"
 msgstr "Alvo"
 
-#: ui/sprint_font_ui.py:1708
+#: ui/sprint_font_ui.py:1649
 msgid " BulkEdit "
 msgstr " Edição Lote "
 

@@ -80,6 +80,8 @@ UPDATE_ELEMENT_PROPS = {
     'thermalTracksWidth': ('number', 'PAD: thermal spoke width in mm'),
     'thermalTracks': ('integer', 'PAD: thermal spoke count'),
     'thermalTracksIndividual': ('boolean', 'PAD: use individual thermal spoke settings'),
+    'padId': ('integer', 'PAD/SMDPAD: pad ID for ratsnest/rubberband connections (must be > 0)'),
+    'connectsTo': ('array', 'PAD/SMDPAD: array of other pad IDs (integers) to connect via ratsnest/rubberband lines'),
     'text': ('string', 'TEXT: new text content (non-empty)'),
     'height': ('number', 'TEXT: text height in mm'),
     'style': ('integer', 'TEXT: 0=Narrow, 1=Normal, 2=Wide'),
@@ -109,16 +111,17 @@ CHIP_PASSIVE_FOOTPRINTS = {
 SOIC_PITCH = 1.27          #同排引脚间距
 SOIC_ROW_DISTANCE = 5.4    #两排焊盘中心距
 SOIC_PAD = (1.5, 0.6)      #(sizeX跨机体方向, sizeY沿排方向)
-SOIC_BODY_WIDTH = 3.9
+SOIC_BODY_WIDTH = 3.5      #机体丝印宽度(与内侧焊盘边缘保持间隙，避免重叠)
 SOIC_BODY_LENGTH = {8: 4.9, 14: 8.65, 16: 9.9}
 DIP_PITCH = 2.54
 DIP_ROW_DISTANCE = 7.62    #300mil标准排距
+DIP_BODY_WIDTH = 5.0       #机体丝印宽度(与通孔焊盘内边缘2.96保持间隙)
 TH_PAD_SIZE = 1.7          #通孔焊盘外径(DIP与排针共用)
 TH_DRILL = 1.0             #通孔钻孔直径(DIP与排针共用)
 SOT23_ROW_DISTANCE = 2.3   #左右焊盘中心距
 SOT23_PIN_SPAN = 1.9       #同侧两焊盘中心距
 SOT23_PAD = (1.0, 0.65)
-SOT23_BODY = (1.5, 2.5)
+SOT23_BODY = (1.0, 2.5)    #丝印本体尺寸(与两侧焊盘内边缘保持间隙)
 HEADER_PITCH = 2.54
 SILK_WIDTH = 0.15          #标准封装丝印线宽
 
@@ -375,9 +378,11 @@ class SprintMcpServer:
         self.pcbAll = pcbAll
         self.hasInputFile = hasInputFile
         self.replaceDisabled = False #输入板图解析失败时由sprintFont置True，禁止replace整板回写
+        self.negotiatedProtocolVersion = MCP_LATEST_PROTOCOL_VERSION
 
         self.boardLock = threading.RLock() #保护textIo的读写锁
         self.undoStack = [] #撤销快照栈(deepcopy的SprintTextIO)
+        self.mutationCount = 0 #修改操作计数(调用pushUndoSnapshot时递增)
         self.sessions = set() #已建立的MCP会话
         self.clientName = '' #最近一次initialize的客户端名字
 
@@ -407,6 +412,7 @@ class SprintMcpServer:
             'addComponent': self.toolAddComponent,
             'batchAdd': self.toolBatchAdd,
             'addStandardFootprint': self.toolAddStandardFootprint,
+            'connectPads': self.toolConnectPads,
             'deleteElements': self.toolDeleteElements,
             'moveElements': self.toolMoveElements,
             'rotateElements': self.toolRotateElements,
@@ -414,6 +420,10 @@ class SprintMcpServer:
             'groupElements': self.toolGroupElements,
             'updateElements': self.toolUpdateElements,
             'undo': self.toolUndo,
+            'addTeardrops': self.toolAddTeardrops,
+            'removeTeardrops': self.toolRemoveTeardrops,
+            'roundTracks': self.toolRoundTracks,
+            'importFootprint': self.toolImportFootprint,
             'importTextIo': self.toolImportTextIo,
             'exportTextIo': self.toolExportTextIo,
             'exportSvg': self.toolExportSvg,
@@ -510,7 +520,10 @@ class SprintMcpServer:
     #处理initialize请求，协商协议版本并建立会话
     def handleInitialize(self, params, requestHandler):
         requested = str(params.get('protocolVersion') or '')
+        if not requested and (requestHandler is not None):
+            requested = str(requestHandler.headers.get('Mcp-Protocol-Version') or '')
         version = requested if requested in MCP_PROTOCOL_VERSIONS else MCP_LATEST_PROTOCOL_VERSION
+        self.negotiatedProtocolVersion = version
         clientInfo = params.get('clientInfo') or {}
         self.clientName = str(clientInfo.get('name', ''))
         if requestHandler is not None:
@@ -577,6 +590,7 @@ class SprintMcpServer:
 
     #在锁内对板图做一次撤销快照并入栈，在每次修改性操作前调用
     def pushUndoSnapshot(self):
+        self.mutationCount += 1
         self.commitUndoSnapshot(self.takeUndoSnapshot())
 
     #取一个撤销快照(暂不入栈)，调用方确认操作确实产生修改后再commitUndoSnapshot入栈，
@@ -756,6 +770,16 @@ class SprintMcpServer:
         if (pad.clearance is not None) and (pad.clearance < 0):
             raise McpToolError('pad.clearance must be >= 0 (unit mm)')
         pad.soldermask = self.parseOptionalBool(spec, 'soldermask', None)
+        padId = spec.get('padId')
+        if padId is not None:
+            if (not isFiniteNumber(padId)) or (padId <= 0):
+                raise McpToolError('pad.padId must be a positive integer')
+            pad.padId = int(padId)
+        connectsTo = spec.get('connectsTo')
+        if connectsTo is not None:
+            if not isinstance(connectsTo, (list, tuple)):
+                raise McpToolError('pad.connectsTo must be an array of pad IDs')
+            pad.connectToOtherPads = [int(v) for v in connectsTo if isFiniteNumber(v) and (v > 0)]
         if spec.get('name'):
             pad.name = pad.sanitizeText(str(spec['name']))
         return pad
@@ -776,6 +800,16 @@ class SprintMcpServer:
         if (pad.clearance is not None) and (pad.clearance < 0):
             raise McpToolError('pad.clearance must be >= 0 (unit mm)')
         pad.soldermask = self.parseOptionalBool(spec, 'soldermask', None)
+        padId = spec.get('padId')
+        if padId is not None:
+            if (not isFiniteNumber(padId)) or (padId <= 0):
+                raise McpToolError('smdPad.padId must be a positive integer')
+            pad.padId = int(padId)
+        connectsTo = spec.get('connectsTo')
+        if connectsTo is not None:
+            if not isinstance(connectsTo, (list, tuple)):
+                raise McpToolError('smdPad.connectsTo must be an array of pad IDs')
+            pad.connectToOtherPads = [int(v) for v in connectsTo if isFiniteNumber(v) and (v > 0)]
         if spec.get('name'):
             pad.name = pad.sanitizeText(str(spec['name']))
         return pad
@@ -881,6 +915,46 @@ class SprintMcpServer:
             else:
                 ret.append(elem)
         return ret
+
+    #检查当前板图相对初始快照是否发生过任何实质性修改
+    #双层判定：写操作计数器零次修改O(1)短路 + 板尺寸/图元总数O(1)短路 + 逐项序列化内容比对
+    def isBoardModified(self, initialElements, initialWidth=None, initialHeight=None):
+        if (initialWidth is not None) and (abs(self.textIo.pcbWidth - initialWidth) > 1e-5):
+            return True
+        if (initialHeight is not None) and (abs(self.textIo.pcbHeight - initialHeight) > 1e-5):
+            return True
+
+        if initialElements is None:
+            return self.mutationCount > 0
+
+        if len(self.textIo.elements) != len(initialElements):
+            return True
+
+        #若未执行过任何写操作，且尺寸与元素数量一致，100%未修改，无需遍历字符串
+        if self.mutationCount == 0:
+            return False
+
+        #逐项序列化内容比对(处理改动后又undo或自消除操作的情况)
+        for elem, origStr in zip(self.textIo.elements, initialElements):
+            if str(elem) != origStr:
+                return True
+
+        return False
+
+    #检查当前板图相对初始快照是否属于纯新增图元
+    #(板尺寸未变，且前N个图元与原板完全一致，仅在末尾追加新图元，无任何旧图元的修改/移动/删除)
+    def isPureAddition(self, initialElements, initialWidth=None, initialHeight=None):
+        if (initialWidth is not None) and (abs(self.textIo.pcbWidth - initialWidth) > 1e-5):
+            return False
+        if (initialHeight is not None) and (abs(self.textIo.pcbHeight - initialHeight) > 1e-5):
+            return False
+        if not initialElements:
+            return False
+        origCount = len(initialElements)
+        currCount = len(self.textIo.elements)
+        if currCount <= origCount:
+            return False
+        return all(str(self.textIo.elements[i]) == initialElements[i] for i in range(origCount))
 
     #按板层过滤顶层元素，组/元件内部包含该层元素时整体保留，避免按层导出时漏掉组内图元
     def filterElementsByLayer(self, layer):
@@ -1147,6 +1221,85 @@ class SprintMcpServer:
         ret['pinCount'] = len(comp.getPads())
         return ret
 
+    #根据标签解析SprintPad实例，支持 "0.1"(组件0的子元素1)、"5"(顶层元素5)、"R1.1"(位号R1的引脚1)
+    def resolvePad(self, label):
+        labelStr = str(label or '').strip()
+        if not labelStr:
+            raise McpToolError('Pad identifier cannot be empty')
+
+        #尝试通过buildNetLabelMap查找(支持 "a.b" 和 顶层索引)
+        netMap = self.buildNetLabelMap()
+        idToPad = {}
+        for elem in self.textIo.baseDrawElements():
+            if isinstance(elem, SprintPad):
+                idToPad[id(elem)] = elem
+
+        for objId, l in netMap.items():
+            if (l == labelStr) and (objId in idToPad):
+                return idToPad[objId]
+
+        #尝试直接作为顶层整数索引
+        if labelStr.isdigit():
+            idx = int(labelStr)
+            if 0 <= idx < len(self.textIo.elements):
+                elem = self.textIo.elements[idx]
+                if isinstance(elem, SprintPad):
+                    return elem
+
+        #尝试解析为 RefDes.Pin (如 "R1.1", "U1.5")
+        if '.' in labelStr:
+            refDes, pinName = labelStr.split('.', 1)
+            refDesUpper = refDes.upper()
+            pinNameUpper = pinName.upper()
+            for elem in self.textIo.elements:
+                if isinstance(elem, SprintComponent):
+                    elemId = elem.idText.text.strip().upper() if elem.idText else ''
+                    if elemId == refDesUpper:
+                        for sub in elem.elements:
+                            if isinstance(sub, SprintPad) and (sub.name or '').strip().upper() == pinNameUpper:
+                                return sub
+
+        raise McpToolError('Pad not found with identifier: {}'.format(labelStr))
+
+    #工具：在焊盘之间建立或解除飞线/预连线连接
+    def toolConnectPads(self, args):
+        rawPads = args.get('pads')
+        if not isinstance(rawPads, (list, tuple)) or (len(rawPads) < 2):
+            raise McpToolError('pads must be an array of at least 2 pad identifiers (e.g. ["0.1", "1.0"] or ["R1.1", "C1.1"])')
+
+        disconnect = self.parseOptionalBool(args, 'disconnect', False)
+        pads = [self.resolvePad(lbl) for lbl in rawPads]
+
+        self.pushUndoSnapshot()
+
+        if disconnect:
+            targetIds = set(p.padId for p in pads if p.padId is not None)
+            for p in pads:
+                if p.padId is not None:
+                    p.connectToOtherPads = [cid for cid in p.connectToOtherPads if cid not in targetIds]
+            return {'connected': False, 'pads': list(rawPads),
+                'message': 'Connections removed between specified pads'}
+
+        allPads = [e for e in self.textIo.baseDrawElements() if isinstance(e, SprintPad)]
+        maxId = 0
+        for p in allPads:
+            if (p.padId is not None) and (p.padId > maxId):
+                maxId = p.padId
+
+        for p in pads:
+            if p.padId is None:
+                maxId += 1
+                p.padId = maxId
+
+        for i, p in enumerate(pads):
+            for j, other in enumerate(pads):
+                if (i != j) and (other.padId not in p.connectToOtherPads):
+                    p.connectToOtherPads.append(other.padId)
+
+        return {'connected': True, 'pads': list(rawPads),
+            'padIds': [p.padId for p in pads],
+            'message': 'Successfully connected {} pads with ratsnest lines'.format(len(pads))}
+
     #解析标准封装名字，返回规范名(如SOIC-8/HEADER-1x4)，不认识则抛出McpToolError
     def parseStandardFootprintName(self, name):
         name = str(name or '').strip().upper().replace(' ', '')
@@ -1229,7 +1382,14 @@ class SprintMcpServer:
             padX, padY, pitch, bodyX, bodyY = CHIP_PASSIVE_FOOTPRINTS[canonicalName]
             addPads(((-pitch / 2, 0), (pitch / 2, 0)),
                 lambda pos, no: self.buildNamedSmdPad(pos, padX, padY, no))
-            comp.add(self.buildSilkRect(0, 0, bodyX, bodyY))
+            #贴片阻容感丝印：在焊盘上下两侧绘制不重叠的平行水平线(间距0.2mm，避免丝印覆盖铜箔)
+            yOffset = padY / 2 + 0.2
+            xHalf = pitch / 2
+            for sign in (-1, 1):
+                track = SprintTrack(LAYER_S1, SILK_WIDTH)
+                track.addPoint((-xHalf, sign * yOffset))
+                track.addPoint((xHalf, sign * yOffset))
+                comp.add(track)
 
         elif canonicalName.startswith('SOIC'):
             pinCount = int(canonicalName.split('-')[1])
@@ -1242,8 +1402,21 @@ class SprintMcpServer:
             rows = pinCount // 2
             addPads(self.dualRowPadPositions(rows, DIP_PITCH, DIP_ROW_DISTANCE),
                 lambda pos, no: self.buildNamedThPad(pos, no))
-            #丝印画DIP本体：宽度略小于排距，长度覆盖引脚排布
-            comp.add(self.buildSilkRect(0, 0, DIP_ROW_DISTANCE - 0.6, (rows - 1) * DIP_PITCH + 2.2))
+            #丝印画DIP本体：宽度5.0mm(与通孔焊盘保持间距)，长度覆盖引脚排布，顶部画引脚1凹槽
+            w = DIP_BODY_WIDTH
+            h = (rows - 1) * DIP_PITCH + 2.0
+            x0, x1, y0, y1 = -w / 2, w / 2, -h / 2, h / 2
+            track = SprintTrack(LAYER_S1, SILK_WIDTH)
+            track.addPoint((-0.8, y0))
+            track.addPoint((-0.8, y0 + 0.8))
+            track.addPoint((0.8, y0 + 0.8))
+            track.addPoint((0.8, y0))
+            track.addPoint((x1, y0))
+            track.addPoint((x1, y1))
+            track.addPoint((x0, y1))
+            track.addPoint((x0, y0))
+            track.addPoint((-0.8, y0))
+            comp.add(track)
 
         elif canonicalName == 'SOT-23':
             xHalf, yHalf = SOT23_ROW_DISTANCE / 2, SOT23_PIN_SPAN / 2
@@ -1494,6 +1667,21 @@ class SprintMcpServer:
                     raise McpToolError('thermalTracks must be a non-negative integer')
                 obj.thermalTracks = int(value)
                 changed = True
+            if 'padId' in args:
+                padId = args.get('padId')
+                if padId is not None:
+                    if (not isFiniteNumber(padId)) or (padId <= 0):
+                        raise McpToolError('padId must be a positive integer')
+                    obj.padId = int(padId)
+                else:
+                    obj.padId = None
+                changed = True
+            if 'connectsTo' in args:
+                connectsTo = args.get('connectsTo')
+                if not isinstance(connectsTo, (list, tuple)):
+                    raise McpToolError('connectsTo must be an array of pad IDs')
+                obj.connectToOtherPads = [int(v) for v in connectsTo if isFiniteNumber(v) and (v > 0)]
+                changed = True
 
         elif isinstance(obj, SprintPolygon):
             if 'width' in args:
@@ -1601,6 +1789,117 @@ class SprintMcpServer:
             raise McpToolError('Nothing to undo')
         self.textIo = self.undoStack.pop()
         return {'undone': True, 'totalElements': len(self.textIo.elements)}
+
+    #工具：添加泪滴焊盘(在走线与焊盘交界处生成平滑过渡多边形)
+    def toolAddTeardrops(self, args):
+        from sprint_struct.teardrop import createTeardrops
+        hPercent = self.parseOptionalPositiveFloat(args, 'hPercent') or 50
+        vPercent = self.parseOptionalPositiveFloat(args, 'vPercent') or 90
+        segs = int(args.get('segs') or 10)
+        if segs <= 0:
+            raise McpToolError('segs must be a positive integer')
+        usePth = self.parseOptionalBool(args, 'usePth', True)
+        useSmd = self.parseOptionalBool(args, 'useSmd', False)
+        followTracks = self.parseOptionalBool(args, 'followTracks', False)
+
+        polys = createTeardrops(self.textIo, hPercent=hPercent, vPercent=vPercent, segs=segs,
+            usePth=usePth, useSmd=useSmd, followTracks=followTracks)
+        if not polys:
+            return {'added': 0, 'message': 'No teardrop pads could be generated'}
+
+        self.pushUndoSnapshot()
+        startIndex = len(self.textIo.elements)
+        self.textIo.addAll(polys)
+        self.textIo.updateSelfBbox()
+        return {'added': len(polys), 'indices': list(range(startIndex, startIndex + len(polys)))}
+
+    #工具：移除板上已有的泪滴焊盘
+    def toolRemoveTeardrops(self, args):
+        from sprint_struct.teardrop import getTeardrops
+        pads = self.textIo.getPads()
+        tracks = self.textIo.getTracks()
+        tds = getTeardrops(self.textIo, pads, tracks) if pads and tracks else []
+        if not tds:
+            return {'removed': 0, 'message': 'No teardrop pads found on board'}
+
+        self.pushUndoSnapshot()
+        tdIds = set(id(t) for t in tds)
+        #按身份过滤删除，遵循 pitfalls.md 规则，不使用 list.remove
+        self.textIo.elements = [e for e in self.textIo.elements if id(e) not in tdIds]
+        self.textIo.updateSelfBbox()
+        return {'removed': len(tds), 'remaining': len(self.textIo.elements)}
+
+    #工具：将走线拐角转换为平滑圆弧(高频/RF/美观)
+    def toolRoundTracks(self, args):
+        from sprint_struct.rounded_track import createArcTracksInTextIo
+        method = str(args.get('method') or 'tangent').strip()
+        if method not in ('tangent', 'bizier', '3Points'):
+            raise McpToolError('method must be "tangent", "bizier", or "3Points"')
+        bigDistance = self.parseOptionalPositiveFloat(args, 'bigDistance') or 1.0
+        smallDistance = self.parseOptionalPositiveFloat(args, 'smallDistance') or 0.5
+        segNum = int(args.get('segNum') or 10)
+        if segNum < 2:
+            raise McpToolError('segNum must be >= 2')
+
+        snapshot = self.takeUndoSnapshot()
+        replaced = createArcTracksInTextIo(self.textIo, method, bigDistance, smallDistance, segNum)
+        if replaced:
+            self.commitUndoSnapshot(snapshot)
+            self.textIo.updateSelfBbox()
+        return {'replaced': bool(replaced), 'totalTracks': len(self.textIo.getTracks())}
+
+    #工具：从立创EDA(在线/离线)或KiCad导入封装到板图
+    def toolImportFootprint(self, args):
+        from conversion.lceda_to_sprint import LcComponent
+        part = str(args.get('part') or args.get('partNumber') or args.get('file') or '').strip()
+        if not part:
+            raise McpToolError('part (or partNumber / file) is required (e.g. "C2040", "SOIC-8.kicad_mod", or local json path)')
+        pos = self.parsePoint(args.get('pos', [0, 0]), 'pos')
+        rotation = self.parseOptionalFloat(args, 'rotation', 0) or 0
+        importText = self.parseOptionalBool(args, 'importText', True)
+        easyEdaSite = str(args.get('easyEdaSite') or 'auto').lower()
+        if easyEdaSite not in ('auto', 'cn', 'global'):
+            easyEdaSite = 'auto'
+
+        subTextIo = None
+        lowerPart = part.lower()
+        if lowerPart.endswith('.kicad_mod'):
+            from conversion.kicad_to_sprint import kicadModToTextIo
+            if not os.path.isfile(part):
+                raise McpToolError('KiCad footprint file not found: {}'.format(part))
+            subTextIo = kicadModToTextIo(part, importText)
+        elif lowerPart.endswith('.json') or os.path.isfile(part):
+            if not os.path.isfile(part):
+                raise McpToolError('Footprint file not found: {}'.format(part))
+            ins = LcComponent.fromFile(part)
+            if not ins or isinstance(ins, str):
+                raise McpToolError('Failed to parse footprint file: {}'.format(ins or 'unknown'))
+            subTextIo = ins.createSprintTextIo(importText)
+        elif LcComponent.isLcedaComponent(part):
+            site = ('cn' if easyEdaSite in ('auto', 'cn') else 'global')
+            ins = LcComponent.fromLcId(part, site)
+            if not isinstance(ins, LcComponent):
+                raise McpToolError('Failed to fetch LCEDA component {}: {}'.format(part, ins))
+            subTextIo = ins.createSprintTextIo(importText)
+        else:
+            raise McpToolError('Unsupported footprint source: {}. Expected LCEDA part (e.g. "C2040"), .kicad_mod file, or .json file'.format(part))
+
+        if not subTextIo or isinstance(subTextIo, str) or not subTextIo.elements:
+            raise McpToolError('No elements found in imported footprint: {}'.format(subTextIo or 'empty'))
+
+        self.pushUndoSnapshot()
+        startIndex = len(self.textIo.elements)
+        for elem in subTextIo.elements:
+            if rotation:
+                elem.rotateBy(rotation, 0, 0)
+            elem.moveByOffset(pos[0], pos[1])
+            self.textIo.add(elem)
+        self.textIo.updateSelfBbox()
+
+        addedCount = len(self.textIo.elements) - startIndex
+        return {'imported': True, 'part': part, 'elementsAdded': addedCount,
+            'pos': [roundMm(pos[0]), roundMm(pos[1])], 'rotation': rotation,
+            'indices': list(range(startIndex, startIndex + addedCount))}
 
     #工具：导入Text-IO格式文本
     def toolImportTextIo(self, args):
@@ -1873,7 +2172,9 @@ class SprintMcpServer:
 #生成一个工具参数的属性描述
 def prop(desc, type_='string', **kwargs):
     ret = {'type': type_, 'description': desc}
-    ret.update(kwargs)
+    for k, v in kwargs.items():
+        if v is not None:
+            ret[k] = v
     return ret
 
 #生成一个工具定义
@@ -1914,6 +2215,8 @@ def buildToolDefinitions():
         'thermal': prop('Optional: thermal pad on automatic ground-plane', 'boolean'),
         'clearance': prop('Optional: distance to automatic ground-plane in mm', 'number'),
         'soldermask': prop('Optional: soldermask opening', 'boolean'),
+        'padId': prop('Optional pad ID for ratsnest/rubberband connections (integer > 0)', 'integer'),
+        'connectsTo': prop('Optional array of other pad IDs to connect via ratsnest', 'array', items={'type': 'integer'}),
         'name': prop('Optional: free-form label for the pad (display hint only; Sprint-Layout has no net '
             'names, so this does not affect connectivity or DSN nets)'),
     }
@@ -1926,6 +2229,8 @@ def buildToolDefinitions():
         'rotation': prop('Optional rotation in degrees, clockwise-positive', 'number'),
         'clearance': prop('Optional: distance to automatic ground-plane in mm', 'number'),
         'soldermask': prop('Optional: soldermask opening', 'boolean'),
+        'padId': prop('Optional pad ID for ratsnest/rubberband connections (integer > 0)', 'integer'),
+        'connectsTo': prop('Optional array of other pad IDs to connect via ratsnest', 'array', items={'type': 'integer'}),
         'name': prop('Optional: free-form label for the pad (display hint only, not a net name)', 'string'),
     }
 
@@ -2000,6 +2305,16 @@ def buildToolDefinitions():
                     'bounding box intersects this rectangle are returned', 'array',
                     items={'type': 'number'}),
             }),
+        toolDef('clearBoard',
+            'Clear all elements from the board.',
+            {'confirm': prop('Must be true to actually clear the board', 'boolean')},
+            ['confirm']),
+        toolDef('setBoardSize',
+            'Set board dimensions in mm.',
+            {
+                'width': prop('Board width in mm (>= 0)', 'number'),
+                'height': prop('Board height in mm (>= 0)', 'number'),
+            }, ['width', 'height']),
         toolDef('addTrack',
             'Add a track (polyline) on a copper or silkscreen layer. ' + pointDesc,
             trackProps, ['layer', 'width', 'points']),
@@ -2028,12 +2343,12 @@ def buildToolDefinitions():
                 'valueText': prop('Optional value label: string or object {text, layer?, height?, pos?}'),
                 'comment': prop('Optional component comment', 'string'),
                 'package': prop('Optional package name (enables pick+place data)', 'string'),
-                'pads': prop('Optional. ' + componentSubNote, 'array'),
-                'smdPads': prop('Optional. ' + componentSubNote, 'array'),
-                'tracks': prop('Optional. ' + componentSubNote, 'array'),
-                'zones': prop('Optional. ' + componentSubNote, 'array'),
-                'texts': prop('Optional. ' + componentSubNote, 'array'),
-                'circles': prop('Optional. ' + componentSubNote, 'array'),
+                'pads': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
+                'smdPads': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
+                'tracks': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
+                'zones': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
+                'texts': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
+                'circles': prop('Optional. ' + componentSubNote, 'array', items={'type': 'object'}),
             }),
         toolDef('batchAdd',
             'Add MANY elements in ONE call (fewer round-trips when routing a bus or placing a row of '
@@ -2043,12 +2358,12 @@ def buildToolDefinitions():
             'texts, circles (input order preserved within each array). For a complete footprint use '
             'addComponent instead.',
             {
-                'tracks': prop('Optional array of track specs (same fields as addTrack)', 'array'),
-                'pads': prop('Optional array of through-hole pad specs (same fields as addPad; use via=true for vias)', 'array'),
-                'smdPads': prop('Optional array of SMD pad specs (same fields as addSmdPad)', 'array'),
-                'zones': prop('Optional array of zone specs (same fields as addZone)', 'array'),
-                'texts': prop('Optional array of text specs (same fields as addText)', 'array'),
-                'circles': prop('Optional array of circle/arc specs (same fields as addCircle)', 'array'),
+                'tracks': prop('Optional array of track specs (same fields as addTrack)', 'array', items={'type': 'object'}),
+                'pads': prop('Optional array of through-hole pad specs (same fields as addPad; use via=true for vias)', 'array', items={'type': 'object'}),
+                'smdPads': prop('Optional array of SMD pad specs (same fields as addSmdPad)', 'array', items={'type': 'object'}),
+                'zones': prop('Optional array of zone specs (same fields as addZone)', 'array', items={'type': 'object'}),
+                'texts': prop('Optional array of text specs (same fields as addText)', 'array', items={'type': 'object'}),
+                'circles': prop('Optional array of circle/arc specs (same fields as addCircle)', 'array', items={'type': 'object'}),
             }),
         toolDef('addStandardFootprint',
             'Place a parametric standard footprint in one call (no manual pad math). Supported packages: '
@@ -2069,6 +2384,15 @@ def buildToolDefinitions():
                 'valueText': prop('Optional value label: string or object {text, layer?, height?, pos?}; '
                     'pos (if given) is relative to the footprint center before rotation', 'string'),
             }, ['package', 'pos']),
+        toolDef('connectPads',
+            'Connect two or more pads with ratsnest / rubberband lines (or disconnect them). '
+            'This defines net connectivity on the board and enables exportDsn to produce nets for external autorouting. '
+            'Pads can be specified by netlist label ("0.1", "5") or by component designator and pin ("R1.1", "U1.5").',
+            {
+                'pads': prop('Array of at least 2 pad identifiers (e.g. ["0.1", "1.0"] or ["R1.1", "C1.1"])', 'array',
+                    items={'type': 'string'}),
+                'disconnect': prop('Optional: if true, remove connection between specified pads (default false)', 'boolean'),
+            }, ['pads']),
         toolDef('deleteElements',
             'Delete top-level elements by their indexes (from getElements).',
             {'indices': prop('Array of element indexes to delete', 'array', items={'type': 'integer'})},
@@ -2108,10 +2432,41 @@ def buildToolDefinitions():
             'Each provided property is applied only to the selected elements whose type supports it '
             '(e.g. size only applies to PAD/SMDPAD, text only to TEXT); other elements skip it. '
             'Returns the updated elements.',
-            dict([(key, prop(desc, type_)) for key, (type_, desc) in UPDATE_ELEMENT_PROPS.items()] +
+            dict([(key, prop(desc, type_, items={'type': 'number'} if key in ('pos', 'center') else ({'type': 'integer'} if key == 'connectsTo' else None)))
+                for key, (type_, desc) in UPDATE_ELEMENT_PROPS.items()] +
                 [('indices', prop('Array of element indexes to update', 'array', items={'type': 'integer'}))]),
             ['indices']),
         toolDef('undo', 'Undo the last board modification.', {}),
+        toolDef('addTeardrops',
+            'Add teardrop pads to copper track-pad intersections to improve mechanical strength and manufacturing yield.',
+            {
+                'hPercent': prop('Optional horizontal percentage (default 50)', 'number'),
+                'vPercent': prop('Optional vertical percentage (default 90)', 'number'),
+                'segs': prop('Optional curve segments (default 10)', 'integer'),
+                'usePth': prop('Optional: apply to through-hole pads (default true)', 'boolean'),
+                'useSmd': prop('Optional: apply to SMD pads (default false)', 'boolean'),
+                'followTracks': prop('Optional: follow tracks if shorter than needed (default false)', 'boolean'),
+            }),
+        toolDef('removeTeardrops',
+            'Remove previously generated teardrop pads from the board.',
+            {}),
+        toolDef('roundTracks',
+            'Smooth sharp track corners into circular or bezier arcs for RF, high-speed routing, or visual polish.',
+            {
+                'method': prop('Optional method: "tangent" (default, tangent arc) / "bizier" / "3Points"', 'string'),
+                'bigDistance': prop('Optional maximum distance from corner in mm (default 1.0)', 'number'),
+                'smallDistance': prop('Optional minimum distance from corner in mm (default 0.5)', 'number'),
+                'segNum': prop('Optional arc segment count (default 10)', 'integer'),
+            }),
+        toolDef('importFootprint',
+            'Import a component footprint from LCEDA (EasyEDA) by part number (e.g. "C2040") or from a KiCad (.kicad_mod) or JSON footprint file.',
+            {
+                'part': prop('LCEDA part number (e.g. "C2040") or path to .kicad_mod / .json file', 'string'),
+                'pos': prop('Placement center ' + pointDesc, 'array', items={'type': 'number'}),
+                'rotation': prop('Optional rotation in degrees, clockwise-positive (default 0)', 'number'),
+                'importText': prop('Optional: import silkscreen text labels (default true)', 'boolean'),
+                'easyEdaSite': prop('Optional LCEDA API site: "auto" (default) / "cn" / "global"', 'string'),
+            }, ['part']),
         toolDef('importTextIo',
             'Import elements from a Text-IO format string (the Sprint-Layout element exchange format). '
             'mode=append adds to the board, mode=replace clears the board first.',
@@ -2188,11 +2543,11 @@ def buildToolDefinitions():
             }, ['path']),
         toolDef('applyToSprintLayout',
             'Hand the board back to Sprint-Layout: the sprintFont plugin writes the result and closes, '
-            'then Sprint-Layout updates the board (replace mode when launched with whole-board export, '
-            'otherwise only newly added elements are inserted). Requires confirm=true.',
+            'then Sprint-Layout updates the board (auto mode safely inserts only newly added elements when existing elements are untouched, '
+            'or replaces the board when existing elements were modified). Requires confirm=true.',
             {
                 'confirm': prop('Must be true to actually close the plugin', 'boolean'),
-                'mode': prop('Optional: auto (default) / replace / insert_new'),
+                'mode': prop('Optional: auto (default, auto-detects pure addition vs modifications) / replace / insert_new'),
             }),
     ]
 
@@ -2290,12 +2645,16 @@ class McpHttpRequestHandler(BaseHTTPRequestHandler):
     def sendHeaderCommon(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Mcp-Session-Id, Authorization, Mcp-Protocol-Version')
+        self.send_header('Access-Control-Expose-Headers', 'Mcp-Session-Id, Mcp-Protocol-Version')
 
     #发送一个JSON响应
     def sendHttpResponse(self, status, obj):
         body = b'' if (obj is None) else json.dumps(obj, ensure_ascii=False).encode('utf-8')
         self.send_response(status)
         self.sendHeaderCommon()
+        mcpServer = getattr(self.server, 'mcpServer', None)
+        protocolVersion = getattr(mcpServer, 'negotiatedProtocolVersion', MCP_LATEST_PROTOCOL_VERSION) if mcpServer else MCP_LATEST_PROTOCOL_VERSION
+        self.send_header('Mcp-Protocol-Version', protocolVersion)
         if self.responseSessionId:
             self.send_header('Mcp-Session-Id', self.responseSessionId)
         if body:
