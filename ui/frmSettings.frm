@@ -2,7 +2,7 @@ VERSION 5.00
 Begin VB.Form frmSettings 
    BorderStyle     =   3  'Fixed Dialog
    Caption         =   "Settings"
-   ClientHeight    =   5265
+   ClientHeight    =   5835
    ClientLeft      =   45
    ClientTop       =   375
    ClientWidth     =   6750
@@ -18,7 +18,7 @@ Begin VB.Form frmSettings
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   5265
+   ScaleHeight     =   5835
    ScaleWidth      =   6750
    ShowInTaskbar   =   0   'False
    StartUpPosition =   2  'ÆÁÄ»ÖÐÐÄ
@@ -32,7 +32,7 @@ Begin VB.Form frmSettings
    End
    Begin VB.Frame frmMcpServer 
       Caption         =   "MCP Server (AI bridge)"
-      Height          =   1095
+      Height          =   1575
       Left            =   120
       TabIndex        =   9
       Top             =   3240
@@ -52,6 +52,16 @@ Begin VB.Form frmSettings
          Text            =   "5390"
          Top             =   360
          Width           =   1215
+      End
+      Begin VB.Label lblMcpServerTip 
+         Alignment       =   2  'Center
+         BackColor       =   &H00EAFFFF&
+         Caption         =   "Note: Start the MCP server before the AI client"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   15
+         Top             =   1080
+         Width           =   6135
       End
       Begin VB.Label lblMcpPort 
          Alignment       =   1  'Right Justify
@@ -93,7 +103,7 @@ Begin VB.Form frmSettings
       Height          =   495
       Left            =   3600
       TabIndex        =   1
-      Top             =   4560
+      Top             =   5160
       Width           =   2295
    End
    Begin VB.CommandButton cmdSettingsOk 
@@ -101,7 +111,7 @@ Begin VB.Form frmSettings
       Height          =   495
       Left            =   480
       TabIndex        =   0
-      Top             =   4560
+      Top             =   5160
       Width           =   2295
    End
    Begin VB.Label lblBackupCount 

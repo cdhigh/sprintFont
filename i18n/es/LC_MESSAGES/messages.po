@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-26 08:31-0300\n"
+"POT-Creation-Date: 2026-09-26 20:07-0300\n"
 "PO-Revision-Date: 2024-12-23 22:42-0300\n"
 "Last-Translator: \n"
 "Language-Team: sprintFont <LL@li.org>\n"
@@ -233,7 +233,7 @@ msgstr "Rectángulo, vertical"
 #: app/pcb_enhancements.py:40 app/pcb_enhancements.py:50
 #: app/pcb_enhancements.py:53 app/pcb_enhancements.py:203
 #: app/pcb_enhancements.py:221 app/pcb_enhancements.py:224
-#: app/pcb_enhancements.py:242 app/settings_dialog.py:366 sprintFont.py:594
+#: app/pcb_enhancements.py:242 app/settings_dialog.py:374 sprintFont.py:594
 #: sprintFont.py:621 sprintFont.py:681 sprintFont.py:716 sprintFont.py:828
 #: sprintFont.py:847 sprintFont.py:849 sprintFont.py:883 sprintFont.py:886
 #: sprintFont.py:888 sprintFont.py:907 sprintFont.py:910 sprintFont.py:930
@@ -260,7 +260,7 @@ msgstr ""
 "\n"
 "Solo los elementos nuevos se pueden transferir a Sprint-Layout."
 
-#: app/settings_dialog.py:187 sprintFont.py:642
+#: app/settings_dialog.py:194 sprintFont.py:642
 msgid "Settings"
 msgstr "Ajustes"
 
@@ -520,7 +520,7 @@ msgid "Click to copy to clipboard"
 msgstr "Clic para copiar al portapapeles"
 
 #: app/mcp_status_window.py:74 app/mcp_status_window.py:141
-#: app/settings_dialog.py:189 sprint_struct/wire_pair_tuner.py:73
+#: app/settings_dialog.py:196 sprint_struct/wire_pair_tuner.py:73
 #: ui/sprint_font_ui.py:1517 ui/sprint_font_ui.py:1530
 #: ui/sprint_font_ui.py:1535 ui/sprint_font_ui.py:1542
 #: ui/sprint_font_ui.py:1554 ui/sprint_font_ui.py:1564
@@ -585,49 +585,53 @@ msgstr "No se encontró una pista adecuada"
 msgid "Never"
 msgstr "Nunca"
 
-#: app/settings_dialog.py:188
+#: app/settings_dialog.py:195
 msgid "MCP Server (AI bridge)"
 msgstr "Servidor MCP (puente de IA)"
 
-#: app/settings_dialog.py:190 ui/sprint_font_ui.py:1516
+#: app/settings_dialog.py:197 ui/sprint_font_ui.py:1516
 #: ui/sprint_font_ui.py:1529 ui/sprint_font_ui.py:1543
 #: ui/sprint_font_ui.py:1584 ui/sprint_font_ui.py:1643
 msgid "Ok"
 msgstr "Aceptar"
 
-#: app/settings_dialog.py:191
-msgid "Update check (days)"
-msgstr "Buscar actualizaciones (días)"
-
-#: app/settings_dialog.py:192
-msgid "Double Click To Check Now"
-msgstr "Doble clic para buscar ahora"
-
-#: app/settings_dialog.py:193
-msgid "EasyEDA server"
-msgstr "Servidor EasyEDA"
-
-#: app/settings_dialog.py:194
-msgid "These settings will take effect after restarting"
-msgstr "Estos ajustes se aplicarán después de reiniciar"
-
-#: app/settings_dialog.py:195
-msgid "Language"
-msgstr "Idioma"
-
-#: app/settings_dialog.py:196
+#: app/settings_dialog.py:198
 msgid "Backup Count"
 msgstr "Número de respaldos"
 
-#: app/settings_dialog.py:197
+#: app/settings_dialog.py:199
+msgid "Update check (days)"
+msgstr "Buscar actualizaciones (días)"
+
+#: app/settings_dialog.py:200
+msgid "Double Click To Check Now"
+msgstr "Doble clic para buscar ahora"
+
+#: app/settings_dialog.py:201
+msgid "EasyEDA server"
+msgstr "Servidor EasyEDA"
+
+#: app/settings_dialog.py:202
+msgid "These settings will take effect after restarting"
+msgstr "Estos ajustes se aplicarán después de reiniciar"
+
+#: app/settings_dialog.py:203
+msgid "Language"
+msgstr "Idioma"
+
+#: app/settings_dialog.py:204
 msgid "Port"
 msgstr "Puerto"
 
-#: app/settings_dialog.py:198
+#: app/settings_dialog.py:205
 msgid "Start MCP Server"
 msgstr "Iniciar servidor MCP"
 
-#: app/settings_dialog.py:366
+#: app/settings_dialog.py:206
+msgid "Note: Start the MCP server before the AI client"
+msgstr "Nota: Inicie el servidor MCP antes del cliente de IA"
+
+#: app/settings_dialog.py:374
 msgid "No new version found"
 msgstr "No se encontró una nueva versión"
 
