@@ -37,8 +37,8 @@ from app.pcb_enhancements import PcbEnhancements
 #注意：app.mcp_server不能在此导入(其依赖的http.server导入耗时约0.6s)，
 #已改为在MCP后台启动线程中延迟导入，见getMcpServer
 
-__Version__ = "1.10"
-__DATE__ = "20260926"
+__Version__ = "1.11"
+__DATE__ = "20261013"
 __AUTHOR__ = "cdhigh"
 
 #DEBUG_IN_FILE = r'G:/Downloads/Example1.txt'
